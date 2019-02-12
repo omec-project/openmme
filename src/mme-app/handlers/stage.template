@@ -1,0 +1,141 @@
+/**
+ * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
+ *
+ * The software in this package is published under the terms of the Commercial
+ * Free Software license V.1, a copy of which has been included with this
+ * distribution in the LICENSE.md file.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <string.h>
+
+#include "mme-app.h"
+#include "ue_table.h"
+#include "err_codes.h"
+#include "message_queues.h"
+#include "ipc_api.h"
+
+/************************************************************************
+Current file : Stage 1 handler.
+ATTACH stages :
+@@@	Stage 1 : IAM-->[stage1 handler]-->AIR, ULR
+	Stage 2 : AIA, ULA -->[stage2 handler]--> Auth req
+	Stage 3 : Auth resp-->[stage1 handler]-->Sec mode cmd
+	Stage 4 : sec mode resp-->[stage1 handler]-->esm infor req
+	Stage 5 : esm infor resp-->[stage1 handler]-->create session
+	Stage 6 : create session resp-->[stage1 handler]-->init ctx setup
+	Stage 7 : attach complete-->[stage1 handler]-->modify bearer
+**************************************************************************/
+
+/****Globals and externs ***/
+
+extern struct UE_info * g_UE_list[];
+
+static int g_Q1_fd;
+
+/*Making global just to avoid stack passing*/
+static char buf[ATTACH_STAGE1_BUFFER_SIZE];
+
+
+/****Global and externs end***/
+
+/**
+Initialize the stage settings, Q, 
+destination communication etc.
+*/
+static void
+init_stage()
+{
+	/*Clear existing queue*/
+	unlink(ATTACH_STAGE1_QUEUE);
+
+	if (create_ipc_channel(ATTACH_STAGE1_QUEUE) == -1) {
+		printf("Error in creating Stage 1Reader IPC channel.\n");
+		pthread_exit(NULL);
+	}
+
+	printf("Waiting for Stage1 Q writer from s1ap\n");
+	if ((g_Q1_fd  = open_ipc_channel(ATTACH_STAGE1_QUEUE, IPC_READ)) == -1){
+		printf("Error in opening reader staage 1 IPC channel.\n");
+		pthread_exit(NULL);
+	}
+	return;
+}
+
+/**
+* Read next message from stage Q for processing.
+*/
+static int
+read_next_msg()
+{
+	int bytes_read=0;
+
+	memset(buf, 0, ATTACH_STAGE1_BUFFER_SIZE);
+	while (bytes_read < ATTACH_STAGE1_BUFFER_SIZE) {//TODO : Recheck condition
+		if ((bytes_read = read_ipc_channel(
+			g_Q1_fd, buf, ATTACH_STAGE1_BUFFER_SIZE)) == -1) {
+			printf("Error in reading \n");
+			/* TODO : Add proper error handling */
+		}
+		printf("mtReader Message Received: %s", buf);
+	}
+
+	return bytes_read;
+}
+
+/**
+* Stage specific message processing.
+*/
+static int
+stage1_processing()
+{
+	/*Parse and validate  the buffer*/
+	/*Find the UE*/
+	/*Check the state*/
+	/*Collect information for next processing*/
+	/*post to next processing*/
+	return SUCCESS;
+}
+
+/**
+* Post message to next handler of the stage
+*/
+static int 
+post_to_next()
+{
+	return SUCCESS;
+}
+
+/**
+* Thread exit function for future reference.
+*/
+void
+shutdown_stage1()
+{
+	close_ipc_channel(g_Q1_fd);
+	printf("Shutdown Stage1 handler \n");
+	pthread_exit(NULL);
+	return;
+}
+
+/**
+* Thread function for stage.
+*/
+void*
+stage1_handler(void *data)
+{
+	init_stage();
+	printf("Stage 1 handler initialized\n");
+	
+	while(1){
+		read_next_msg();
+
+		stage1_processing();
+
+		post_to_next();
+	}
+
+	return NULL;
+}

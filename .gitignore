@@ -1,0 +1,11 @@
+*.o
+*.obj
+*.lib
+*.a
+*.la
+*.so
+*.so.*
+*.out
+.project
+.cproject
+.settings
