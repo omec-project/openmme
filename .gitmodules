@@ -1,0 +1,3 @@
+[submodule "modules/freediameter"]
+	path = modules/freediameter
+	url = https://github.com/omec-project/freediameter.git
