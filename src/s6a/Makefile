@@ -69,6 +69,7 @@ install:
 	-@mkdir -p $(TARGET_DIR)/conf
 	-@cp conf/s6a_fd.conf $(TARGET_DIR)/conf/s6a_fd.conf
 	-@cp conf/s6a.json $(TARGET_DIR)/conf/s6a.json
+	-@cp conf/make_certs.sh $(TARGET_DIR)/conf/make_certs.sh
 
 
 .PHONY: clean
