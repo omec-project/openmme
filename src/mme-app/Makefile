@@ -73,7 +73,6 @@ install:
 	cp run.sh $(TARGET_DIR)
 	cp stop.sh $(TARGET_DIR)
 	-@mkdir -p $(TARGET_DIR)/conf
-	-@cp conf/*.pem $(TARGET_DIR)/conf/
 	-@cp conf/*.json $(TARGET_DIR)/conf/
 
 .PHONY: clean
