@@ -22,6 +22,10 @@ Pairs (AVPs) over TCP and S11 GTPV2C messages over UDP protocols.
         src/s6a/conf/*.json
 	Refer appendix A for details of json file parameters.
 
+	src/s6a/conf/s6a_fd.conf
+	Refer free diameter documentation for help on s6a_fd.conf configuration
+	http://www.freediameter.net/trac/wiki/Configuration
+
     c. update the certificates in src/s6a/conf/ with production one
 
     d. set LD_LIBRARY_PATH as follows before starting MME modules,
