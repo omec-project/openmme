@@ -22,7 +22,6 @@ echo "Start MME application"
 sleep 1
 ./bin/s1ap-app > /dev/null &
 sleep 1
-./bin/s6a > /dev/null &
+./bin/s6a-app > /dev/null &
 sleep 1
 ./bin/s11-app > /dev/null &
-

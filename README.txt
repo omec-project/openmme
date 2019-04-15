@@ -11,37 +11,51 @@ Pairs (AVPs) over TCP and S11 GTPV2C messages over UDP protocols.
 
 2. Build and Installation Procedure:
 
-    a. Build open mme components as follows,
+    a. update the following configuration files:
+        {install_path}/openmme/src/mme-app/conf/mme.json
+        {install_path}/openmme/src/s1ap/conf/s1ap.json
+        {install_path}/openmme/src/s11/conf/s11.json
+        {install_path}/openmme/src/s6a/conf/*.json
+
+       update the Diameter Configuration File:
+        {install_path}/openmme/src/s6a/conf/s6a_fd.conf
+       
+        the following values shall be defined:
+          Identity:
+          - the diameter identity.
+          - default value: mme.localdomain
+
+          Realm:
+          - the diameter realm (everything past the first period of Identity)
+          - default value: localdomain
+          
+          Refer following link for further freediameter configuration help
+          http://www.freediameter.net/trac/wiki/Configuration
+
+    b. build open mme components as follows:
         cd {install_path}/openmme
-        make clean;make
+        make clean; make; make install
 
-    b. update the following configuration files,
-        src/mme-app/conf/mme.json
-        src/s1ap/conf/s1ap.json
-        src/s11/conf/s11.json
-        src/s6a/conf/*.json
-	Refer appendix A for details of json file parameters.
+    c. generate certificates
 
-	src/s6a/conf/s6a_fd.conf
-	Refer free diameter documentation for help on s6a_fd.conf configuration
-	http://www.freediameter.net/trac/wiki/Configuration
+       NOTE: The "Diameter Identity" is a fully qualified domain name that is
+       used to access the the Diameter peer. The "Diameter Host" is
+       everything up to the first period of the "Diameter Identity". The
+       "Diameter Realm" is everything after the first period of the
+       "Diameter Identity".
 
-    c. update the certificates in src/s6a/conf/ with production one
+       Execute the following command, using the "Identity" configured in
+       {install_path}/openmme/src/s6a/conf/s6a_fd.conf
 
-    d. set LD_LIBRARY_PATH as follows before starting MME modules,
-       (need to set on each terminal where modules started)
+          cd {install_path}/openmme/target/conf
+          ./make_certs.sh <diameter_host> <diameter_realm>
 
-        export LD_LIBRARY_PATH={install_path}/openmme/src/common/
+        For Example: ./make_certs.sh mme localdomain
 
-    e. start the mme modules in the following order,
-        cd {install_path}/openmme/src/mme-app
-        ./mme-app
-        cd {install_path}/openmme/src/s1ap
-        ./s1ap-app
-        cd {install_path}/openmme/src/s11
-        ./s11-app
-        cd {install_path}/openmme/src/s6a
-        ./s6a-app
+    d. cd {install_path}/openmme/target/
+
+    e. start the mme modules
+        ./run.sh
 
 3. Known Issues:
     a. O3 optimization flag is disabled in s6a module
