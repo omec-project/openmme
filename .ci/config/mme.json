@@ -1,0 +1,35 @@
+{
+	"mme": {
+		"egtp_default_port": 2123,
+		"ip_addr": "10.0.10.30",
+		"s1ap_addr": "10.0.10.30",
+		"egtp_addr": "10.1.10.22",
+		"sctp_port": 36412,
+		"name": "vmmestandalone",
+		"egtp_default_hostname": "sutlej.ccin.ccpu.com",
+		"__comment__": "Here is comment",
+		"mcc": {
+			"dig1": 2,
+			"dig2": 0,
+			"dig3": 8
+		},
+		"mnc": {
+			"dig1": 0,
+			"dig2": 1,
+			"dig3": -1
+		}
+	},
+	"enb": {
+		"enb_addr": "10.0.10.1",
+		"enb_port": "32767"
+	},
+	"s11": {
+		"sgw_addr": "10.1.10.20",
+		"pgw_addr": "192.168.1.105"
+	},
+	"s6a": {
+		"host_type": "freediameter",
+		"host": "hss.openair4G.eur",
+		"realm": "openair4G.eur"
+	}
+}
