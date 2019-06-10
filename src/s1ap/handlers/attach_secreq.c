@@ -32,6 +32,7 @@
 #include "stage3_info.h"
 #include "snow_3g.h"
 
+#define EUTRAN_SECURITY_ENABLED 2
 /****Globals and externs ***/
 
 /*Making global just to avoid stack passing*/
@@ -132,12 +133,14 @@ get_secreq_protoie_value(struct proto_IE *value)
 	value->data[2].nas.elements = (nas_pdu_elements *)
 			malloc(SEC_MODE_NO_OF_NAS_IES * sizeof(nas_pdu_elements));
 
+	// TODO: it should be full UE security capabilities
+	// for now, only return the mandatory capabilities for EUTRAN
 	value->data[2].nas.elements->ue_network.len =
-			g_secReqInfo->ue_network.len;
+			EUTRAN_SECURITY_ENABLED;
 
 	memcpy(value->data[2].nas.elements->ue_network.capab,
 			g_secReqInfo->ue_network.capab,
-			g_secReqInfo->ue_network.len);
+			EUTRAN_SECURITY_ENABLED);
 
 	return SUCCESS;
 }
