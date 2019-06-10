@@ -167,6 +167,7 @@ stage1_processing()
 		sizeof(struct UE_net_capab));
 	memcpy(&(ue_entry->ms_net_capab), &(ue_info->ms_net_capab),
 		sizeof(struct MS_net_capab));
+	memcpy(&(ue_entry->pti), &(ue_info->pti), 1);
 
 	ue_entry->bearer_id = 5;
 

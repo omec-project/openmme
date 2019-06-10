@@ -406,6 +406,7 @@ typedef union nas_pdu_elements {
 	esm_msg_container esm_msg;
 	guti mi_guti;
 	bool esm_info_tx_required;
+	unsigned char pti;
 }nas_pdu_elements;
 
 typedef struct nasPDU {

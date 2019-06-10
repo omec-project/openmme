@@ -37,6 +37,7 @@ struct ue_attach_info {
 	enum ie_RRC_est_cause rrc_cause;
 	int enb_fd;
 	char esm_info_tx_required;
+	unsigned char pti;
 };
 
 #define INITUE_STAGE1_BUF_SIZE sizeof(struct ue_attach_info)
