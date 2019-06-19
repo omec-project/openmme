@@ -156,7 +156,7 @@ create_session_processing()
 	ies[ieCount].type = IE_MSISDN;
 	ies[ieCount].length = htons(5);
 	ies[ieCount].instance = INSTANCE_ZERO;
-	memcpy(ies[ieCount].value, g_csReqInfo->MSISDN, 5);
+	bswap8_array(g_csReqInfo->MSISDN, ies[ieCount].value, 5);
 	ieCount++;
 
 	ies[ieCount].type = IE_ULI;
