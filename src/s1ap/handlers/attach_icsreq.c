@@ -24,6 +24,7 @@
 
 #include "log.h"
 #include "err_codes.h"
+#include "options.h"
 #include "message_queues.h"
 #include "ipc_api.h"
 #include "s1ap_config.h"
@@ -184,52 +185,52 @@ get_icsreq_protoie_value(struct proto_IE *value)
 			malloc(ICS_REQ_NO_OF_NAS_IES * sizeof(nas_pdu_elements));
 
 	nas_pdu_elements *nasIEs = e_rab->nas.elements;
-	nasIEs[nasIeCnt].attach_res = 1; /* EPS Only */
+	nasIEs[nasIeCnt].pduElement.attach_res = 1; /* EPS Only */
 	nasIeCnt++;
 
-	nasIEs[nasIeCnt].t3412 = 16;
+	nasIEs[nasIeCnt].pduElement.t3412 = 16;
 	nasIeCnt++;
 
-	nasIEs[nasIeCnt].tailist.type = 1;
-	nasIEs[nasIeCnt].tailist.num_of_elements = 0;
-	memcpy(&(nasIEs[nasIeCnt].tailist.partial_list[0]),
+	nasIEs[nasIeCnt].pduElement.tailist.type = 1;
+	nasIEs[nasIeCnt].pduElement.tailist.num_of_elements = 0;
+	memcpy(&(nasIEs[nasIeCnt].pduElement.tailist.partial_list[0]),
 			&(g_icsReqInfo->tai), sizeof(g_icsReqInfo->tai));
 	nasIeCnt++;
 
-	nasIEs[nasIeCnt].esm_msg.eps_bearer_id = 5; /* TODO: revisit */
-	nasIEs[nasIeCnt].esm_msg.proto_discriminator = 2;
-	memcpy(&(nasIEs[nasIeCnt].esm_msg.procedure_trans_identity), &(g_icsReqInfo->pti), 1);
-	nasIEs[nasIeCnt].esm_msg.session_management_msgs =
+	nasIEs[nasIeCnt].pduElement.esm_msg.eps_bearer_id = 5; /* TODO: revisit */
+	nasIEs[nasIeCnt].pduElement.esm_msg.proto_discriminator = 2;
+	memcpy(&(nasIEs[nasIeCnt].pduElement.esm_msg.procedure_trans_identity), &(g_icsReqInfo->pti), 1);
+	nasIEs[nasIeCnt].pduElement.esm_msg.session_management_msgs =
 			ESM_MSG_ACTV_DEF_BEAR__CTX_REQ;
-	nasIEs[nasIeCnt].esm_msg.eps_qos = 9;
+	nasIEs[nasIeCnt].pduElement.esm_msg.eps_qos = 9;
 
 	/* TODO: Remove hardcoded value */
 	/*char apnname[4] = "apn1";
 	memcpy(&(nasIEs[nasIeCnt].esm_msg.apn.val), apnname, 4);
 	nasIEs[nasIeCnt].esm_msg.apn.len =  4;
 	*/
-	nasIEs[nasIeCnt].esm_msg.apn.len = g_icsReqInfo->apn.len;
-	memcpy(nasIEs[nasIeCnt].esm_msg.apn.val,
+	nasIEs[nasIeCnt].pduElement.esm_msg.apn.len = g_icsReqInfo->apn.len;
+	memcpy(nasIEs[nasIeCnt].pduElement.esm_msg.apn.val,
 			g_icsReqInfo->apn.val, g_icsReqInfo->apn.len);
 
 
-	nasIEs[nasIeCnt].esm_msg.pdn_addr.type = 1;
-	nasIEs[nasIeCnt].esm_msg.pdn_addr.ipv4 =
+	nasIEs[nasIeCnt].pduElement.esm_msg.pdn_addr.type = 1;
+	nasIEs[nasIeCnt].pduElement.esm_msg.pdn_addr.ipv4 =
 			g_icsReqInfo->pdn_addr.ip_type.ipv4.s_addr;
-	nasIEs[nasIeCnt].esm_msg.linked_ti.flag = 0;
-	nasIEs[nasIeCnt].esm_msg.linked_ti.val = 0;
-	get_negotiated_qos_value(&nasIEs[nasIeCnt].esm_msg.negotiated_qos);
+	nasIEs[nasIeCnt].pduElement.esm_msg.linked_ti.flag = 0;
+	nasIEs[nasIeCnt].pduElement.esm_msg.linked_ti.val = 0;
+	get_negotiated_qos_value(&nasIEs[nasIeCnt].pduElement.esm_msg.negotiated_qos);
 	nasIeCnt++;
 
-	nasIEs[nasIeCnt].mi_guti.odd_even_indication = 0;
-	nasIEs[nasIeCnt].mi_guti.id_type = 6;
-	memcpy(&(nasIEs[nasIeCnt].mi_guti.plmn_id),
+	nasIEs[nasIeCnt].pduElement.mi_guti.odd_even_indication = 0;
+	nasIEs[nasIeCnt].pduElement.mi_guti.id_type = 6;
+	memcpy(&(nasIEs[nasIeCnt].pduElement.mi_guti.plmn_id),
 			&(g_icsReqInfo->tai.plmn_id), sizeof(struct PLMN));
-	nasIEs[nasIeCnt].mi_guti.mme_grp_id = htons(g_s1ap_cfg.mme_group_id);
-	nasIEs[nasIeCnt].mi_guti.mme_code = g_s1ap_cfg.mme_code;
+	nasIEs[nasIeCnt].pduElement.mi_guti.mme_grp_id = htons(g_s1ap_cfg.mme_group_id);
+	nasIEs[nasIeCnt].pduElement.mi_guti.mme_code = g_s1ap_cfg.mme_code;
 	/* TODO : Revisit, temp fix for handling detach request retransmit.
 	 * M-TMSI should come from MME */
-	nasIEs[nasIeCnt].mi_guti.m_TMSI = htonl(g_icsReqInfo->ue_idx);
+	nasIEs[nasIeCnt].pduElement.mi_guti.m_TMSI = htonl(g_icsReqInfo->ue_idx);
 	nasIeCnt++;
 
 	ieCnt++;
@@ -460,18 +461,18 @@ icsreq_processing()
 	nas_pdu_elements *ies = erab->nas.elements;
 
 	/* eps attach result */
-	buffer_copy(&g_ics_buffer, &(ies[0].attach_res), sizeof(u8value));
+	buffer_copy(&g_ics_buffer, &(ies[0].pduElement.attach_res), sizeof(u8value));
 
 	/* GPRS timer */
-	buffer_copy(&g_ics_buffer, &(ies[1].t3412), sizeof(ies[1].t3412));
+	buffer_copy(&g_ics_buffer, &(ies[1].pduElement.t3412), sizeof(ies[1].pduElement.t3412));
 
 	/* TAI list */
 	u8value = 6;
 	buffer_copy(&g_ics_buffer, &u8value, sizeof(u8value));
 	u8value = 32; /* TODO: use value from tai list */
 	buffer_copy(&g_ics_buffer, &u8value, sizeof(u8value));
-	buffer_copy(&g_ics_buffer, &(ies[2].tailist.partial_list[0].plmn_id.idx), 3);
-	buffer_copy(&g_ics_buffer, &(ies[2].tailist.partial_list[0].tac), 2);
+	buffer_copy(&g_ics_buffer, &(ies[2].pduElement.tailist.partial_list[0].plmn_id.idx), 3);
+	buffer_copy(&g_ics_buffer, &(ies[2].pduElement.tailist.partial_list[0].tac), 2);
 
 	esm_len_pos = g_ics_buffer.pos;
 
@@ -482,23 +483,23 @@ icsreq_processing()
 	/* ESM message container start */
 
 	/* esm message bearer id and protocol discriminator */
-	u8value = (ies[3].esm_msg.eps_bearer_id << 4 |
-			ies[3].esm_msg.proto_discriminator);
+	u8value = (ies[3].pduElement.esm_msg.eps_bearer_id << 4 |
+			ies[3].pduElement.esm_msg.proto_discriminator);
 	buffer_copy(&g_ics_buffer, &u8value, sizeof(u8value));
 
 	/* esm message procedure identity */
-	buffer_copy(&g_ics_buffer, &(ies[3].esm_msg.procedure_trans_identity),
-			sizeof(ies[3].esm_msg.procedure_trans_identity));
+	buffer_copy(&g_ics_buffer, &(ies[3].pduElement.esm_msg.procedure_trans_identity),
+			sizeof(ies[3].pduElement.esm_msg.procedure_trans_identity));
 
 	/* esm message session management message */
-	buffer_copy(&g_ics_buffer, &(ies[3].esm_msg.session_management_msgs),
-			sizeof(ies[3].esm_msg.session_management_msgs));
+	buffer_copy(&g_ics_buffer, &(ies[3].pduElement.esm_msg.session_management_msgs),
+			sizeof(ies[3].pduElement.esm_msg.session_management_msgs));
 
 	/* eps qos */
 	datalen = 1;
 	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
-	buffer_copy(&g_ics_buffer, &(ies[3].esm_msg.eps_qos),
-			sizeof(ies[3].esm_msg.eps_qos));
+	buffer_copy(&g_ics_buffer, &(ies[3].pduElement.esm_msg.eps_qos),
+			sizeof(ies[3].pduElement.esm_msg.eps_qos));
 
 	/* apn */
 	{
@@ -521,21 +522,21 @@ icsreq_processing()
 	u8value = 1;
 	buffer_copy(&g_ics_buffer, &u8value, sizeof(u8value));
 	//buffer_copy(&g_ics_buffer, &(ies[3].esm_msg.pdn_addr.pdn_type), 1);
-	buffer_copy(&g_ics_buffer, &(ies[3].esm_msg.pdn_addr.ipv4), datalen-1);
+	buffer_copy(&g_ics_buffer, &(ies[3].pduElement.esm_msg.pdn_addr.ipv4), datalen-1);
 
 	/* linked ti */
 	u8value = 0x5d; /* element id TODO: define macro or enum */
 	buffer_copy(&g_ics_buffer, &u8value, sizeof(u8value));
 	datalen = 1;//sizeof(ies[3].esm_msg.linked_ti);
 	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
-	buffer_copy(&g_ics_buffer, &(ies[3].esm_msg.linked_ti), datalen);
+	buffer_copy(&g_ics_buffer, &(ies[3].pduElement.esm_msg.linked_ti), datalen);
 
 	/* negotiated qos */
 	u8value = 0x30; /* element id TODO: define macro or enum */
 	buffer_copy(&g_ics_buffer, &u8value, sizeof(u8value));
 	datalen = 16;//sizeof(ies[3].esm_msg.negotiated_qos);
 	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
-	buffer_copy(&g_ics_buffer, &(ies[3].esm_msg.negotiated_qos), datalen);
+	buffer_copy(&g_ics_buffer, &(ies[3].pduElement.esm_msg.negotiated_qos), datalen);
 
 	/* apn ambr */
 #if 0
@@ -575,13 +576,13 @@ icsreq_processing()
 	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
 	u8value = 246; /* TODO: remove hard coding */
 	buffer_copy(&g_ics_buffer, &u8value, sizeof(u8value));
-	buffer_copy(&g_ics_buffer, &(ies[4].mi_guti.plmn_id.idx), 3);
-	buffer_copy(&g_ics_buffer, &(ies[4].mi_guti.mme_grp_id),
-			sizeof(ies[4].mi_guti.mme_grp_id));
-	buffer_copy(&g_ics_buffer, &(ies[4].mi_guti.mme_code),
-			sizeof(ies[4].mi_guti.mme_code));
-	buffer_copy(&g_ics_buffer, &(ies[4].mi_guti.m_TMSI),
-			sizeof(ies[4].mi_guti.m_TMSI));
+	buffer_copy(&g_ics_buffer, &(ies[4].pduElement.mi_guti.plmn_id.idx), 3);
+	buffer_copy(&g_ics_buffer, &(ies[4].pduElement.mi_guti.mme_grp_id),
+			sizeof(ies[4].pduElement.mi_guti.mme_grp_id));
+	buffer_copy(&g_ics_buffer, &(ies[4].pduElement.mi_guti.mme_code),
+			sizeof(ies[4].pduElement.mi_guti.mme_code));
+	buffer_copy(&g_ics_buffer, &(ies[4].pduElement.mi_guti.m_TMSI),
+			sizeof(ies[4].pduElement.mi_guti.m_TMSI));
 
 	/* E_RABToBeSetupListCtxtSUReq NAS PDU end */
 
@@ -648,7 +649,7 @@ icsreq_processing()
 static int
 post_to_next()
 {
-	send_sctp_msg(g_icsReqInfo->enb_fd, g_ics_buffer.buf, g_ics_buffer.pos);
+	send_sctp_msg_upd(g_icsReqInfo->enb_fd, g_ics_buffer.buf, g_ics_buffer.pos);
 	log_msg(LOG_INFO, "buffer size is %d\n", g_ics_buffer.pos);
 	log_msg(LOG_INFO, "\n-----Stage6 completed.---\n");
 	return SUCCESS;

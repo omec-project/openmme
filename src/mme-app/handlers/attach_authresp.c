@@ -152,6 +152,8 @@ post_to_next()
 	sec_mode_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
 	memcpy(&(sec_mode_msg.ue_network), &(ue_entry->ue_net_capab),
 		sizeof(struct UE_net_capab));
+	memcpy(&(sec_mode_msg.ms_net_capab), &(ue_entry->ms_net_capab),
+		sizeof(struct MS_net_capab));
 
 	memcpy(&(sec_mode_msg.key), &(ue_entry->aia_sec_info->kasme),
 		sizeof(struct KASME));

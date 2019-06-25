@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include <errno.h>
 
 #include "err_codes.h"
 #include "options.h"
@@ -30,8 +31,11 @@
 #include "sctp_conn.h"
 #include "s1ap_structs.h"
 #include "s1ap_msg_codes.h"
+#include "hashtable.h"
 
 extern int g_enb_fd;
+extern onf_ht_hash_table* g_enbfd_hash_table;
+extern pthread_mutex_t s1ap_hashtable_lock;
 extern s1ap_config g_s1ap_cfg;
 static struct Buffer resp_buf;
 
@@ -133,12 +137,50 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp)
 	return resp_buf.pos;
 }
 
+/**
+ * @brief get socket info and add assoc info to hash
+ * @return error code.
+ */
 int
-s1_setup_handler(char *msg, int enb_fd)
+addEnbInfoToHash(int enbfd, int inStreamId)
+{
+    struct sctp_status stat = {0};
+    struct enb_assoc_info enbAssoc = {0};
+    int stat_len = sizeof(struct sctp_status);
+					
+    if (getsockopt (enbfd, IPPROTO_SCTP, 
+                  SCTP_STATUS, &stat, (socklen_t *)&stat_len) < 0) 
+    {
+	log_msg(LOG_ERROR, "Getsockopt failed: %s\n", 
+	                             strerror (errno));
+	return E_FAIL;
+    }
+
+    enbAssoc.enb_fd = enbfd;
+    enbAssoc.inStreamId = inStreamId;
+    enbAssoc.assoc_max_out_streams = stat.sstat_outstrms; 
+    enbAssoc.assoc_max_in_streams  = stat.sstat_instrms; 
+    enbAssoc.assocId = stat.sstat_assoc_id;
+
+    pthread_mutex_lock(&s1ap_hashtable_lock);
+    int retval =  onf_ht_insert(g_enbfd_hash_table, sizeof(int),
+       sizeof(struct enb_assoc_info), (const char*)&enbfd,
+       (const char*)&enbAssoc);
+    pthread_mutex_unlock(&s1ap_hashtable_lock);
+    return retval;
+}
+
+int
+s1_setup_handler(char *msg, int enb_fd, int inStreamId)
 {
 	unsigned char *resp_msg = NULL;
 	int resp_len = 0;
 	struct proto_IE s1_init_ies;
+
+	if(SUCCESS != addEnbInfoToHash(enb_fd, inStreamId))
+	{
+            log_msg(LOG_ERROR, "Could not add enb info in hash");
+	}
 
 	/*****Message structure***
 	*/

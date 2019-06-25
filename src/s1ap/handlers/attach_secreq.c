@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include "err_codes.h"
+#include "options.h"
 #include "message_queues.h"
 #include "ipc_api.h"
 #include "log.h"
@@ -132,12 +133,43 @@ get_secreq_protoie_value(struct proto_IE *value)
 	value->data[2].nas.elements = (nas_pdu_elements *)
 			malloc(SEC_MODE_NO_OF_NAS_IES * sizeof(nas_pdu_elements));
 
-	value->data[2].nas.elements->ue_network.len =
+	value->data[2].nas.elements->pduElement.ue_network.len =
 			g_secReqInfo->ue_network.len;
+	if(g_secReqInfo->ue_network.len >= 4)
+	{
+	    if(g_secReqInfo->ms_net_capab.pres == true)
+	    {
+	        /*The MS Network capability contains the GEA
+		* capability. The MSB of 1st Byte and the 2nd to
+		* 7th Bit of 2nd byte contain the GEA info.
+		* Thus the masks 0x7F : for GEA/1
+		* and mask 0x7D: for GEA2 -GEA7
+		*/
+	        value->data[2].nas.elements->pduElement.ue_network.len = 5;
+		char val = 0x00;
+		val = g_secReqInfo->ms_net_capab.capab[0]&0x7F;
+                val |= g_secReqInfo->ms_net_capab.capab[1]&0x7D;
+	        value->data[2].nas.elements->pduElement.ue_network.capab[4] = val;
+	    }
+	    else
+	    {
+	        /*If MS capability is not present. Then only 
+		* Capability till UMTS Algorithms is sent.*/
+	        value->data[2].nas.elements->pduElement.ue_network.len = 4;
+	    }
 
-	memcpy(value->data[2].nas.elements->ue_network.capab,
+            /*Copy first 4 bytes of security algo info*/
+	    memcpy(value->data[2].nas.elements->pduElement.ue_network.capab, g_secReqInfo->ue_network.capab, 4);
+	}
+	else
+	{
+	    /*Copy as much info of UE network capability 
+	    * as received.
+	    */
+            memcpy(value->data[2].nas.elements->pduElement.ue_network.capab,
 			g_secReqInfo->ue_network.capab,
 			g_secReqInfo->ue_network.len);
+	}
 
 	return SUCCESS;
 }
@@ -194,11 +226,11 @@ secreq_processing()
 	buffer_copy(&g_sec_nas_buffer, &nas.header.nas_security_param,
 			sizeof(nas.header.nas_security_param));
 
-	buffer_copy(&g_sec_nas_buffer, &nas.elements->ue_network.len,
-			sizeof(nas.elements->ue_network.len));
+	buffer_copy(&g_sec_nas_buffer, &nas.elements->pduElement.ue_network.len,
+			sizeof(nas.elements->pduElement.ue_network.len));
 
-	buffer_copy(&g_sec_nas_buffer, &nas.elements->ue_network.capab,
-			nas.elements->ue_network.len);
+	buffer_copy(&g_sec_nas_buffer, &nas.elements->pduElement.ue_network.capab,
+			nas.elements->pduElement.ue_network.len);
 
 	/* Calculate mac */
 	uint8_t direction = 1;
@@ -300,7 +332,7 @@ secreq_processing()
 static int
 post_to_next()
 {
-	send_sctp_msg(g_secReqInfo->enb_fd, g_sec_buffer.buf, g_sec_buffer.pos);
+	send_sctp_msg_upd(g_secReqInfo->enb_fd, g_sec_buffer.buf, g_sec_buffer.pos);
 	log_msg(LOG_INFO, "\n-----Stage3 completed.---\n");
 	return SUCCESS;
 }

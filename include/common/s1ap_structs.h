@@ -70,7 +70,40 @@ struct esm_sec_info {
 	struct proto_conf proto_config;
 };
 
+/*ENB association information*/
+struct enb_assoc_info {
+	int enb_fd;
+	int inStreamId;
+	int outStreamId;
+	int assoc_max_out_streams;
+	int assoc_max_in_streams;
+	int assocId;
+};
+
+/*NAS MSG IE CODES */
+/* Message content : 
+   3gpp 24.301
+   Table 8.2.4.1: IEI Column.*/
+typedef enum
+{
+    NAS_IE_TYPE_EPS_MOBILE_ID_IMSI=0x1,
+    NAS_IE_TYPE_UE_NETWORK_CAPABILITY=0x2,
+    NAS_IE_TYPE_ESM_MSG=0x3,
+    NAS_IE_TYPE_TMSI_STATUS=0x9,
+    NAS_IE_TYPE_MS_NETWORK_FEATURE_SUPPORT=0xC,
+    NAS_IE_TYPE_GUTI_TYPE=0xE,
+    NAS_IE_TYPE_ADDITIONAL_UPDATE_TYPE=0xF,
+    NAS_IE_TYPE_MS_CLASSMARK_2=0x11,
+    NAS_IE_TYPE_LAI=0x13,
+    NAS_IE_TYPE_PTMSI_SIGNATURE=0x19,
+    NAS_IE_TYPE_MS_CLASSMARK_3=0x20,
+    NAS_IE_TYPE_MS_NETWORK_CAPABILITY=0x31,
+    NAS_IE_TYPE_DRX_PARAM=0x5C,
+    NAS_IE_TYPE_VOICE_DOMAIN_PREF_UE_USAGE_SETTING=0x5D,
+}nas_ie_type;
+
 typedef struct MS_net_capab {
+        bool          pres;
 	unsigned char element_id;
 	unsigned char len;
 	unsigned char capab[6];
@@ -260,6 +293,7 @@ typedef struct esm_msg_container {
 	uint8_t procedure_trans_identity;
 	uint8_t session_management_msgs;
 	uint8_t eps_qos;  /* TODO: Revisit 24.301 - 9.9.4.3.1 */
+	bool    esm_info_tx_required;
 	struct apn_name apn;
 	pdn_address pdn_addr;
 	linked_transcation_id linked_ti;
@@ -387,7 +421,7 @@ typedef struct eRAB_elements {
 /**eRAB structures end**/
 
 /**Information elements structs end**/
-typedef union nas_pdu_elements {
+typedef union nas_pdu_elements_union {
 	unsigned char rand[NAS_RAND_SIZE];
 	unsigned char autn[NAS_AUTN_SIZE];
 	unsigned char IMSI[BINARY_IMSI_LEN];
@@ -406,7 +440,11 @@ typedef union nas_pdu_elements {
 	esm_msg_container esm_msg;
 	guti mi_guti;
 	bool esm_info_tx_required;
-	unsigned char pti;
+}nas_pdu_elements_union;
+
+typedef struct nas_pdu_elements {
+   nas_ie_type msgType;
+   nas_pdu_elements_union pduElement;
 }nas_pdu_elements;
 
 typedef struct nasPDU {

@@ -58,8 +58,8 @@ s1_auth_resp_handler(struct proto_IE *s1_auth_resp_ies)
 	else
 		auth_resp.status = SUCCESS;
 
-	memcpy(&(auth_resp.res), &(s1_auth_resp_ies->data[2].nas.elements[0].auth_resp),
-		sizeof(struct XRES));
+	memcpy(&(auth_resp.res), 
+	   &(s1_auth_resp_ies->data[2].nas.elements[0].pduElement.auth_resp), sizeof(struct XRES));
 
 	//STIMER_GET_CURRENT_TP(g_attach_stats[s1_auth_resp_ies->data[1].enb_ue_s1ap_id].auth_to_mme);
 	write_ipc_channel(ipcHndl_authresp, (char *)&auth_resp, S1AP_AUTHRESP_STAGE3_BUF_SIZE);

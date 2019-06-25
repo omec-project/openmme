@@ -9,12 +9,12 @@ ROOT=$(PWD)
 INCLUDE_DIR=$(ROOT)/include
 
 INC_DIRS=-I$(INCLUDE_DIR)/mme-app -I$(INCLUDE_DIR)/s11 -I$(INCLUDE_DIR)/s1ap \
-	-I$(INCLUDE_DIR)/s6a \
+	-I$(INCLUDE_DIR)/s6a -I$(ROOT)/../freediameter/build/include -I$(ROOT)/../freediameter/include\
 	-I$(INCLUDE_DIR)/common
 
 HSS_INC_DIRS = -I$(INCLUDE_DIR)/common -I$(INCLUDE_DIR)/hss
 
-CC := gcc
+CC := gcc -L/home/cord/bad/mme/freediameter/build/libfdproto -L/home/cord/bad/mme/freediameter/build/libfdcore
 
 #DEBUG=true
 DEBUG=false

@@ -31,6 +31,7 @@ endif
 IF_LIBNAME = libinterface.so
 JSON_PARSER_LIBNAME = libjson.so
 LOG_LIBNAME = liblog.a
+HASHTABLE_LIBNAME = libhash.a
 TPOOL_LIBNAME = libthreadpool.a
 UTIL_LIBNAME = libsecutil.so
 
@@ -39,11 +40,13 @@ LOG_SRC = log.c
 TPOOL_SRC = thread_pool.c tpool_queue.c
 JSON_PARSER_SRC = json_parser.c
 UTIL_SRC = snow_3g.c f8.c f9.c
+HASH_SRC = hashtable.c prime.c
 
 build_s6a:
 	$(CC) $(CFLAGS) -fPIC -c $(IF_SRC) $(INC_DIRS)
 	$(CC) $(CFLAGS) -fPIC -c $(LOG_SRC) $(INC_DIRS)
 	$(CC) $(CFLAGS) -fPIC -c $(TPOOL_SRC) $(INC_DIRS)
+	$(CC) $(CFLAGS) -fPIC -c $(HASH_SRC) $(INC_DIRS)
 	$(CC) $(CFLAGS) -fPIC -c $(JSON_PARSER_SRC) $(INC_DIRS)
 	$(CC) $(CFLAGS) -fPIC -c $(UTIL_SRC) $(INC_DIRS)
 	$(CC) $(CFLAGS) ipc_api.o -shared -o $(IF_LIBNAME)
@@ -51,6 +54,7 @@ build_s6a:
 	$(CC) $(CFLAGS) snow_3g.o f8.o f9.o -shared -o $(UTIL_LIBNAME)
 	ar rcs $(LOG_LIBNAME) log.o
 	ar rcs $(TPOOL_LIBNAME) thread_pool.o tpool_queue.o
+	ar rcs $(HASHTABLE_LIBNAME) hashtable.o prime.o
 
 all: build_s6a
 
@@ -61,6 +65,7 @@ install:all
 	-@cp $(LOG_LIBNAME) $(TARGET_DIR)/lib
 	-@cp $(JSON_PARSER_LIBNAME) $(TARGET_DIR)/lib
 	-@cp $(UTIL_LIBNAME) $(TARGET_DIR)/lib
+	-@cp $(HASHTABLE_LIBNAME) $(TARGET_DIR)/lib
 
 clean:
 	rm -f *.o
