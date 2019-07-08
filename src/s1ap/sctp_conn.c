@@ -27,6 +27,7 @@
 #include "log.h"
 #include "sctp_conn.h"
 #define ENB_PORT 62324
+#define S1AP_PPID 18
 
 int create_sctp_socket(unsigned int remote_ip, unsigned short port)
 {
@@ -101,8 +102,9 @@ int recv_sctp_msg(int connSock, unsigned char *buffer, size_t len)
 
 int send_sctp_msg(int connSock, unsigned char *buffer, size_t len)
 {
+	uint32_t ppid = S1AP_PPID;
 	return sctp_sendmsg(connSock, (void *)buffer, len,
-			NULL, 0, 0, 0, 0, 0, 0);
+			NULL, 0, htonl(ppid), 0, 0, 0, 0);
 }
 
 int close_sctp_socket(int connSock)
