@@ -33,8 +33,6 @@ typedef struct mme_config
 	unsigned short mme_sctp_port;
 	unsigned int s11_sgw_ip;
 	unsigned int s11_pgw_ip;
-	unsigned int enb_ip;
-	unsigned short enb_port;
 	unsigned short mme_egtp_def_port;
 	char  *mme_egtp_def_hostname;
 	char  *mme_name;
