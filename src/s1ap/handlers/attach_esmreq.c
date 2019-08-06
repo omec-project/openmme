@@ -118,7 +118,7 @@ get_esmreq_protoie_value(struct proto_IE *value)
 
 	/* TODO: Remove hardcoded value */
 	value->data[2].nas.header.eps_bearer_identity = 0;
-	value->data[2].nas.header.procedure_trans_identity = 1;
+	value->data[2].nas.header.procedure_trans_identity = g_esmReqInfo->pti;
 
 	return SUCCESS;
 }

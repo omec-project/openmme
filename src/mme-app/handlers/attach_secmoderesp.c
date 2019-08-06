@@ -150,6 +150,7 @@ post_to_next()
 		esm_req.dl_seq_no = ue_entry->dl_seq_no++;
 		memcpy(&(esm_req.int_key), &(ue_entry->ue_sec_info.int_key),
 				NAS_INT_KEY_SIZE);
+		esm_req.pti = ue_entry->pti;
 
 		write_ipc_channel(g_Q_esmreq_fd, (char *)&(esm_req),
 				S1AP_ESMREQ_STAGE4_BUF_SIZE);

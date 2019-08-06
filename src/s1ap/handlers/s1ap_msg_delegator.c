@@ -205,8 +205,8 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 
 	case NAS_ATTACH_REQUEST:{
 		short offset = 0;
-		nas->elements_len = 5;
-		nas->elements = calloc(sizeof(nas_pdu_elements), 5);
+		nas->elements_len = 6;
+		nas->elements = calloc(sizeof(nas_pdu_elements), 6);
 		//if(NULL == nas.elements)...
 
 		/*EPS mobility identity*/
@@ -232,6 +232,7 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		/*ESM msg container*/
 		{
 		short len = msg[offset];
+		nas->elements[5].pti = msg[offset + 2];
 		unsigned char val = *(msg+offset+5);
 		/*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
 		 * +pdn_type(1)*/

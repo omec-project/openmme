@@ -103,11 +103,6 @@ the MME application(s1ap-app, s6a-app, s11-app, mme-app)
 		s1ap_local_addr[M] : MME's s1ap interface source IP address.
 		sctp_port[M] : MME's s1ap interface source port.
 
-		Destination eNB information is only for testing purpose. eNB
-		information is learned when eNB dynamically connects to MME.
-		enb_addr[M] : Destination eNB IP for s1ap interface.
-		enb_port[M] : Destination eNB port for s1ap interface.
-
 	"s11" - SGW information for s11 communication. Relevant for s11-app.
 		egtp_local_addr[M] : MME's source s11 interface IP address.
 		egtp_default_port[M] : MME's source s11 interface port.
