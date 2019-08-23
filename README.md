@@ -1,10 +1,15 @@
 # OpenMME
 ## Table of Contents
 [Introduction](#introduction)
+
 [Builds and Installation Procedure](#build-and-installation-procedure)
+
 [Update Config](#update-config)
+
 [Known Issues](#known-issues)
+
 [Config Parameters](#config-parameters)
+
 ## Introduction:
 OpenMME is a grounds up implementation of the Mobility management Entity EPC S1 front end to the Cell Tower (eNB). Its design is performance optimized for high speed mobility events over the S1-MME interface, while maintaining state coherent high transaction rate interactions over the S6a interface to the HSS and the S11 interface to the Serving Gateway Control (SGWC). The design allows maximum utilization of the transaction rate allowed by the S1-MME Non-Access Stratum (NAS) messages over SCTP, S6a DIAMETER Attribute Value Pairs (AVPs) over TCP and S11 GTPV2C messages over UDP protocols.
 
