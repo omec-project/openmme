@@ -16,6 +16,7 @@ OpenMME is a grounds up implementation of the Mobility management Entity EPC S1 
 ## Build and Installation Procedure
 ### Update config 
 Update following config files
+
     {install_path}/openmme/src/mme-app/conf/mme.json
     {install_path}/openmme/src/s1ap/conf/s1ap.json
     {install_path}/openmme/src/s11/conf/s11.json
