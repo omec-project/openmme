@@ -71,29 +71,37 @@ Before starting openMME applications respective parameters should be  configured
   - [M] - Mandatory parameter.
 
 #### "mme" - Contains information relevant for mme-app & s1ap-app.
-  - egtp_default_port[U] : Default S11 port for MME's s11 end.
-  - ip_addr[M] : MME's own ip address. Reserved for management.
-  - s1ap_addr[U] : MME's s1ap interface IP address
-  - egtp_addr[U] : MME's s11 interface IP address
-  - sctp_port[U] : MME's sctp(s1ap) port number.
-  - name[M] : MME's name to use in s1 setup with eNB
-  - egtp_default_hostname[O]:
-  - mcc[M], mnc[M] : MCC, MNC for the MME.
+  Config Parameter Name | Reserved/Unused/Mandatory | Comments |
+  ----------------------|---------------------------|----------|
+  egtp_default_port     | Unused                    | Default S11 port for MME's S11 end |
+  ip_addr               | Mandatory                 | MME's own ip address. Reserved for management. |
+  s1ap_addr             | Unused | MME's s1ap interface IP address |
+  egtp_addr             | Unused | MME's s11 interface IP address |
+  sctp_port             | Unused | MME's sctp(s1ap) port number. |
+  name                  | Unused | MME's name to use in s1 setup with eNB |
+  egtp_default_hostname | Optioal| | 
+  MCC, MNC              | Mandatory | MCC, MNC for the MME|
+  
 
 #### "s1ap" -eNB information. Relevant for s1ap-app.
-- s1ap_local_addr[M] : MME's s1ap interface source IP address.
-- sctp_port[M] : MME's s1ap interface source port.
+Config Parameter Name | Reserved/Unused/Mandatory | Comments |
+----------------------|---------------------------|----------|
+s1ap_local_addr | Mandatory | MME's s1ap interface source IP address |
+sctp_port       | Mandatory | MME's s1ap interface source port |
+
 
 #### "s11" - SGW information for s11 communication. Relevant for s11-app  
-- egtp_local_addr[M] : MME's source s11 interface IP address.
-- egtp_default_port[M] : MME's source s11 interface port.
-- sgw_addr[M] : Destination SGW IP for s11 interface
-- pgw_addr[M] : PGW address. This field is not used as of now. Provision made in MME config for PGW information.
+Config Parameter Name | Reserved/Unused/Mandatory | Comments |
+----------------------|---------------------------|----------|
+egtp_local_addr | Mandatory | MME's source s11 interface IP address. |
+egtp_default_port | Mandatory | MME's source s11 interface port. |
+sgw_addr | Mandatory | Destination SGW IP for s11 interface |
+pgw_addr | Mandatory | PGW address. This field is not used as of now. Provision made in MME config for PGW information. |
 
 #### "s6a" - HSS information for s6a communication. Relevant for s6a-app.
-- host_type[M] : Two types are supported here as mentioned below:
-  - "freediameter" - Communicate to HSS host over freediameter interface
-  - "hss_perf" - Use local loopback HSS option. This is only for testing purpose.
-- host_name[M] : HSS destination host name.
-- realm[M] : Realm for HSS freediameter communication.
+Config Parameter Name | Reserved/Unused/Mandatory | Comments |
+----------------------|---------------------------|----------|
+host_type | Mandatory | Two types are supported. "freediameter" - Communicate to HSS host over freediameter interface. "hss_perf" - Use local loopback HSS option. This is only for testing purpose. |
+host_name | Mandatory | HSS destination host name. |
+realm | Mandatory | Realm for HSS freediameter communication. |
 
