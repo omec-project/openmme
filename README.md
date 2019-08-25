@@ -14,7 +14,8 @@
 OpenMME is a grounds up implementation of the Mobility management Entity EPC S1 front end to the Cell Tower (eNB). Its design is performance optimized for high speed mobility events over the S1-MME interface, while maintaining state coherent high transaction rate interactions over the S6a interface to the HSS and the S11 interface to the Serving Gateway Control (SGWC). The design allows maximum utilization of the transaction rate allowed by the S1-MME Non-Access Stratum (NAS) messages over SCTP, S6a DIAMETER Attribute Value Pairs (AVPs) over TCP and S11 GTPV2C messages over UDP protocols.
 
 ## Build and Installation Procedure
-### Update config : Update following config files
+### Update config 
+Update following config files
     {install_path}/openmme/src/mme-app/conf/mme.json
     {install_path}/openmme/src/s1ap/conf/s1ap.json
     {install_path}/openmme/src/s11/conf/s11.json
@@ -66,8 +67,8 @@ Before starting openMME applications respective parameters should be  configured
 
 ### Config Parameters
 - Following is a description of each section under json file.
-	[U] - Reserved/Unused. Can be skipped in the json.
-	[M] - Mandatory parameter.
+  - [U] - Reserved/Unused. Can be skipped in the json.
+  - [M] - Mandatory parameter.
 
 #### "mme" - Contains information relevant for mme-app & s1ap-app.
   - egtp_default_port[U] : Default S11 port for MME's s11 end.
