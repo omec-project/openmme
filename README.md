@@ -53,14 +53,7 @@ Execute the following command, using the "Identity" configured in        {instal
 
 ## Known Issues
 - O3 optimization flag is disabled in s6a module Observed issues in attach procedure when -O3 optimization flag is enabled in s6a module.
- - APN value hardcoded in openMME  APN value sent in InitialContextSetupRequest message is hardcoded in the  following file,
-   - **FILE**: src/s1ap/handlers/attach_icsreq.c
-   - **Function**: icsreq_processing()
-   - **Code**:
-     - strncpy(apn_name, " apn", sizeof(" apn"));
-     - strcat(apn_name, ".TestNetwork");
 - Message Authentication Code (MAC) needs to be disabled at the RAN side to support number of devices >10 and S1-MME transaction rate >10
-- Multiple eNB support is added, but not tested beyond 2 eNB connections.
 
 ## Appendix A.
 Before starting openMME applications respective parameters should be  configured in the json files mentioned in section 2.b. For each of the application individual json file can be created, or a user can create a common json file for entire MME configuration(all interfaces), and copy contents of this file in all other jsons.
