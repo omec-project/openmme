@@ -79,7 +79,7 @@ Before starting openMME applications respective parameters should be  configured
   egtp_addr             | Unused | MME's s11 interface IP address |
   sctp_port             | Unused | MME's sctp(s1ap) port number. |
   name                  | Unused | MME's name to use in s1 setup with eNB |
-  egtp_default_hostname | Optioal| | 
+  egtp_default_hostname | Optional| | 
   MCC, MNC              | Mandatory | MCC, MNC for the MME|
   
 
