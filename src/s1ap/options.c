@@ -19,9 +19,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <pthread.h>
 
 #include "log.h"
 #include "options.h"
+#include "hashtable.h"
+#include "s1ap_structs.h"
+#include "sctp_conn.h"
+
+extern onf_ht_hash_table* g_enbfd_hash_table;
+extern pthread_mutex_t s1ap_hashtable_lock;
 
 void parse_args(int argc, char **argv)
 {
@@ -61,5 +68,31 @@ void parse_args(int argc, char **argv)
 		}
 		exit(0);
 	}
+}
+
+/**
+* Post sctp message with streamid
+*/
+int
+send_sctp_msg_upd(int enb_fd, unsigned char *buffer, size_t len)
+{
+        int send_streamId = 0;
+        pthread_mutex_lock(&s1ap_hashtable_lock);
+	struct enb_assoc_info* enbAssoc
+	     = (struct enb_assoc_info*)onf_ht_search(
+	         g_enbfd_hash_table, 
+		 (const char*)&enb_fd, sizeof(int));
+        pthread_mutex_unlock(&s1ap_hashtable_lock);
+        if(NULL == enbAssoc)
+	{
+	    log_msg(LOG_ERROR, "No entry found in hash table for enbfd %d", enb_fd);
+	}
+	else
+	{
+	    send_streamId = enbAssoc->outStreamId;
+        }
+
+	return send_sctp_req_msg(
+	           enb_fd, send_streamId, buffer, len);
 }
 

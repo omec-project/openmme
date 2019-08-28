@@ -56,7 +56,7 @@ s1_esm_resp_handler(struct proto_IE *s1_esm_resp_ies)
 	else
 		esm_resp.status = SUCCESS;
 
-	memcpy(&(esm_resp.apn), &(s1_esm_resp_ies->data[2].nas.elements[0].apn),
+	memcpy(&(esm_resp.apn), &(s1_esm_resp_ies->data[2].nas.elements[0].pduElement.apn),
 		sizeof(struct apn_name));
 
 	int i = write_ipc_channel(ipcHndl_esmresp, (char *)&esm_resp, S1AP_ESMRESP_STAGE5_BUF_SIZE);

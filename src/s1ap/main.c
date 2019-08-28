@@ -36,16 +36,17 @@
 #include "tpool_queue.h"
 #include "snow_3g.h"
 #include "f9.h"
+#include "hashtable.h"
 
 
 /*Global and externs **/
 extern s1ap_config g_s1ap_cfg;
 pthread_t s1ap_iam_t;
-
+pthread_mutex_t s1ap_hashtable_lock = PTHREAD_MUTEX_INITIALIZER;
 int g_enb_fd = 0;
 int g_sctp_fd = 0;
 struct thread_pool *g_tpool;
-
+onf_ht_hash_table* g_enbfd_hash_table;
 ipc_handle ipcHndl_attach;
 ipc_handle ipcHndl_authresp;
 ipc_handle ipcHndl_secresp;
@@ -228,22 +229,27 @@ accept_sctp(void *data)
 
 			sd = enb_socket[i];
 
-			if (FD_ISSET(sd, &readfds)) {
-				if ((valread = recv_sctp_msg(sd, buffer, SCTP_BUF_SIZE)) == 0) {
+			if (FD_ISSET(sd, &readfds)) 
+			{
+	                    struct sctp_sndrcvinfo sndrcvinfo;
+			    if ((valread = recv_sctp_msg(sd, 
+			             &sndrcvinfo, buffer, 
+				     SCTP_BUF_SIZE)) == 0) 
+				{
+                                    log_msg(LOG_INFO, "Host Disconnected\n");
+				    close(sd);
+				    enb_socket[i] = 0;
 
-					log_msg(LOG_INFO, "Host Disconnected\n");
-					close(sd);
-					enb_socket[i] = 0;
-
-				} else {
-
-					unsigned char *tmpBuf = (unsigned char *)
-					malloc(sizeof(char) * valread + sizeof(int) );
-					memcpy(tmpBuf, &sd, sizeof(sd));
-					memcpy(tmpBuf + sizeof(int), buffer, valread);
-					//tmpBuf[len] = '\0';
-					log_msg(LOG_INFO, "SCTP Received msg len : %d \n",valread);
-					insert_job(g_tpool, handle_s1ap_message, tmpBuf);
+				} else 
+				{
+                                    unsigned char *tmpBuf = (unsigned char *)
+				    malloc(sizeof(char) * valread + 2 * sizeof(int));
+				    int inStreamId = sndrcvinfo.sinfo_stream;
+                                    memcpy(tmpBuf, &sd, sizeof(sd));
+                                    memcpy(tmpBuf + sizeof(int), &inStreamId, sizeof(inStreamId));
+			            memcpy(tmpBuf + (2*sizeof(int)), buffer, valread);
+				    log_msg(LOG_DEBUG, "SCTP Received msg len : %d \n",valread);
+				    insert_job(g_tpool, handle_s1ap_message, tmpBuf);
 
 				}
 			}
@@ -429,6 +435,14 @@ main(int argc, char **argv)
 	}
 	log_msg(LOG_INFO, "S1AP Listener theadpool initalized.\n");
 
+        pthread_mutex_init(&s1ap_hashtable_lock, NULL);
+        /* enb fd hashtable */
+        g_enbfd_hash_table = onf_ht_new();
+	if (g_enbfd_hash_table == NULL) {
+		log_msg(LOG_ERROR, "Error in creating enb info hashtable. \n");
+		return -E_FAIL_INIT;
+	}
+	log_msg(LOG_INFO, "ENB info hashtable initalized.\n");
 
 	if (init_sctp() != SUCCESS) {
 		log_msg(LOG_ERROR, "Error in initializing sctp server.\n");

@@ -91,13 +91,13 @@ int accept_sctp_socket(int connSock)
 	return accept(connSock, (struct sockaddr *) NULL, (socklen_t *) NULL);
 }
 
-int recv_sctp_msg(int connSock, unsigned char *buffer, size_t len)
+int recv_sctp_msg(int connSock, struct sctp_sndrcvinfo *sndrcvinfo, unsigned char *buffer, size_t len)
 {
-	struct sctp_sndrcvinfo sndrcvinfo;
+	//struct sctp_sndrcvinfo sndrcvinfo;
 	int flags;
 
 	return sctp_recvmsg(connSock, buffer, len,
-			(struct sockaddr *) NULL, 0, &sndrcvinfo, &flags);
+			(struct sockaddr *) NULL, 0, sndrcvinfo, &flags);
 }
 
 int send_sctp_msg(int connSock, unsigned char *buffer, size_t len)
@@ -105,6 +105,15 @@ int send_sctp_msg(int connSock, unsigned char *buffer, size_t len)
 	uint32_t ppid = S1AP_PPID;
 	return sctp_sendmsg(connSock, (void *)buffer, len,
 			NULL, 0, htonl(ppid), 0, 0, 0, 0);
+}
+
+int send_sctp_req_msg(
+    int connSock, int streamId, 
+    unsigned char *buffer, size_t len)
+{
+    uint32_t ppid = S1AP_PPID;
+    return sctp_sendmsg(connSock, (void *)buffer, len,
+			NULL, 0, htonl(ppid), 0, streamId, 0, 0);
 }
 
 int close_sctp_socket(int connSock)

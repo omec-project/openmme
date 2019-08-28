@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
+ * Copyright (c) 2003-2019, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +15,12 @@
  * limitations under the License.
  */
 
-/*
- * options.h
- *
- */
+#ifndef PRIME_H_
+#define PRIME_H_
 
-#ifndef OPTIONS_H_
-#define OPTIONS_H_
+#include "stdbool.h"
 
-#define REQ_ARGS 0x0000
-void parse_args(int argc, char **argv);
-int  send_sctp_msg_upd(int enb_fd, 
-                        unsigned char *buffer, size_t len);
+bool onf_is_prime(int x);
+int onf_next_prime(int x);
 
-#endif /* OPTIONS_H_ */
+#endif

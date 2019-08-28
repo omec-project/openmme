@@ -30,6 +30,10 @@
 #include "s1ap_structs.h"
 #include "s1ap_msg_codes.h"
 #include "s1ap_ie.h"
+#include "hashtable.h"
+
+extern onf_ht_hash_table* g_enbfd_hash_table;
+extern pthread_mutex_t s1ap_hashtable_lock;
 
 static void
 parse_erab_pdu(char *msg,  int nas_msg_len, struct eRAB_elements *erab)
@@ -185,9 +189,9 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		nas->elements = calloc(sizeof(nas_pdu_elements), 2);
 		//if(NULL == nas.elements)...
 
-		memcpy(&(nas->elements[0].apn.len), msg + (offset++), 1);
-		memcpy(nas->elements[0].apn.val, msg + offset, nas->elements[0].apn.len);
-		log_msg(LOG_INFO, "APN name - %s\n", nas->elements[0].apn.val);
+		memcpy(&(nas->elements[0].pduElement.apn.len), msg + (offset++), 1);
+		memcpy(nas->elements[0].pduElement.apn.val, msg + offset, nas->elements[0].pduElement.apn.len);
+		log_msg(LOG_INFO, "APN name - %s\n", nas->elements[0].pduElement.apn.val);
 		break;
 		}
 
@@ -199,15 +203,17 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		nas->elements_len = 1;
 		nas->elements = calloc(sizeof(nas_pdu_elements), 5);
 		//if(NULL == nas.elements)...
-		memcpy(&(nas->elements[0].auth_resp), msg + 3, sizeof(struct XRES));
+		memcpy(&(nas->elements[0].pduElement.auth_resp), msg + 3, sizeof(struct XRES));
 
 		break;
 
 	case NAS_ATTACH_REQUEST:{
 		short offset = 0;
+		int index = 0;
 		nas->elements_len = 6;
 		nas->elements = calloc(sizeof(nas_pdu_elements), 6);
-		//if(NULL == nas.elements)...
+		
+                //if(NULL == nas.elements)...
 
 		/*EPS mobility identity*/
 		//memcpy(&(nas->elements[0].IMSI), msg+6, BINARY_IMSI_LEN);
@@ -219,47 +225,84 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		*/
 
 		/*Code working with sprirent and Polaris*/
-		memcpy(&(nas->elements[0].IMSI), msg+5, BINARY_IMSI_LEN);
+		memcpy(&(nas->elements[index].pduElement.IMSI), msg+5, BINARY_IMSI_LEN);
+		nas->elements[index].msgType = 
+		       NAS_IE_TYPE_EPS_MOBILE_ID_IMSI;
 		offset = 5 + BINARY_IMSI_LEN ;
 
 		/*UE network capacity*/
-		nas->elements[1].ue_network.len = msg[offset];
+		index++;
+		nas->elements[index].msgType = 
+		       NAS_IE_TYPE_UE_NETWORK_CAPABILITY;
+		nas->elements[index].pduElement.ue_network.len = msg[offset];
 		++offset;
-		memcpy((nas->elements[1].ue_network.capab), msg+offset,
-			nas->elements[1].ue_network.len);
-		offset += nas->elements[1].ue_network.len + 1;
-
+		memcpy(
+		 (nas->elements[index].pduElement.ue_network.capab)
+		   ,msg+offset,
+		   nas->elements[index].pduElement.ue_network.len);
+		offset += 
+		 nas->elements[index].pduElement.ue_network.len + 1;
+		
+		index++;
 		/*ESM msg container*/
 		{
-		short len = msg[offset];
-		nas->elements[5].pti = msg[offset + 2];
-		unsigned char val = *(msg+offset+5);
-		/*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
-		 * +pdn_type(1)*/
-		/*element id 13(1101....) = "esm required" flag*/
-		nas->elements[2].esm_info_tx_required = false;
-		if(13 == (val>>4)) {
-			nas->elements[2].esm_info_tx_required = true;
-			if(val & 1) {
-				nas->elements[2].esm_info_tx_required = true;
+		    short len = msg[offset];
+		    nas->elements[index].msgType = 
+		       NAS_IE_TYPE_ESM_MSG;
+		    nas->elements[index].pduElement.esm_msg.procedure_trans_identity = msg[offset + 2];
+		    unsigned char val = *(msg+offset+5);
+		    /*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
+		     * +pdn_type(1)*/
+		    /*element id 13(1101....) = "esm required" flag*/
+		    nas->elements[index].msgType = 
+		       NAS_IE_TYPE_ESM_MSG;
+		    nas->elements[index].pduElement.esm_msg.esm_info_tx_required = false;
+		    if(13 == (val>>4)) 
+		    {
+			if(val & 1) 
+			{
+			    nas->elements[index].pduElement.esm_msg.esm_info_tx_required = true;
 			}
+		    }
+		    offset += len;
 		}
-		offset += len;
+
+		/*Loop through till end of nas messages*/
+		while(offset < nas_msg_len)
+		{
+		    switch((nas_ie_type)msg[offset])
+		    {
+			case NAS_IE_TYPE_MS_NETWORK_CAPABILITY:
+			{
+		            log_msg(LOG_INFO, "MS NW Capability IE \n");
+			    index++;
+			    nas->elements[index].msgType = NAS_IE_TYPE_MS_NETWORK_CAPABILITY;
+			    nas->elements[index].pduElement.ms_network.pres = true;
+			    nas->elements[index].pduElement.ms_network.element_id 
+						= msg[offset];
+			    ++offset;
+			    nas->elements[index].pduElement.ms_network.len 
+						= msg[offset];
+			    ++offset;
+			    memcpy(
+			     (nas->elements[index].pduElement.ms_network.capab), 
+			      msg+offset, 
+			      nas->elements[index].pduElement.ms_network.len);
+			    offset += 
+			      nas->elements[index].pduElement.ms_network.len;
+			    break;
+			}
+			default:
+			{
+			    log_msg(LOG_ERROR, "UnHandled NAS IE type- 0x%x\n", msg[offset]);
+			    offset++;
+		        }
+		    }
 		}
-
-		/*DRX parameter*/
-		offset += 4;
-
-		/*MS network capability*/
-		nas->elements[4].ms_network.element_id = msg[offset];
-		++offset;
-		nas->elements[4].ms_network.len = msg[offset];
-		++offset;
-		memcpy((nas->elements[4].ms_network.capab), msg+offset,
-			nas->elements[4].ms_network.len);
-
+		    
+		nas->elements_len = index+1;
 		break;
-		}
+	}
 
 	case NAS_ATTACH_COMPLETE:
 		/*Other than error check there seems no information to pass to mme. Marking TODO for protocol study*/
@@ -270,8 +313,8 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		nas->elements = calloc(sizeof(nas_pdu_elements), 1);
 
 		/*EPS mobility identity*/
-		memcpy(&(nas->elements[0].mi_guti), msg + 11, sizeof(guti));
-		log_msg(LOG_INFO, "M-TMSI - %d\n", nas->elements[0].mi_guti.m_TMSI);
+		memcpy(&(nas->elements[0].pduElement.mi_guti), msg + 11, sizeof(guti));
+		log_msg(LOG_INFO, "M-TMSI - %d\n", nas->elements[0].pduElement.mi_guti.m_TMSI);
 		break;
 	}
 
@@ -405,10 +448,46 @@ parse_IEs(char *msg, struct proto_IE *proto_ies, unsigned short proc_code)
 }
 
 static int
-init_ue_msg_handler(char *msg, int enb_fd)
+init_ue_msg_handler(char *msg, int enb_fd, int inStreamId)
 {
 	//TODO: use static instead of synamic for perf.
 	struct proto_IE proto_ies;
+	struct enb_assoc_info local_assocInfo;
+	
+        pthread_mutex_lock(&s1ap_hashtable_lock);
+	struct enb_assoc_info* enbAssoc
+	     = (struct enb_assoc_info*)onf_ht_search(
+	         g_enbfd_hash_table, (const char*)&enb_fd,
+		 sizeof(int));
+        pthread_mutex_unlock(&s1ap_hashtable_lock);
+        if(NULL == enbAssoc)
+	{
+	    log_msg(LOG_ERROR, "No entry found in hash table for enbfd %d", enb_fd);
+	}
+	else
+	{
+	    memcpy(&local_assocInfo, 
+			enbAssoc, sizeof(struct enb_assoc_info));
+	    /*Update send stream Id whenever 
+	      Initial UE msg is received*/
+	    local_assocInfo.outStreamId += 1;
+	    if(local_assocInfo.outStreamId > 
+			local_assocInfo.assoc_max_in_streams)
+	    {
+		local_assocInfo.outStreamId = 1;
+	    }
+
+            pthread_mutex_lock(&s1ap_hashtable_lock);
+	    if(SUCCESS != onf_ht_insert(g_enbfd_hash_table, 
+				sizeof(int),
+				sizeof(struct enb_assoc_info), 
+				(const char*)&enb_fd,
+				(const char *)&local_assocInfo))
+	    {
+		log_msg(LOG_ERROR, "Hash update failed");
+	    }
+            pthread_mutex_unlock(&s1ap_hashtable_lock);
+	}
 
 	/*****Message structure***
 	*/
@@ -491,9 +570,11 @@ handle_s1ap_message(void *msg)
 	/*Call handler for the procedure code. TBD: Tasks pool for handlers*/
 
 	int enb_fd = 0;
+	int inStreamId = 0;
 	memcpy(&enb_fd, msg, sizeof(enb_fd));
-	char *message = ((char *) msg) + sizeof(enb_fd);
-
+	memcpy(&inStreamId, (char*)msg + sizeof(int), sizeof(int));
+	
+	char *message = ((char *) msg) + (2*sizeof(int));
 	struct s1ap_header *header = (struct s1ap_header*)(message);
 	header->procedure_code = ntohs(header->procedure_code);
 	header->criticality= ntohs(header->criticality);
@@ -501,11 +582,11 @@ handle_s1ap_message(void *msg)
 
 	switch(header->procedure_code & 0x00FF){
 	case S1AP_SETUP_REQUEST_CODE:
-		s1_setup_handler(message, enb_fd);
+		s1_setup_handler(message, enb_fd, inStreamId);
 		break;
 
 	case S1AP_INITIAL_UE_MSG_CODE:
-		init_ue_msg_handler(message, enb_fd);
+		init_ue_msg_handler(message, enb_fd, inStreamId);
 		break;
 
 	case S1AP_UL_NAS_TX_MSG_CODE:

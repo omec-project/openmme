@@ -39,6 +39,7 @@ int
 s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
 {
 	struct ue_attach_info ue_info;
+	int nas_index = 0;
 
 	/*****Message structure***
 	*/
@@ -54,21 +55,59 @@ s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
 	ue_info.enb_fd = enodeb_fd;
 	ue_info.s1ap_enb_ue_id = s1_init_ies->data[0].enb_ue_s1ap_id;
 	ue_info.criticality = 0;//TBD
-	ue_info.esm_info_tx_required =
-		s1_init_ies->data[1].nas.elements[2].esm_info_tx_required;
-	memcpy(&(ue_info.IMSI), &(s1_init_ies->data[1].nas.elements[0].IMSI),
-			BINARY_IMSI_LEN);
 	memcpy(&(ue_info.tai), &(s1_init_ies->data[2].tai), sizeof(struct TAI));
 	memcpy(&(ue_info.utran_cgi), &(s1_init_ies->data[3].utran_cgi),
 			sizeof(struct CGI));
-	memcpy(&(ue_info.ue_net_capab),
-			&(s1_init_ies->data[1].nas.elements[1].ue_network),
-			sizeof(struct UE_net_capab));
-	memcpy(&(ue_info.ms_net_capab),
-			&(s1_init_ies->data[1].nas.elements[4].ms_network),
-			sizeof(struct MS_net_capab));
-	ue_info.pti = s1_init_ies->data[1].nas.elements[5].pti;
+	
+	while(nas_index < s1_init_ies->data[1].nas.elements_len)
+	{
+	    log_msg(LOG_INFO, "nasIndex %d, msgType %d\n",
+	      nas_index,
+	      s1_init_ies->data[1].nas.elements[nas_index].msgType);
+	    switch(s1_init_ies->data[1].nas.elements[nas_index].msgType)
+            {
+	        case NAS_IE_TYPE_ESM_MSG:
+		{
+	            ue_info.esm_info_tx_required =
+		        s1_init_ies->data[1].nas.elements[nas_index].pduElement.esm_msg.esm_info_tx_required;
+	            ue_info.pti = s1_init_ies->data[1].nas.elements[nas_index].pduElement.esm_msg.procedure_trans_identity;
+		    break;
+		}
+	        case NAS_IE_TYPE_EPS_MOBILE_ID_IMSI:
+		{
+	            memcpy(&(ue_info.IMSI), 
+		       &(s1_init_ies->data[1].nas.\
+		            elements[nas_index].pduElement.IMSI),
+		       BINARY_IMSI_LEN);
+		    break;
+		}
+	        case NAS_IE_TYPE_UE_NETWORK_CAPABILITY:
+		{
+	            memcpy(&(ue_info.ue_net_capab),
+		     &(s1_init_ies->data[1].nas.\
+		        elements[nas_index].pduElement.ue_network),
+		     sizeof(struct UE_net_capab));
+		    
+		    break;
+		}
+	        case NAS_IE_TYPE_MS_NETWORK_CAPABILITY:
+		{
+	            memcpy(&(ue_info.ms_net_capab),
+		     &(s1_init_ies->data[1].nas.\
+		        elements[nas_index].pduElement.ms_network),
+		     sizeof(struct MS_net_capab));
+		    
+		    break;
+		}
+		default:
+		{
+		    log_msg(LOG_INFO, "nas element not handled\n");
+		}
+            }
 
+	    nas_index++;
+	}
+	
 	write_ipc_channel(ipcHndl_attach, (char *)&ue_info, INITUE_STAGE1_BUF_SIZE);
 
 	/*Send S1Setup response*/

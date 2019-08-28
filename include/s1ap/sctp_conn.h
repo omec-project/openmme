@@ -31,9 +31,11 @@ int create_sctp_socket(unsigned int remote_ip, unsigned short port);
 
 int accept_sctp_socket(int sockfd);
 
-int recv_sctp_msg(int sockfd, unsigned char *buf, size_t len);
+int recv_sctp_msg(int sockfd, struct sctp_sndrcvinfo *sndrcvinfo, unsigned char *buf, size_t len);
 
 int send_sctp_msg(int sockfd, unsigned char *buf, size_t len);
+int send_sctp_req_msg(int sockfd, int streamId, 
+                       unsigned char *buf, size_t len);
 
 int close_sctp_socket(int sockfd);
 

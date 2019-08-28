@@ -31,7 +31,10 @@ int
 parse_IEs(char *msg, struct proto_IE *proto_ies, unsigned short proc_code);
 
 int
-s1_setup_handler(char *msg, int enb_fd);
+s1_setup_handler(char *msg, int enb_fd, int inStreamId);
+
+int
+addEnbInfoToHash(int enbfd, int inStreamId);
 
 int
 s1_init_ue_handler(struct proto_IE *s1_init_ies, int enb_fd);

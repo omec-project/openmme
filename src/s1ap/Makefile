@@ -50,7 +50,9 @@ LIBS := -lpthread	\
 	-linterface \
 	-llog \
 	-lthreadpool \
+	-lhash \
 	-ljson \
+	-lm \
 	-lsecutil
 
 $(TARGET): $(OBJECTS)
