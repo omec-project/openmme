@@ -67,6 +67,7 @@ s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
 	memcpy(&(ue_info.ms_net_capab),
 			&(s1_init_ies->data[1].nas.elements[4].ms_network),
 			sizeof(struct MS_net_capab));
+	ue_info.pti = s1_init_ies->data[1].nas.elements[5].pti;
 
 	write_ipc_channel(ipcHndl_attach, (char *)&ue_info, INITUE_STAGE1_BUF_SIZE);
 

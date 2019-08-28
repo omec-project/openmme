@@ -198,7 +198,7 @@ get_icsreq_protoie_value(struct proto_IE *value)
 
 	nasIEs[nasIeCnt].esm_msg.eps_bearer_id = 5; /* TODO: revisit */
 	nasIEs[nasIeCnt].esm_msg.proto_discriminator = 2;
-	nasIEs[nasIeCnt].esm_msg.procedure_trans_identity = 1;
+	memcpy(&(nasIEs[nasIeCnt].esm_msg.procedure_trans_identity), &(g_icsReqInfo->pti), 1);
 	nasIEs[nasIeCnt].esm_msg.session_management_msgs =
 			ESM_MSG_ACTV_DEF_BEAR__CTX_REQ;
 	nasIEs[nasIeCnt].esm_msg.eps_qos = 9;

@@ -125,6 +125,7 @@ struct UE_info{
 	struct secinfo ue_sec_info;
 
 	bool esm_info_tx_required;
+	unsigned char pti;
 };
 
 int get_index_from_list();

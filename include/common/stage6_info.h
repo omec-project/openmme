@@ -49,6 +49,7 @@ struct init_ctx_req_Q_msg {
 	uint8_t int_key[NAS_INT_KEY_SIZE];
 	uint16_t dl_seq_no;
 	int enb_fd;
+	unsigned char pti;
 };
 
 
