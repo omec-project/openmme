@@ -318,7 +318,24 @@ parse_IEs(char *msg, struct proto_IE *proto_ies, unsigned short proc_code)
 		ie->IE_type = IE_type;
 		msg +=2;//next to ie type
 		msg +=1;//next to criticality
-		memcpy(&IE_data_len, msg, sizeof(char));
+        /*parse length according to PER rules*/
+        char val = msg[0] & 0x10111111;
+        val = val >> 6;
+        if(val == 0x02)
+        {
+		    log_msg(LOG_INFO, "length more than 128");
+            unsigned short first = msg[0] & 0x00111111;
+            msg += 1;
+            unsigned short second = msg[0];
+            unsigned short ie_len = second & (first << 8);
+            IE_data_len = ie_len;
+        }
+        else
+        {
+		    log_msg(LOG_INFO, "length less than 128");
+		    memcpy(&IE_data_len, msg, sizeof(char));
+        }
+
 		msg+=1;//next to len
 		//IE_data_len = (IE_data_len);
 		log_msg(LOG_INFO, "IE type = %d\n", IE_type);

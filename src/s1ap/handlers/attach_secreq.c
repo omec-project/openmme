@@ -300,7 +300,7 @@ secreq_processing()
 static int
 post_to_next()
 {
-	send_sctp_msg(g_secReqInfo->enb_fd, g_sec_buffer.buf, g_sec_buffer.pos);
+	send_sctp_msg(g_secReqInfo->enb_fd, g_sec_buffer.buf, g_sec_buffer.pos, 1);
 	log_msg(LOG_INFO, "\n-----Stage3 completed.---\n");
 	return SUCCESS;
 }
