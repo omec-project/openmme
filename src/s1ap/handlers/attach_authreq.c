@@ -267,7 +267,7 @@ authreq_processing()
 static int
 post_to_next()
 {
-	send_sctp_msg(g_authreqInfo->enb_fd, g_buffer.buf, g_buffer.pos);
+	send_sctp_msg(g_authreqInfo->enb_fd, g_buffer.buf, g_buffer.pos, 1);
 	log_msg(LOG_INFO, "\n-----Stage2 completed.---\n");
 	return SUCCESS;
 }

@@ -66,7 +66,7 @@ int
 copyU16(unsigned char *buffer, uint32_t val);
 
 int
-send_sctp_msg(int connSock, unsigned char *buffer, size_t len);
+send_sctp_msg(int connSock, unsigned char *buffer, size_t len, uint16_t stream_no);
 
 void
 buffer_copy(struct Buffer *buffer, void *value, size_t size);

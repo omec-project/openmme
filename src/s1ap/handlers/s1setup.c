@@ -153,7 +153,7 @@ s1_setup_handler(char *msg, int enb_fd)
 
 	/*Send S1Setup response*/
 	log_msg(LOG_INFO, "Send s1setup response.\n");
-	resp_len = send_sctp_msg(enb_fd, resp_msg, resp_len);
+	resp_len = send_sctp_msg(enb_fd, resp_msg, resp_len, 0);
 	log_msg(LOG_INFO, "send len %d\n", resp_len);
 	//free(resp_msg);
 

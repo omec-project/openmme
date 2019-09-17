@@ -648,7 +648,7 @@ icsreq_processing()
 static int
 post_to_next()
 {
-	send_sctp_msg(g_icsReqInfo->enb_fd, g_ics_buffer.buf, g_ics_buffer.pos);
+	send_sctp_msg(g_icsReqInfo->enb_fd, g_ics_buffer.buf, g_ics_buffer.pos, 1);
 	log_msg(LOG_INFO, "buffer size is %d\n", g_ics_buffer.pos);
 	log_msg(LOG_INFO, "\n-----Stage6 completed.---\n");
 	return SUCCESS;
