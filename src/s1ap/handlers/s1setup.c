@@ -140,9 +140,15 @@ s1_setup_handler(char *msg, int enb_fd)
 	int resp_len = 0;
 	struct proto_IE s1_init_ies;
 
+	unsigned short msg_len = get_length(&msg);
+
+	char *buffer;
+	log_msg(LOG_INFO, "S1AP_SETUP_REQUEST msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
+	free(buffer);
+
 	/*****Message structure***
 	*/
-	parse_IEs(msg+2, &s1_init_ies, S1AP_SETUP_REQUEST_CODE);
+	parse_IEs(msg, &s1_init_ies, S1AP_SETUP_REQUEST_CODE);
 
 	/*Validate all eNB info*/
 
@@ -153,7 +159,7 @@ s1_setup_handler(char *msg, int enb_fd)
 
 	/*Send S1Setup response*/
 	log_msg(LOG_INFO, "Send s1setup response.\n");
-	resp_len = send_sctp_msg(enb_fd, resp_msg, resp_len);
+	resp_len = send_sctp_msg(enb_fd, resp_msg, resp_len, 0);
 	log_msg(LOG_INFO, "send len %d\n", resp_len);
 	//free(resp_msg);
 

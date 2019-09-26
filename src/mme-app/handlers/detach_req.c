@@ -178,11 +178,11 @@ post_to_next()
 	/* Post to s11-app */
 	write_ipc_channel(g_Q_S11_detach_fd, (char *)&(g_ds_msg),
 			S11_DTCHREQ_STAGE1_BUF_SIZE);
-	log_msg(LOG_INFO, "Posted Delete Session message to s11-app\n.");
+	log_msg(LOG_INFO, "Posted Delete Session message to s11-app.\n");
 
 	write_ipc_channel(g_Q_S6A_detach_fd, (char *)&(g_purge_msg),
 			  S6A_PURGEREQ_STAGE1_BUF_SIZE);
-	log_msg(LOG_INFO, "Posted purge message to s6a-app\n.");
+	log_msg(LOG_INFO, "Posted purge message to s6a-app.\n");
 
 	detach_stage1_counter++;
 	return SUCCESS;

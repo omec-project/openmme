@@ -80,7 +80,7 @@ read_next_msg()
 					log_msg(LOG_ERROR, "Error in reading \n");
 					/* TODO : Add proper error handling */
 				}
-		log_msg(LOG_INFO, "Init Ctx Setup Message Received, len: %d", bytes_read);
+		log_msg(LOG_INFO, "Init Ctx Setup Message Received, len: %d\n", bytes_read);
 	}
 
 	return bytes_read;
@@ -648,7 +648,7 @@ icsreq_processing()
 static int
 post_to_next()
 {
-	send_sctp_msg(g_icsReqInfo->enb_fd, g_ics_buffer.buf, g_ics_buffer.pos);
+	send_sctp_msg(g_icsReqInfo->enb_fd, g_ics_buffer.buf, g_ics_buffer.pos, 1);
 	log_msg(LOG_INFO, "buffer size is %d\n", g_ics_buffer.pos);
 	log_msg(LOG_INFO, "\n-----Stage6 completed.---\n");
 	return SUCCESS;

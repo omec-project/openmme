@@ -370,8 +370,8 @@ ue_ctx_release_processing()
 static int
 post_to_next()
 {
-	send_sctp_msg(g_acptReqInfo->enb_fd, g_acpt_buffer.buf, g_acpt_buffer.pos);
-	send_sctp_msg(g_acptReqInfo->enb_fd, g_ctxrel_buffer.buf, g_ctxrel_buffer.pos);
+	send_sctp_msg(g_acptReqInfo->enb_fd, g_acpt_buffer.buf, g_acpt_buffer.pos, 1);
+	send_sctp_msg(g_acptReqInfo->enb_fd, g_ctxrel_buffer.buf, g_ctxrel_buffer.pos, 1);
 	log_msg(LOG_INFO, "buffer size is %d\n", g_acpt_buffer.pos);
 	log_msg(LOG_INFO, "\n-----Detach Stage2 completed.---\n");
 	return SUCCESS;
