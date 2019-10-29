@@ -279,9 +279,10 @@ accept_sctp(void *data)
 				} else {
 
 					unsigned char *tmpBuf = (unsigned char *)
-					malloc(sizeof(char) * valread + sizeof(int) );
+					malloc(sizeof(char) * valread + (2*sizeof(int)) );
 					memcpy(tmpBuf, &sd, sizeof(sd));
-					memcpy(tmpBuf + sizeof(int), buffer, valread);
+					memcpy(tmpBuf + sizeof(int), &valread, sizeof(int));
+					memcpy(tmpBuf + (2*sizeof(int)), buffer, valread);
 					//tmpBuf[len] = '\0';
 					log_msg(LOG_INFO, "SCTP Received msg len : %d \n",valread);
 					insert_job(g_tpool, handle_s1ap_message, tmpBuf);

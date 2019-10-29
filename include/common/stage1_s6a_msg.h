@@ -27,6 +27,7 @@
 struct s6a_Q_msg {
 	unsigned char imsi[BINARY_IMSI_LEN];
 	struct TAI tai;
+    struct AUTS auts;
 	//struct PLMN visited_plmn;
 	/*e-utran auth info??*/
 	unsigned int ue_idx;

@@ -100,13 +100,13 @@ get_detach_accept_protoie_value(struct proto_IE *value)
 	value->data = (proto_IEs *) malloc(DTCH_ACCEPT_NO_OF_IES *
 			sizeof(proto_IEs));
 
-	value->data[ieCnt].mme_ue_s1ap_id = g_acptReqInfo->ue_idx;
+	value->data[ieCnt].val.mme_ue_s1ap_id = g_acptReqInfo->ue_idx;
 	ieCnt++;
 
-	value->data[ieCnt].enb_ue_s1ap_id = g_acptReqInfo->enb_s1ap_ue_id;
+	value->data[ieCnt].val.enb_ue_s1ap_id = g_acptReqInfo->enb_s1ap_ue_id;
 	ieCnt++;
 
-	struct nasPDU *nas = &(value->data[ieCnt].nas);
+	struct nasPDU *nas = &(value->data[ieCnt].val.nas);
 	nas->header.security_header_type = IntegrityProtectedCiphered;
 	nas->header.proto_discriminator = EPSMobilityManagementMessages;
 
@@ -176,7 +176,7 @@ detach_accept_processing()
 	datalen = 2;
 	/* TODO need to add proper handling*/
 	unsigned char mme_ue_id[3];
-	datalen = copyU16(mme_ue_id, s1apPDU.value.data[0].mme_ue_s1ap_id);
+	datalen = copyU16(mme_ue_id, s1apPDU.value.data[0].val.mme_ue_s1ap_id);
 	buffer_copy(&g_acpt_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_acpt_buffer, mme_ue_id, datalen);
 
@@ -188,7 +188,7 @@ detach_accept_processing()
 					sizeof(protocolIe_criticality));
 	/* TODO needs proper handling*/
 	unsigned char enb_ue_id[3];
-	datalen = copyU16(enb_ue_id, s1apPDU.value.data[1].enb_ue_s1ap_id);
+	datalen = copyU16(enb_ue_id, s1apPDU.value.data[1].val.enb_ue_s1ap_id);
 	buffer_copy(&g_acpt_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_acpt_buffer, enb_ue_id, datalen);
 
@@ -206,7 +206,7 @@ detach_accept_processing()
 
 	buffer_copy(&g_acpt_buffer, &datalen, sizeof(datalen));
 
-	nas_pdu_header *nas_hdr = &(s1apPDU.value.data[2].nas.header);
+	nas_pdu_header *nas_hdr = &(s1apPDU.value.data[2].val.nas.header);
 
 	/* security header and protocol discriminator */
 	u8value = (nas_hdr->security_header_type << 4 |
@@ -309,7 +309,7 @@ ue_ctx_release_processing()
 
 	uint8_t mme_ue_id[4];
 	uint8_t mme_ue_id_len = copyU16(mme_ue_id,
-				s1apPDU.value.data[0].mme_ue_s1ap_id);
+				s1apPDU.value.data[0].val.mme_ue_s1ap_id);
 
 	if (mme_ue_id[0] == 0x40 || mme_ue_id[0] == 0x80)
 		mme_ue_id[0] = ((mme_ue_id[0] & 0x0F)<<4 |
@@ -317,7 +317,7 @@ ue_ctx_release_processing()
 
 	uint8_t enb_ue_id[4];
 	uint8_t enb_ue_id_len = copyU16(enb_ue_id,
-				s1apPDU.value.data[1].enb_ue_s1ap_id);
+				s1apPDU.value.data[1].val.enb_ue_s1ap_id);
 
 	datalen = mme_ue_id_len + enb_ue_id_len;
 	buffer_copy(&g_ctxrel_buffer, &datalen, sizeof(datalen));

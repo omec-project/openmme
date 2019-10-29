@@ -19,7 +19,7 @@
 ifndef ROOT
 include ../../build-config
 ROOT=../..
-LIB_PATH +=-L../common/
+LIB_PATH +=-L../common/ -L./asn1c/asnGenFiles
 TARGET_DIR := $(ROOT)/target
 endif
 SRCDIR := .
@@ -50,6 +50,7 @@ LIBS := -lpthread	\
 	-linterface \
 	-llog \
 	-lthreadpool \
+	-lasncodec \
 	-ljson \
 	-lsecutil
 

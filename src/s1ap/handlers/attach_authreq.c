@@ -104,24 +104,24 @@ get_authreq_protoie_value(struct proto_IE *value)
 	value->data = (proto_IEs *) malloc(SEC_MODE_NO_OF_IES *
 			sizeof(proto_IEs));
 
-	value->data[0].mme_ue_s1ap_id = g_authreqInfo->ue_idx;
-	value->data[1].enb_ue_s1ap_id = g_authreqInfo->enb_s1ap_ue_id;
+	value->data[0].val.mme_ue_s1ap_id = g_authreqInfo->ue_idx;
+	value->data[1].val.enb_ue_s1ap_id = g_authreqInfo->enb_s1ap_ue_id;
 
 	log_msg(LOG_INFO, "mme_ue_s1ap_id %d and enb_ue_s1ap_id %d\n",
 			g_authreqInfo->ue_idx, g_authreqInfo->enb_s1ap_ue_id);
 
 	/* TODO: Add enum for security header type */
-	value->data[2].nas.header.security_header_type = 0;
-	value->data[2].nas.header.proto_discriminator = EPSMobilityManagementMessages;
-	value->data[2].nas.header.message_type = AuthenticationRequest;
-	value->data[2].nas.header.nas_security_param = AUTHREQ_NAS_SECURITY_PARAM;
+	value->data[2].val.nas.header.security_header_type = 0;
+	value->data[2].val.nas.header.proto_discriminator = EPSMobilityManagementMessages;
+	value->data[2].val.nas.header.message_type = AuthenticationRequest;
+	value->data[2].val.nas.header.nas_security_param = AUTHREQ_NAS_SECURITY_PARAM;
 
-	value->data[2].nas.elements = (nas_pdu_elements *)
+	value->data[2].val.nas.elements = (nas_pdu_elements *)
 			malloc(AUTH_REQ_NO_OF_NAS_IES * sizeof(nas_pdu_elements));
 
-	memcpy(value->data[2].nas.elements[0].rand,
+	memcpy(value->data[2].val.nas.elements[0].rand,
 			g_authreqInfo->rand, NAS_RAND_SIZE);
-	memcpy(value->data[2].nas.elements[1].autn,
+	memcpy(value->data[2].val.nas.elements[1].autn,
 			g_authreqInfo->autn, NAS_AUTN_SIZE);
 
 
@@ -183,7 +183,7 @@ authreq_processing()
 	/* TODO needs proper handling*/
 	unsigned char mme_ue_id[3];
 	datalen = copyU16(mme_ue_id,
-			s1apPDU.value.data[0].mme_ue_s1ap_id);
+			s1apPDU.value.data[0].val.mme_ue_s1ap_id);
 	buffer_copy(&g_value_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_value_buffer, mme_ue_id, datalen);
 
@@ -201,7 +201,7 @@ authreq_processing()
 	/* TODO needs proper handling*/
 	unsigned char enb_ue_id[3];
 	datalen = copyU16(enb_ue_id,
-			s1apPDU.value.data[1].enb_ue_s1ap_id);
+			s1apPDU.value.data[1].val.enb_ue_s1ap_id);
 	buffer_copy(&g_value_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_value_buffer, enb_ue_id, datalen);
 	//STIMER_GET_CURRENT_TP(g_attach_stats[s1apPDU.value.enb_ue_s1ap_id].esm_in);
@@ -215,7 +215,7 @@ authreq_processing()
 	buffer_copy(&g_value_buffer, &protocolIe_criticality,
 					sizeof(protocolIe_criticality));
 
-	struct nasPDU *nas = &(s1apPDU.value.data[2].nas);
+	struct nasPDU *nas = &(s1apPDU.value.data[2].val.nas);
 	uint8_t value = (nas->header.security_header_type) |
 			nas->header.proto_discriminator;
 
@@ -255,7 +255,7 @@ authreq_processing()
 	buffer_copy(&g_buffer, &g_value_buffer,
 						g_value_buffer.pos);
 
-	free(s1apPDU.value.data[2].nas.elements);
+	free(s1apPDU.value.data[2].val.nas.elements);
 	free(s1apPDU.value.data);
 
 	return SUCCESS;
