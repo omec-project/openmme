@@ -7,6 +7,8 @@
 		"sctp_port": 36412,
 		"name": "vmmestandalone",
 		"egtp_default_hostname": "sutlej.ccin.ccpu.com",
+		"group_id": 1,
+		"code": 1,
 		"__comment__": "Here is comment",
 		"mcc": {
 			"dig1": 2,

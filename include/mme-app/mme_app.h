@@ -47,6 +47,8 @@ typedef struct mme_config
 
 	unsigned int mme_s1ap_ip;
 	unsigned int mme_egtp_ip;
+	unsigned short mme_group_id;
+	unsigned char mme_code;
 } mme_config;
 
 
@@ -74,6 +76,7 @@ void* stage8_handler(void *);
 void* detach_stage1_mme_handler(void *);
 void* detach_stage2_handler(void *);
 void* detach_stage3_handler(void *);
+void  guti_attach_post_to_next(int index);
 
 //for testing, delete it
 void

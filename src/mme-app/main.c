@@ -40,8 +40,6 @@ extern mme_config g_mme_cfg;
 /*List of UEs attached to MME*/
 struct UE_info* g_UE_list[UE_POOL_SIZE];
 
-/*Counter UE list. Add each element sequentially when UE attaches*/
-int g_UE_cnt = 0;
 
 pthread_t stage_tid[TOTAL_STAGES];
 

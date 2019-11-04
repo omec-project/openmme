@@ -64,6 +64,8 @@ parse_erab_pdu(char *msg,  int nas_msg_len, struct eRAB_elements *erab)
 	//ntohl ??
 }
 
+// msg points to start of ASN encoded NAS payload
+
 void
 parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		unsigned short proc_code)
@@ -133,20 +135,27 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 			}
 		}
 	} else if (S1AP_INITIAL_UE_MSG_CODE == proc_code ) {
-
+                // msg is pointing to NAS payload..NAS payload starts with length at msg[0]
 		unsigned char header_type;
 		unsigned char sec_type;
-		memcpy(&header_type, msg + 2, 1);
+		memcpy(&header_type, msg + 1, 1);
+		log_msg(LOG_INFO, "%s : header_type = %x \n", __FUNCTION__, header_type);
 		sec_type = header_type << 4;
-		header_type >>= 4;
+		header_type >>= 4; // Security header type
+		log_msg(LOG_INFO, "%s : bit shifting header_type = %d \n", __FUNCTION__, header_type);
+		log_msg(LOG_INFO, "%s : bit shifting sec type  = %d \n", __FUNCTION__, sec_type);
 		if(0 == header_type) { /*not security header*/
+                        // IMSI attach message would land here 
+
 			log_msg(LOG_INFO, "No security header\n");
-			memcpy(&(nas->header), msg+2, sizeof(nas_pdu_header));/*copy only till msg type*/
+			memcpy(&(nas->header), msg+1, sizeof(nas_pdu_header));/*copy only till msg type*/
+                        offset = 4;
 		} else {
 			log_msg(LOG_INFO, "Security header\n");
 			/*now for esm resp, there is procedure tx identity, why the hell it was not there before.*/
 			/*one more donkey logic, do something!!*/
-			if(4 == header_type || ((7 == (*(msg+7) & 7)))) {
+			 #if 0
+                         if(4 == header_type || ((7 == (*(msg+7) & 7)))) {
 				log_msg(LOG_INFO, "4 == header_type\n");
 				if(sec_type == 4) {
 				log_msg(LOG_INFO, "security - cihpered\n");
@@ -158,12 +167,16 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 				memcpy(&(nas->header), msg+1, 2);/*copy only till msg type*/
 				offset = 3;
 				}
-			} else {
+			} else 
+                        #endif 
+                        {
 				unsigned char tmp;
-				memcpy(&(nas->header.message_type), msg+9, 1);/*copy only till msg type*/
 				memcpy(&(tmp), msg+7, 1);/*copy only till msg type*/
 				nas->header.security_header_type = tmp;
-				offset = 10;
+
+				memcpy(&(nas->header.message_type), msg+8, 1);/*copy only till msg type*/
+
+				offset = 10; // Now offset is at length  of identity IE
 			}
 		}
 
@@ -196,6 +209,7 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		break;
 
 	case NAS_AUTH_RESP:
+		log_msg(LOG_INFO, "Auth Response recvd\n");
 		nas->elements_len = 1;
 		nas->elements = calloc(sizeof(nas_pdu_elements), 5);
 		//if(NULL == nas.elements)...
@@ -204,8 +218,8 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		break;
 
 	case NAS_ATTACH_REQUEST:{
-		short offset = 0;
-		nas->elements_len = 6;
+		log_msg(LOG_INFO, "NAS Attach Request Rcvd\n");
+		nas->elements_len = 6; // Fix this hardcoding
 		nas->elements = calloc(sizeof(nas_pdu_elements), 6);
 		//if(NULL == nas.elements)...
 
@@ -219,37 +233,221 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		*/
 
 		/*Code working with sprirent and Polaris*/
-		memcpy(&(nas->elements[0].IMSI), msg+5, BINARY_IMSI_LEN);
-		offset = 5 + BINARY_IMSI_LEN ;
+//		memcpy(&(nas->elements[0].IMSI), msg+5, BINARY_IMSI_LEN);
+//		offset = 5 + BINARY_IMSI_LEN ;
+		log_msg(LOG_INFO, "NAS Attach Request Rcvd : offset %d\n",offset);
+		log_msg(LOG_INFO, "NAS Attach Request Rcvd content at offset %x\n",msg[offset]);
+
+                // First see if this is IMSI or imei or GUTI and decode it appropriately
+                unsigned char id_len = msg[offset];
+                offset++;
+                bool odd = msg[offset] & 0x08; // if this bit is set then odd number of digits in identity
+                if((msg[offset] & 0x07) == 0x01) {
+                  // Mobile Identity contains imsi
+                  // Support for 14 digit IMSIs is missing 
+                 /*Code working with sprirent and Polaris*/
+                 memcpy(&(nas->elements[0].IMSI), &msg[offset], BINARY_IMSI_LEN);
+                  nas->flags |= NAS_MSG_UE_IE_IMSI;
+	 log_msg(LOG_INFO, "Create UE record for IMSI %x %x %x %x %x %x %x %x \n", nas->elements[0].IMSI[0], nas->elements[0].IMSI[1], nas->elements[0].IMSI[2],nas->elements[0].IMSI[3],nas->elements[0].IMSI[4],nas->elements[0].IMSI[5],nas->elements[0].IMSI[6],nas->elements[0].IMSI[7]);
+                } else if ((msg[offset] & 0x07) == 0x06) { 
+		  log_msg(LOG_INFO, "NAS Attach Request Rcvd ID 1: GUTI\n");
+                  // Mobile Identity contains GUTI
+                  // MCC+MNC offset = 3
+                  // MME Group Id   = 2
+                  // MME Code       = 1
+                  // MTMSI offset from start of this AVP = 3 + 2 + 1 
+
+                  memcpy(&nas->elements[0].mi_guti.plmn_id.idx, &msg[offset+1], 3);
+                  nas->elements[0].mi_guti.mme_grp_id = ntohs(*(short int *)(&msg[offset+4]));
+
+                  nas->elements[0].mi_guti.mme_code = msg[offset+6];
+
+                  nas->elements[0].mi_guti.m_TMSI = ntohl(*((unsigned int *)(&msg[offset+7])));
+
+		  log_msg(LOG_INFO, "NAS Attach Request Rcvd ID: GUTI. PLMN id %d %d %d \n", nas->elements[0].mi_guti.plmn_id.idx[0], nas->elements[0].mi_guti.plmn_id.idx[1], nas->elements[0].mi_guti.plmn_id.idx[2] );
+		  log_msg(LOG_INFO, "NAS Attach Request Rcvd ID: GUTI. mme group id = %d, MME code %d  mtmsi = %d\n", nas->elements[0].mi_guti.mme_grp_id, nas->elements[0].mi_guti.mme_code, nas->elements[0].mi_guti.m_TMSI);
+                  nas->flags |= NAS_MSG_UE_IE_GUTI;
+                } else if ((msg[offset] & 0x07) == 0x03) { 
+                  // Mobile Identity contains imei
+                }
+                offset += id_len;
 
 		/*UE network capacity*/
 		nas->elements[1].ue_network.len = msg[offset];
 		++offset;
+		log_msg(LOG_INFO, "NAS Attach Request Rcvd : offset %d\n",offset);
+
 		memcpy((nas->elements[1].ue_network.capab), msg+offset,
 			nas->elements[1].ue_network.len);
-		offset += nas->elements[1].ue_network.len + 1;
+
+		offset += nas->elements[1].ue_network.len;
+		log_msg(LOG_INFO, "NAS Attach Request Rcvd : offset %d\n",offset);
 
 		/*ESM msg container*/
 		{
-		short len = msg[offset];
-		nas->elements[5].pti = msg[offset + 2];
-		unsigned char val = *(msg+offset+5);
-		/*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
-		 * +pdn_type(1)*/
-		/*element id 13(1101....) = "esm required" flag*/
-		nas->elements[2].esm_info_tx_required = false;
-		if(13 == (val>>4)) {
-			nas->elements[2].esm_info_tx_required = true;
-			if(val & 1) {
-				nas->elements[2].esm_info_tx_required = true;
-			}
-		}
-		offset += len;
+		  unsigned short len = 0;  
+	          memcpy(&len, msg+offset, 2);
+	          len = ntohs(len);
+                 // offset += 2;
+
+                  //offset +=1; // skipping reading EBI & PD
+
+		  nas->elements[5].pti = msg[offset+3];
+                  //offset +=1;
+
+		  unsigned char val = *(msg+offset+4);
+  		  /*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
+		   * +pdn_type(1)*/
+		  /*element id 13(1101....) = "esm required" flag*/
+		  nas->elements[2].esm_info_tx_required = false;
+		  if(13 == (val>>4)) {
+		  	//nas->elements[2].esm_info_tx_required = true; // seems no need to have this line of code
+		  	if(val & 1) {
+		  		nas->elements[2].esm_info_tx_required = true;
+                                log_msg(LOG_INFO, "NAS Attach Request ESM infor request required 1");
+		  	}
+                        log_msg(LOG_INFO, "NAS Attach Request ESM infor request required 2");
+		  }
+		  else 
+                  {
+                    log_msg(LOG_INFO, "NAS Attach Request ESM infor request not required");
+                  } 
+		  offset += len + 2;
+		  log_msg(LOG_INFO, "NAS Attach Request Rcvd : offset %d\n",offset);
 		}
 
+                /*optional AVPs we need to go through to read required things..
+                  We cant assume any data there...
+                  */
+		log_msg(LOG_INFO, "NAS Attach Request. Length %d and offset = %d \n", nas_msg_len, offset);
+                while(offset < nas_msg_len)
+                {
+                  unsigned char iei = msg[offset];
+		  log_msg(LOG_INFO, "NAS Attach Request - Current offset %d IEI %d \n", offset, iei);
+                  // Old-PTMSI Signature - 			TV  Length -4 , 
+                  // additional GUTI. 				TLV Length 13 , 
+                  // last visited registered TAI - 		TV  Length 6, Type-3
+                  // DRX param - 				TV  Length - 3, 
+                  // MS network capability. 			TLV Length - 4-10
+                  // old location area identification           TV  Length - 6
+                  // TMSI status                                TV  Length - 1
+                  // mobile station classmark 2                 TLV Length - 5
+                  // mobile station classmasrk 3                TLV Length - 2-34
+                  // Supported codecs                           TLV Length - 5-N
+                  // additional update type                     TV  Length - 1, Type - F-
+                  // voice domain pref and UEs usage setting    TLV Length - 3
+                  // Device property                            TV  Length - 1  Type - D-
+                  // Old GUTI type                              TV  Length - 1  Type - E-
+                  // MS network feature support                 TV  Length - 1  Type - C-
+                  // TMSI based NRI container                   TLV Length - 4
+                  // T3324 value                                TLV Length - 3
+                  // T3412 extended value                       TLV Length - 3
+                  // extended DRX parameters                    TLV Length - 3
+                  // UE additional security capability          TLV Length - 6 
+                  // UE status                                  TLV Length - 3
+                  // Additional information requested           TV  Length - 2
+                  // N1 UE network capability                   TLV Length - 3-15
+                  if(((iei & 0xf0) == 0xf0) || ((iei & 0xf0) == 0xe0)|| ((iei & 0xf0) == 0xd0) || ((iei & 0xf0) == 0xc0)||((iei & 0xf0) == 0x90))
+                  {
+                    //type-1, TV within 1 byte
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d \n", iei & 0xf0);
+                    offset += 1;
+                  }
+                  else if ( iei == 0x19)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, PTMSI signature \n", iei);
+                    offset += 4;
+                  } 
+                  else if ( iei == 0x50)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, addtional guti \n", iei);
+                    unsigned char len = msg[offset+1];
+                    offset += len + 1;
+                  }                  
+                  else if ( iei == 0x52)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, last visited registered tai \n", iei);
+                    offset += 6;
+                  }
+                  else if ( iei == 0x5c)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, DRX param \n", iei);
+                    offset += 3;
+                  }
+                  else if ( iei == 0x31)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, MS network capability \n", iei);
+                    unsigned char len=msg[offset+1];
+		    nas->elements[4].ms_network.element_id = iei; 
+		    nas->elements[4].ms_network.len = len; 
+		    memcpy((nas->elements[4].ms_network.capab), msg+offset+2,
+			nas->elements[4].ms_network.len);
+                    offset += len;
+                  }                  
+                  else if ( iei == 0x13)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, old location area identification \n", iei);
+                    offset += 6;
+                  }
+                  else if ( iei == 0x11)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, mobile station classmark 2  \n", iei);
+                    offset += 5;
+                  }
+                  else if ( iei == 0x20)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, mobile station classmark 3 \n", iei);
+                    unsigned char len=msg[offset+1];
+                    offset += len;
+                  }
+                  else if ( iei == 0x40)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, supported codecs \n", iei);
+                    unsigned char len=msg[offset+1];
+                    offset += len;
+                  }
+                  else if ( iei == 0x5D)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, voice domain preference \n", iei);
+                    offset += 3;
+                  }
+                  else if ( iei == 0x10)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, TMSI based NRI container \n", iei);
+                    offset += 4;
+                  }
+                  else if ( iei == 0x6A)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, T3324 timer \n", iei);
+                    offset += 3;
+                  }
+                  else if ( iei == 0x5E)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, T3412 timer \n", iei);
+                    offset += 3;
+                  }
+                  else if ( iei == 0x6E)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, extended DRX parameters \n", iei);
+                    offset += 3;
+                  }
+                  else if ( iei == 0x17)
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - IEI %d, additional info req \n", iei);
+                    offset += 2;
+                  }
+                  else
+                  {
+		    log_msg(LOG_INFO, "NAS Attach Request - unknown \n");
+                    sleep(1000);
+                    
+                  }
+                } 
+                #if 0 
 		/*DRX parameter*/
-		offset += 4;
+		offset += 3; // DRX is just 3 bytes..1 byte type and 2 byte data 
 
+          
 		/*MS network capability*/
 		nas->elements[4].ms_network.element_id = msg[offset];
 		++offset;
@@ -257,6 +455,7 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		++offset;
 		memcpy((nas->elements[4].ms_network.capab), msg+offset,
 			nas->elements[4].ms_network.len);
+                #endif
 
 		break;
 		}
@@ -282,16 +481,29 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 	}
 }
 
+// msg points to length 
 int
 parse_IEs(char *msg, struct proto_IE *proto_ies, unsigned short proc_code)
 {
 	unsigned short int no_of_IEs=0;
 
 	short data_size=0;
-	msg +=1;
-	memcpy(&data_size, msg, 1);
 
-	msg +=2;
+        // now we are pointing to length
+        if((msg[0] & 0x80) == 0x80)
+        {
+	  memcpy(&data_size, msg, 2);
+          msg +=2; // 2 byte length 
+          data_size = ntohs(data_size);
+        }
+        else
+        { 
+	  memcpy(&data_size, msg, 1);
+          msg +=1; // 1 byte length 
+        }
+
+        msg +=1; // 1 extension byte 
+
 	memcpy(&no_of_IEs, msg, 2);
 	//no_of_IEs=msg[0];
 	no_of_IEs = ntohs(no_of_IEs);
@@ -343,6 +555,8 @@ parse_IEs(char *msg, struct proto_IE *proto_ies, unsigned short proc_code)
 			break;
 
 		case S1AP_IE_MME_UE_ID:{
+                        // decode_int_val looks hacky...its assuming that length 2 means only 1 byte has data
+
 			ie->mme_ue_s1ap_id = decode_int_val((unsigned char *)msg,
 					IE_data_len);
 			log_msg(LOG_ERROR, "parse MME_UE_S1AP_ID - %d\n",
@@ -413,15 +627,13 @@ init_ue_msg_handler(char *msg, int enb_fd)
 	/*****Message structure***
 	*/
 	log_msg(LOG_INFO, "--------------------- %d --------------", msg[3]);
-	if (msg[3] == 0x80)
-		parse_IEs(msg+3, &proto_ies, S1AP_INITIAL_UE_MSG_CODE);
-	else
-		parse_IEs(msg+2, &proto_ies, S1AP_INITIAL_UE_MSG_CODE);
+        //extenstion + Proc Code + Criticality 
+	parse_IEs(msg+3, &proto_ies, S1AP_INITIAL_UE_MSG_CODE);
 
 	/*Check nas message type*/
 	//TODO: check through all proto IEs for which is nas
 	//currentlyy hard coding to 2 looking at packets
-	log_msg(LOG_INFO, "NAS msg type = %x\n", proto_ies.data[2].nas.header.message_type);
+	log_msg(LOG_INFO, "NAS msg type = %x\n", proto_ies.data[1].nas.header.message_type);
 	switch(proto_ies.data[1].nas.header.message_type) {
 	case NAS_ATTACH_REQUEST:
 		s1_init_ue_handler(&proto_ies, enb_fd);
@@ -525,6 +737,6 @@ handle_s1ap_message(void *msg)
 			header->procedure_code & 0x00FF);
 		break;
 	}
-	free(msg);
+	//free(msg);
 	return;
 }

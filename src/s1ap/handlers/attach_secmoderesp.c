@@ -51,6 +51,8 @@ s1_secmode_resp_handler(struct proto_IE *s1_sec_resp_ies)
 
 	/*Create Q structure for stage 1 to MME.
 	  contains init UE information.*/
+        //Great..s1ap id is also includes ue index .. this really makes things simple
+
 	secmode_resp.ue_idx = s1_sec_resp_ies->data[0].mme_ue_s1ap_id;
 	if(s1_sec_resp_ies->data[2].nas.header.message_type != NAS_SEC_MODE_COMPLETE)
 		secmode_resp.status = S1AP_SECMODE_FAILED;//Error in authentication

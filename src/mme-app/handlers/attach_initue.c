@@ -117,25 +117,7 @@ static int
 stage1_processing()
 {
 	struct ue_attach_info *ue_info = (struct ue_attach_info*)buf;
-	int index = ++g_UE_cnt;
 	struct UE_info *ue_entry = NULL;
-
-
-
-	if (index%UE_POOL_CNT == 0) {
-
-		log_msg(LOG_INFO, "UE Buffer Pool is full \n");
-		g_UE_cnt--;
-		index = get_index_from_list();
-
-		if (index != -1) {
-			log_msg(LOG_INFO, "Index is  received from the list\n");
-		} else {
-			log_msg(LOG_ERROR, "Error: No Index found in the list \n");
-			exit(-1);
-		}
-
-	}
 
 	/*Parse and validate  the buffer*/
 	if (NULL == ue_info) {
@@ -143,6 +125,48 @@ stage1_processing()
 		return E_FAIL;
 	}
 
+        log_msg(LOG_INFO,"%s - UE info flags %x \n",__FUNCTION__, ue_info->flags);
+
+        if(UE_ID_GUTI(ue_info->flags))
+        {
+	  log_msg(LOG_INFO, "GUTI received....TMSI = %d \n",ue_info->mi_guti.m_TMSI);
+          if((ue_info->mi_guti.mme_grp_id != g_mme_cfg.mme_group_id) || 
+             (ue_info->mi_guti.mme_code   != g_mme_cfg.mme_code))
+          {
+	    log_msg(LOG_INFO, "MME GroupId/Code missmatch. My Group(%d) Received "
+            "Group(%d) My code(%d) Received Code(%d)\n",ue_info->mi_guti.m_TMSI,
+            g_mme_cfg.mme_group_id,ue_info->mi_guti.mme_grp_id,g_mme_cfg.mme_code,ue_info->mi_guti.mme_code);
+            //map mme_grp_id & mme_code to neighbor MME and fetch IMSI from the neighbor mme
+            // REQUIREMENT : MME to support S10 interface for this functionality
+            return E_FAIL;
+          }
+          
+          /* Group id and mme code matches with our groupid and mme code.
+           */ 
+	  ue_entry = GET_UE_ENTRY(ue_info->mi_guti.m_TMSI);
+          // Lets find if we have GUTI with us
+          if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+          {
+	    log_msg(LOG_INFO, "GUTI received. NO valid record at given index %x \n", ue_entry);
+            //Invalid index..Perhaps crossing our pool count OR
+            //m-tmsi within range but UE_INFO is not valid 
+            //REQUIREMENT : Initiate Identity Request towards UE
+            return E_FAIL;
+          }
+          // cross validates with ue_index of the UE_entry
+          // We have GUTI and its valid too...any further cross checks ??? 
+	  log_msg(LOG_INFO, "Valid UE Record found from the GUTI \n");
+          guti_attach_post_to_next(ue_entry->ue_index);
+          return SUCCESS_1;
+        }
+
+	int index = allocate_ue_index();
+	if (index == -1) {
+		log_msg(LOG_INFO, "Index is  received from the list\n");
+                return E_FAIL; /* FEATURE REQUEAST : NO RESOURCE REJECTION */
+	} 
+
+	log_msg(LOG_INFO, "Create UE record for IMSI %x %x %x %x %x %x %x %x \n", ue_info->IMSI[0], ue_info->IMSI[1], ue_info->IMSI[2],ue_info->IMSI[3],ue_info->IMSI[4],ue_info->IMSI[5],ue_info->IMSI[6],ue_info->IMSI[7]);
 	/**TODO
 	Find the UE if already exists in hash
 	Delete exisint UE entry.
@@ -151,6 +175,8 @@ stage1_processing()
 	/*Allocate new UE entry in the hash*/
 	/*Copy UE information*/
 	ue_entry = GET_UE_ENTRY(index);
+        ue_entry->magic = UE_INFO_VALID_MAGIC;  
+        ue_entry->ue_index = index;
 	ue_entry->ue_state = ATTACH_STAGE1;
 	ue_entry->s1ap_enb_ue_id = ue_info->s1ap_enb_ue_id;
 	ue_entry->enb_fd = ue_info->enb_fd;
@@ -201,6 +227,12 @@ create_dummy_msg()
 static int
 post_to_next()
 {
+        /*in case of GUTI attach and subscriber belong to this MME then we dont want to 
+         * do the subscriber authorization again. 
+         * Refer 23.401 Section - 5.3.2.1 Initial Attach, Step-5. There are good details
+         * about when we can skip this stage 
+         */ 
+
 	//test create_dummy_msg();
 	write_ipc_channel(g_Q_s6a_air, (char *)&(s6a_req), S6A_REQ_Q_MSG_SIZE);
 	attach_stage1_counter++;
@@ -225,6 +257,7 @@ shutdown_stage1()
 void*
 stage1_handler(void *data)
 {
+        int ret;
 	init_stage();
 	log_msg(LOG_INFO, "Stage 1 Ready.\n");
 	g_mme_hdlr_status <<= 1;
@@ -237,9 +270,10 @@ stage1_handler(void *data)
 	while(1){
 		read_next_msg();
 
-		stage1_processing();
+		ret = stage1_processing();
 
-		post_to_next();
+                if(ret == SUCCESS)
+		  post_to_next();
 	}
 
 	return NULL;

@@ -38,6 +38,8 @@ struct ue_attach_info {
 	int enb_fd;
 	char esm_info_tx_required;
 	unsigned char pti;
+        unsigned int  flags; /* imsi - 0x00000001, GUTI - 0x00000002 */
+	guti mi_guti;
 };
 
 #define INITUE_STAGE1_BUF_SIZE sizeof(struct ue_attach_info)

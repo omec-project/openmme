@@ -132,6 +132,8 @@ get_authreq_protoie_value(struct proto_IE *value)
 /**
 * Stage specific message processing.
 */
+// once HSS ULR/A, AIR/A is done we do authentication towards UE
+
 static int
 authreq_processing()
 {
@@ -267,6 +269,7 @@ authreq_processing()
 static int
 post_to_next()
 {
+        // HSS ULR/A and AIR/A is done and we are sending message to UE. 
 	send_sctp_msg(g_authreqInfo->enb_fd, g_buffer.buf, g_buffer.pos,1);
 	log_msg(LOG_INFO, "\n-----Stage2 completed.---\n");
 	return SUCCESS;

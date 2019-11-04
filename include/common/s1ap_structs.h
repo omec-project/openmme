@@ -409,10 +409,15 @@ typedef union nas_pdu_elements {
 	unsigned char pti;
 }nas_pdu_elements;
 
+#define NAS_MSG_UE_IE_GUTI  0x00000001
+#define NAS_MSG_UE_IE_IMSI  0x00000002
+#define UE_ID_IMSI(flags)   ((flags & NAS_MSG_UE_IE_IMSI) == NAS_MSG_UE_IE_IMSI)
+#define UE_ID_GUTI(flags)   ((flags & NAS_MSG_UE_IE_GUTI) == NAS_MSG_UE_IE_GUTI)
 typedef struct nasPDU {
 	nas_pdu_header header;
 	unsigned char elements_len;
 	nas_pdu_elements *elements;
+        unsigned int flags; 
 } nasPDU;
 
 #pragma pack(1)

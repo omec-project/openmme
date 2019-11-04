@@ -50,8 +50,6 @@ static int g_Q_secmoderesp_fd;
 static int g_Q_esmreq_fd;
 extern int g_Q_CSreq_fd;
 
-/*Making global just to avoid stack passing*/
-static char buf[S1AP_SECRESP_STAGE4_BUF_SIZE];
 
 extern uint32_t attach_stage4_counter;
 extern uint32_t attach_stage5_counter;
@@ -86,7 +84,7 @@ init_stage()
 * Read next message from stage Q for processing.
 */
 static int
-read_next_msg()
+read_next_msg(char *buf)
 {
 	int bytes_read=0;
 
@@ -110,7 +108,7 @@ read_next_msg()
 * Stage specific message processing.
 */
 static int
-stage4_processing()
+stage4_processing(char *buf)
 {
 	/*Parse and validate  the buffer*/
 	struct secmode_resp_Q_msg *secmode_resp = (struct secmode_resp_Q_msg*)buf;
@@ -137,12 +135,14 @@ stage4_processing()
 * Post message to next handler of the stage
 */
 static int
-post_to_next()
+post_to_next(char *buf)
 {
 	struct esm_req_Q_msg esm_req;
 	struct secmode_resp_Q_msg *secmode_resp = (struct secmode_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(secmode_resp->ue_idx);
+        log_msg(LOG_INFO, "Stiching stage 1 to stage 4 - 1 \n");
 
+        /* Doubt : for GUTI attach, do we need to check for esm_info_tx_required ? */
 	if(ue_entry->esm_info_tx_required) {
 		esm_req.enb_fd = ue_entry->enb_fd;
 		esm_req.ue_idx = secmode_resp->ue_idx;
@@ -208,6 +208,7 @@ shutdown_stage4()
 void*
 stage4_handler(void *data)
 {
+        static char buf[S1AP_SECRESP_STAGE4_BUF_SIZE];
 	init_stage();
 	log_msg(LOG_INFO, "Stage 4 ready.\n");
 	g_mme_hdlr_status <<= 1;
@@ -215,12 +216,27 @@ stage4_handler(void *data)
 	check_mme_hdlr_status();
 
 	while(1){
-		read_next_msg();
+		read_next_msg(buf);
 
-		stage4_processing();
+		stage4_processing(buf);
 
-		post_to_next();
+		post_to_next(buf);
 	}
 
 	return NULL;
+}
+
+/* Initial Attach Stage1 might want to jump to stage 5 if GUTI attach... 
+ */
+void 
+guti_attach_post_to_next(int ue_index )
+{
+  static char buf[S1AP_SECRESP_STAGE4_BUF_SIZE];
+  memset(buf, 0, S1AP_SECRESP_STAGE4_BUF_SIZE);
+  struct secmode_resp_Q_msg *secmode_resp = (struct secmode_resp_Q_msg*)(&buf[0]);
+  secmode_resp->ue_idx = ue_index;
+  secmode_resp->status =  SUCCESS;
+  log_msg(LOG_INFO, "Stiching stage 1 to stage 4 \n");
+  post_to_next(buf);
+  return;
 }

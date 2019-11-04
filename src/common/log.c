@@ -31,8 +31,8 @@ static const char *log_level_name[] = { "INFO", "DEBUG", "WARN", "ERROR" };
 void log_message(int l, const char *file, int line, const char *fmt, ...)
 {
 	va_list arg;
-	if (g_nolog) return;
-	if(g_log_level > l) return;
+	//if (g_nolog) return;
+	//if(g_log_level > l) return;
 
 	fprintf(stderr,"%s-%s:%d:", log_level_name[l], file, line);
 	va_start(arg, fmt);

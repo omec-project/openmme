@@ -44,6 +44,8 @@ s1_init_ctx_resp_handler(char *msg)
 	/*****Message structure****/
 	log_msg(LOG_INFO, "Parse int ctx s1ap response message:--\n");
 	parse_IEs(msg+2, &s1_ics_ies, S1AP_INITIAL_CTX_RESP_CODE);
+        // clever..we are using s1ap id as ue index..so lookup is super fast. Same thing
+        // done on the s11 side teid lookup as well
 
 	ics_resp.ue_idx = s1_ics_ies.data[0].mme_ue_s1ap_id;
 	ics_resp.transp_layer_addr = s1_ics_ies.data[2].erab.elements[0].su_res.transp_layer_addr;
