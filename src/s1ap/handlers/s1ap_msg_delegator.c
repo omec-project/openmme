@@ -295,7 +295,7 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		  nas->elements[5].pti = msg[offset+3];
                   //offset +=1;
 
-		  unsigned char val = *(msg+offset+4);
+		  unsigned char val = *(msg+offset+6);
   		  /*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
 		   * +pdn_type(1)*/
 		  /*element id 13(1101....) = "esm required" flag*/
@@ -737,6 +737,6 @@ handle_s1ap_message(void *msg)
 			header->procedure_code & 0x00FF);
 		break;
 	}
-	//free(msg);
+	free(msg);
 	return;
 }
