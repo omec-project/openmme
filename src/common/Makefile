@@ -33,12 +33,14 @@ JSON_PARSER_LIBNAME = libjson.so
 LOG_LIBNAME = liblog.a
 TPOOL_LIBNAME = libthreadpool.a
 UTIL_LIBNAME = libsecutil.so
+TIMER_LIBNAME = liblocaltimer.so 
 
 IF_SRC=ipc_api.c
 LOG_SRC = log.c
 TPOOL_SRC = thread_pool.c tpool_queue.c
 JSON_PARSER_SRC = json_parser.c
 UTIL_SRC = snow_3g.c f8.c f9.c
+TIMER_SRC = local_timer.c
 
 build_s6a:
 	$(CC) $(CFLAGS) -fPIC -c $(IF_SRC) $(INC_DIRS)
@@ -46,9 +48,11 @@ build_s6a:
 	$(CC) $(CFLAGS) -fPIC -c $(TPOOL_SRC) $(INC_DIRS)
 	$(CC) $(CFLAGS) -fPIC -c $(JSON_PARSER_SRC) $(INC_DIRS)
 	$(CC) $(CFLAGS) -fPIC -c $(UTIL_SRC) $(INC_DIRS)
+	$(CC) $(CFLAGS) -fPIC -c $(TIMER_SRC) $(INC_DIRS)
 	$(CC) $(CFLAGS) ipc_api.o -shared -o $(IF_LIBNAME)
 	$(CC) $(CFLAGS) json_parser.o -shared -o $(JSON_PARSER_LIBNAME)
 	$(CC) $(CFLAGS) snow_3g.o f8.o f9.o -shared -o $(UTIL_LIBNAME)
+	$(CC) $(CFLAGS) local_timer.o -shared -o $(TIMER_LIBNAME)
 	ar rcs $(LOG_LIBNAME) log.o
 	ar rcs $(TPOOL_LIBNAME) thread_pool.o tpool_queue.o
 
