@@ -53,10 +53,28 @@ detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit)
 	/* TODO : Revisit, in InitialContextSetup Request we are sending
 	 * MME UE S1AP Id as M-TMSI.
 	 */
-	if (!retransmit)
-		req.ue_idx = detach_ies->data[0].mme_ue_s1ap_id;
-	else
-		req.ue_idx = ntohl(detach_ies->data[1].nas.elements[0].mi_guti.m_TMSI);
+    for(int i = 0; i < detach_ies->no_of_IEs; i++)
+    {
+        switch(detach_ies->data[i].IE_type)
+        {
+            case S1AP_IE_MME_UE_ID:
+                {
+                    if (!retransmit)
+                    {
+                        req.ue_idx = detach_ies->data[i].val.mme_ue_s1ap_id;
+                    }
+                }break;
+            case S1AP_IE_NAS_PDU:
+                {
+                    if(retransmit)
+                    {
+                        req.ue_idx = ntohl(detach_ies->data[i].val.nas.elements[0].mi_guti.m_TMSI);
+                    }
+                }break;
+            default:
+                log_msg(LOG_WARNING,"Unhandled IE");
+        }
+    }
 
 	write_ipc_channel(ipcHndl_detach, (char *)&req, S1AP_DETACHREQ_STAGE1_BUF_SIZE);
 

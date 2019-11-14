@@ -100,42 +100,42 @@ get_secreq_protoie_value(struct proto_IE *value)
 	value->data = (proto_IEs *) malloc(SEC_MODE_NO_OF_IES *
 			sizeof(proto_IEs));
 
-	value->data[0].mme_ue_s1ap_id = g_secReqInfo->ue_idx;
-	value->data[1].enb_ue_s1ap_id = g_secReqInfo->enb_s1ap_ue_id;
+	value->data[0].val.mme_ue_s1ap_id = g_secReqInfo->ue_idx;
+	value->data[1].val.enb_ue_s1ap_id = g_secReqInfo->enb_s1ap_ue_id;
 
-	value->data[2].nas.header.security_header_type =
+	value->data[2].val.nas.header.security_header_type =
 			IntegrityProtectedEPSSecCntxt;
 
-	value->data[2].nas.header.proto_discriminator =
+	value->data[2].val.nas.header.proto_discriminator =
 			EPSMobilityManagementMessages;
 
 	/* placeholder for mac. mac value will be calculated later */
 	uint8_t mac[MAC_SIZE] = {0};
-	memcpy(value->data[2].nas.header.mac, mac, MAC_SIZE);
+	memcpy(value->data[2].val.nas.header.mac, mac, MAC_SIZE);
 
-	value->data[2].nas.header.seq_no = g_secReqInfo->dl_seq_no;
+	value->data[2].val.nas.header.seq_no = g_secReqInfo->dl_seq_no;
 
-	value->data[2].nas.header.message_type = SecurityModeCommand;
+	value->data[2].val.nas.header.message_type = SecurityModeCommand;
 
-	value->data[2].nas.header.security_encryption_algo = Algo_EEA0;
+	value->data[2].val.nas.header.security_encryption_algo = Algo_EEA0;
 
-	value->data[2].nas.header.security_integrity_algo = Algo_128EIA1;
+	value->data[2].val.nas.header.security_integrity_algo = Algo_128EIA1;
 
 	/* Security Param (1 octet) =
 	 * Spare half octet, Type of Security, NAS KSI
 	 * TODO: Remove hard coded value
 	 */
-	value->data[2].nas.header.nas_security_param = AUTHREQ_NAS_SECURITY_PARAM;
+	value->data[2].val.nas.header.nas_security_param = AUTHREQ_NAS_SECURITY_PARAM;
 
-	value->data[2].nas.elements_len = SEC_MODE_NO_OF_NAS_IES;
+	value->data[2].val.nas.elements_len = SEC_MODE_NO_OF_NAS_IES;
 
-	value->data[2].nas.elements = (nas_pdu_elements *)
+	value->data[2].val.nas.elements = (nas_pdu_elements *)
 			malloc(SEC_MODE_NO_OF_NAS_IES * sizeof(nas_pdu_elements));
 
-	value->data[2].nas.elements->ue_network.len =
+	value->data[2].val.nas.elements->ue_network.len =
 			g_secReqInfo->ue_network.len;
 
-	memcpy(value->data[2].nas.elements->ue_network.capab,
+	memcpy(value->data[2].val.nas.elements->ue_network.capab,
 			g_secReqInfo->ue_network.capab,
 			g_secReqInfo->ue_network.len);
 
@@ -164,7 +164,7 @@ secreq_processing()
 
 	/* id-NAS-PDU */
 	g_sec_nas_buffer.pos = 0;
-	nasPDU nas = s1apPDU.value.data[2].nas;
+	nasPDU nas = s1apPDU.value.data[2].val.nas;
 
 	unsigned char value = (nas.header.security_header_type << 4 |
 			nas.header.proto_discriminator);
@@ -230,7 +230,7 @@ secreq_processing()
 
 	/* TODO need to add proper handling*/
 	unsigned char mme_ue_id[3];
-	datalen = copyU16(mme_ue_id, s1apPDU.value.data[0].mme_ue_s1ap_id);
+	datalen = copyU16(mme_ue_id, s1apPDU.value.data[0].val.mme_ue_s1ap_id);
 	buffer_copy(&g_sec_value_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_sec_value_buffer, mme_ue_id, datalen);
 
@@ -245,7 +245,7 @@ secreq_processing()
 
 	/* TODO needs proper handling*/
 	unsigned char enb_ue_id[3];
-	datalen = copyU16(enb_ue_id, s1apPDU.value.data[1].enb_ue_s1ap_id);
+	datalen = copyU16(enb_ue_id, s1apPDU.value.data[1].val.enb_ue_s1ap_id);
 	buffer_copy(&g_sec_value_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_sec_value_buffer, enb_ue_id, datalen);
 
@@ -288,7 +288,7 @@ secreq_processing()
 	buffer_copy(&g_sec_buffer, &g_sec_value_buffer,
 			g_sec_value_buffer.pos);
 
-	free(s1apPDU.value.data[2].nas.elements);
+	free(s1apPDU.value.data[2].val.nas.elements);
 	free(s1apPDU.value.data);
 	//STIMER_GET_CURRENT_TP(g_attach_stats[s1apPDU.value.data[1].enb_ue_s1ap_id].secreq_out);
 	return SUCCESS;

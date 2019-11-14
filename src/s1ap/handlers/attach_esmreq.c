@@ -99,26 +99,26 @@ get_esmreq_protoie_value(struct proto_IE *value)
 	value->data = (proto_IEs *) malloc(ESM_REQ_NO_OF_IES *
 			sizeof(proto_IEs));
 
-	value->data[0].mme_ue_s1ap_id = g_esmReqInfo->ue_idx;
-	value->data[1].enb_ue_s1ap_id = g_esmReqInfo->enb_s1ap_ue_id;
+	value->data[0].val.mme_ue_s1ap_id = g_esmReqInfo->ue_idx;
+	value->data[1].val.enb_ue_s1ap_id = g_esmReqInfo->enb_s1ap_ue_id;
 
-	value->data[2].nas.header.security_header_type =
+	value->data[2].val.nas.header.security_header_type =
 			IntegrityProtectedCiphered;
 
-	value->data[2].nas.header.proto_discriminator =
+	value->data[2].val.nas.header.proto_discriminator =
 			EPSMobilityManagementMessages;
 
 	/* placeholder for mac. mac value will be calculated later */
 	uint8_t mac[MAC_SIZE] = {0};
-	memcpy(value->data[2].nas.header.mac, mac, MAC_SIZE);
+	memcpy(value->data[2].val.nas.header.mac, mac, MAC_SIZE);
 
-	value->data[2].nas.header.seq_no = g_esmReqInfo->dl_seq_no;
+	value->data[2].val.nas.header.seq_no = g_esmReqInfo->dl_seq_no;
 
-	value->data[2].nas.header.message_type = ESMInformationRequest;
+	value->data[2].val.nas.header.message_type = ESMInformationRequest;
 
 	/* TODO: Remove hardcoded value */
-	value->data[2].nas.header.eps_bearer_identity = 0;
-	value->data[2].nas.header.procedure_trans_identity = g_esmReqInfo->pti;
+	value->data[2].val.nas.header.eps_bearer_identity = 0;
+	value->data[2].val.nas.header.procedure_trans_identity = g_esmReqInfo->pti;
 
 	return SUCCESS;
 }
@@ -145,7 +145,7 @@ esmreq_processing()
 
 	/* id-NAS-PDU */
 	g_esm_nas_buffer.pos = 0;
-	nasPDU nas = s1apPDU.value.data[2].nas;
+	nasPDU nas = s1apPDU.value.data[2].val.nas;
 
 	unsigned char value = (nas.header.security_header_type << 4 |
 			nas.header.proto_discriminator);
@@ -200,7 +200,7 @@ esmreq_processing()
 
 	/* TODO need to add proper handling*/
 	unsigned char mme_ue_id[3];
-	datalen = copyU16(mme_ue_id, s1apPDU.value.data[0].mme_ue_s1ap_id);
+	datalen = copyU16(mme_ue_id, s1apPDU.value.data[0].val.mme_ue_s1ap_id);
 	buffer_copy(&g_esm_value_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_esm_value_buffer, mme_ue_id, datalen);
 
@@ -215,7 +215,7 @@ esmreq_processing()
 
 	/* TODO needs proper handling*/
 	unsigned char enb_ue_id[3];
-	datalen = copyU16(enb_ue_id, s1apPDU.value.data[1].enb_ue_s1ap_id);
+	datalen = copyU16(enb_ue_id, s1apPDU.value.data[1].val.enb_ue_s1ap_id);
 	buffer_copy(&g_esm_value_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_esm_value_buffer, enb_ue_id, datalen);
 

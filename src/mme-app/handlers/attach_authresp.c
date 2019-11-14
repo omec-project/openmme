@@ -46,9 +46,11 @@ extern int g_mme_hdlr_status;
 
 static int g_Q_authresp_fd;
 static int g_Q_secmode_fd;
+static int g_Q_s6a_resync_air_fd;
 
 /*Making global just to avoid stack passing*/
 static char buf[S1AP_AUTHRESP_STAGE3_BUF_SIZE];
+static struct s6a_Q_msg s6a_air_resync_req;
 
 extern uint32_t attach_stage3_counter;
 
@@ -76,6 +78,14 @@ init_stage()
 		pthread_exit(NULL);
 	}
 	log_msg(LOG_INFO, "Stage 3 writer - s1ap Security mode cmd: Connected\n");
+	
+    g_Q_s6a_resync_air_fd = open_ipc_channel(S6A_REQ_STAGE1_QUEUE, IPC_WRITE);
+
+	if (g_Q_s6a_resync_air_fd == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel: S6A - AIR\n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "Stage1 writer - AIR: Connected\n");
 	return;
 }
 
@@ -112,11 +122,25 @@ stage3_processing()
 	struct authresp_Q_msg *auth_resp = (struct authresp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(auth_resp->ue_idx);
 
+	ue_entry->ue_state = STAGE3_WAITING;
 	/*Check the state*/
 	if(SUCCESS != auth_resp->status) {
-		log_msg(LOG_ERROR, "eNB authentication failure for UE %d",
+		log_msg(LOG_INFO, "eNB authentication failure for UE %d",
 			auth_resp->ue_idx);
-		return E_FAIL;//report failure
+        if(auth_resp->auts.len == 0)
+        {
+            log_msg(LOG_ERROR,"No AUTS. Not Synch failure");
+		    return E_FAIL;//report failure
+        }
+        else
+        {
+            log_msg(LOG_INFO,"AUTS recvd.  Synch failure. send AIR");
+            memcpy(&(s6a_air_resync_req.imsi), &(ue_entry->IMSI), BINARY_IMSI_LEN);
+            memcpy(&(s6a_air_resync_req.tai), &(ue_entry->tai), sizeof(struct TAI));
+            memcpy(&(s6a_air_resync_req.auts), &(auth_resp->auts), sizeof(struct AUTS));
+            s6a_air_resync_req.ue_idx = auth_resp->ue_idx;
+            ue_entry->ue_state = ATTACH_STAGE1_RESYNC;
+        }   
 	}
 #if 0
 	log_msg(LOG_ERROR, "stage 3 processing memcmp - %d, %d, %d", &(ue_entry->aia_sec_info->xres.val),
@@ -133,7 +157,6 @@ stage3_processing()
 	log_msg(LOG_INFO, "Stage 3: Auth resp done for UE: %d\n",
 		auth_resp->ue_idx);
 
-	ue_entry->ue_state = STAGE3_WAITING;
 	/*Ready post to next processing*/
 	return SUCCESS;
 }
@@ -148,26 +171,38 @@ post_to_next()
 	struct authresp_Q_msg *authresp = (struct authresp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(authresp->ue_idx);
 
-	sec_mode_msg.ue_idx = authresp->ue_idx;
-	sec_mode_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
-	memcpy(&(sec_mode_msg.ue_network), &(ue_entry->ue_net_capab),
-		sizeof(struct UE_net_capab));
+	if(STAGE3_WAITING == ue_entry->ue_state)
+    {
+        sec_mode_msg.ue_idx = authresp->ue_idx;
+        sec_mode_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+        memcpy(&(sec_mode_msg.ue_network), &(ue_entry->ue_net_capab),
+               sizeof(struct UE_net_capab));
 
-	memcpy(&(sec_mode_msg.key), &(ue_entry->aia_sec_info->kasme),
-		sizeof(struct KASME));
+        memcpy(&(sec_mode_msg.key), &(ue_entry->aia_sec_info->kasme),
+               sizeof(struct KASME));
 
-	memcpy(&(sec_mode_msg.int_key), &(ue_entry->ue_sec_info.int_key),
-			NAS_INT_KEY_SIZE);
+        memcpy(&(sec_mode_msg.int_key), &(ue_entry->ue_sec_info.int_key),
+               NAS_INT_KEY_SIZE);
 
-	sec_mode_msg.dl_seq_no = ue_entry->dl_seq_no++;
+        sec_mode_msg.dl_seq_no = ue_entry->dl_seq_no++;
 
-	sec_mode_msg.enb_fd = ue_entry->enb_fd;
+        sec_mode_msg.enb_fd = ue_entry->enb_fd;
 
-	write_ipc_channel(g_Q_secmode_fd, (char *)&(sec_mode_msg), S1AP_SECREQ_STAGE3_BUF_SIZE);
-	log_msg(LOG_INFO, "Sec mode msg posted to s1ap Q UE-%d.\n",
-		authresp->ue_idx);
+        write_ipc_channel(g_Q_secmode_fd, (char *)&(sec_mode_msg), S1AP_SECREQ_STAGE3_BUF_SIZE);
+        log_msg(LOG_INFO, "Sec mode msg posted to s1ap Q UE-%d.\n",
+                authresp->ue_idx);
 
-	attach_stage3_counter++;
+        attach_stage3_counter++;
+    }
+    else if(ATTACH_STAGE1_RESYNC == ue_entry->ue_state)
+    {
+        log_msg(LOG_INFO, "AIR Resync stage for UE-%d.\n", authresp->ue_idx);
+        write_ipc_channel(g_Q_s6a_resync_air_fd, (char *)&(s6a_air_resync_req), S6A_REQ_Q_MSG_SIZE);
+    }
+    else
+    {
+        log_msg(LOG_ERROR, "Wrong stage for UE-%d.\n", authresp->ue_idx);
+    }
 	return SUCCESS;
 }
 
@@ -179,6 +214,7 @@ shutdown_stage3()
 {
 	close_ipc_channel(g_Q_secmode_fd);
 	close_ipc_channel(g_Q_authresp_fd);
+	close_ipc_channel(g_Q_s6a_resync_air_fd);
 	log_msg(LOG_INFO, "Shutdown Stage 3 handler \n");
 	pthread_exit(NULL);
 	return;
