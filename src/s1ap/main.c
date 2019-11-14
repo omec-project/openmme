@@ -77,6 +77,47 @@ struct time_stat g_attach_stats[65535];
 #define MAX_ENB     10
 #define BUFFER_LEN  1024
 
+char *msg_to_hex_str(const char *msg, int len, char **buffer) {
+
+  char chars[]= "0123456789abcdef";
+  char *local;
+
+  if (!len)
+      return NULL;
+
+  if (!((*buffer) = (char *)malloc(2 * len + 1)))
+      return NULL;
+
+  local = *buffer;
+  for (int i = 0; i < len; i++) {
+      local[2 * i] = chars[(msg[i] >> 4) & 0x0F];
+      local[2 * i + 1] = chars[(msg[i]) & 0x0F];
+  }
+  local[2 * len] = '\0';
+
+  return local;
+}
+
+unsigned short get_length(char **msg) {
+    /* get length and consume msg bytes accordingly */
+
+    unsigned short ie_len = 0;
+
+    unsigned char val = ((*msg)[0] & 0xc0) >> 6;
+    if(val == 2) {
+        //log_msg(LOG_INFO, "length more than 128\n");
+        unsigned short higher = (unsigned char)(*msg)[0] & 0x3f;
+        (*msg)++;
+        unsigned short lower = (unsigned char)(*msg)[0];
+        ie_len = (higher << 8) | lower;
+    } else {
+        //log_msg(LOG_INFO, "length less than 128\n");
+        ie_len = (unsigned short)(*msg)[0];
+    }
+    (*msg)++;
+    return ie_len;
+}
+
 /**
  * @brief Decode int value from the byte array received in the s1ap incoming
  * packet.

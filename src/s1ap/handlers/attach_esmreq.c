@@ -270,7 +270,7 @@ esmreq_processing()
 static int
 post_to_next()
 {
-	send_sctp_msg(g_esmReqInfo->enb_fd, g_esm_buffer.buf, g_esm_buffer.pos);
+	send_sctp_msg(g_esmReqInfo->enb_fd, g_esm_buffer.buf, g_esm_buffer.pos, 1);
 	log_msg(LOG_INFO, "\n-----Stage4 completed.---\n");
 
 	return SUCCESS;

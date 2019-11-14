@@ -519,6 +519,26 @@ typedef enum security_header_type {
     IntegrityProtectedEPSSecCntxt,
 }security_header_type;
 
+typedef struct nas_pdu_header_sec {
+        unsigned char security_header_type:4;
+        unsigned char proto_discriminator:4;
+        unsigned char mac[MAC_SIZE];
+        unsigned char seq_no;
+}nas_pdu_header_sec;
+
+typedef struct nas_pdu_header_short {
+        unsigned char security_header_type:4;
+        unsigned char proto_discriminator:4;
+        unsigned char message_type;
+}nas_pdu_header_short;
+
+typedef struct nas_pdu_header_long {
+        unsigned char security_header_type:4;
+        unsigned char proto_discriminator:4;
+        unsigned char procedure_trans_identity;
+        unsigned char message_type;
+}nas_pdu_header_long;
+
 /* NAS Security Encryption Algorithm */
 typedef enum security_encryption_algo {
 	Algo_EEA0 = 0,

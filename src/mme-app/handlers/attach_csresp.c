@@ -178,6 +178,7 @@ post_to_next()
 	/*Call DUMMY MB funcion*/
 	//test: send_dummy_mbr();
 	attach_stage6_counter++;
+	log_msg(LOG_INFO, "Post for s1ap processing - stage 6. SUCCESS\n");
 	return SUCCESS;
 }
 

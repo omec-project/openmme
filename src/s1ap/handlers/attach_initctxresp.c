@@ -41,9 +41,15 @@ s1_init_ctx_resp_handler(char *msg)
 	struct proto_IE s1_ics_ies;
 	struct initctx_resp_Q_msg ics_resp;
 
+	unsigned short msg_len = get_length(&msg);
+
+	char *buffer;
+	log_msg(LOG_INFO, "S1AP_INITIAL_CTX_RESP msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
+	free(buffer);
+
 	/*****Message structure****/
 	log_msg(LOG_INFO, "Parse int ctx s1ap response message:--\n");
-	parse_IEs(msg+2, &s1_ics_ies, S1AP_INITIAL_CTX_RESP_CODE);
+	parse_IEs(msg, &s1_ics_ies, S1AP_INITIAL_CTX_RESP_CODE);
 
 	ics_resp.ue_idx = s1_ics_ies.data[0].mme_ue_s1ap_id;
 	ics_resp.transp_layer_addr = s1_ics_ies.data[2].erab.elements[0].su_res.transp_layer_addr;

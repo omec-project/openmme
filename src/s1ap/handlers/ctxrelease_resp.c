@@ -41,9 +41,13 @@ s1_ctx_release_resp_handler(char *msg)
 	struct ctx_release_complete_Q_msg release_complete;
 	struct proto_IE s1_ctx_release_ies;
 
-	log_msg(LOG_INFO, "Parse s1ap context release complete message:--\n");
+	unsigned short msg_len = get_length(&msg);
 
-	parse_IEs(msg+2, &s1_ctx_release_ies, S1AP_UE_CTX_RELEASE_CODE);
+	char *buffer;
+	log_msg(LOG_INFO, "S1AP_UE_CTX_RELEASE msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
+	free(buffer);
+
+	parse_IEs(msg, &s1_ctx_release_ies, S1AP_UE_CTX_RELEASE_CODE);
 
 	/*TODO: Validate all eNB info*/
 
