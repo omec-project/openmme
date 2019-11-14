@@ -130,20 +130,20 @@ get_icsreq_protoie_value(struct proto_IE *value)
 	value->data = (proto_IEs *) malloc(ICS_REQ_NO_OF_IES *
 			sizeof(proto_IEs));
 
-	value->data[ieCnt].mme_ue_s1ap_id = g_icsReqInfo->ue_idx;
+	value->data[ieCnt].val.mme_ue_s1ap_id = g_icsReqInfo->ue_idx;
 	ieCnt++;
 
-	value->data[ieCnt].enb_ue_s1ap_id = g_icsReqInfo->enb_s1ap_ue_id;
+	value->data[ieCnt].val.enb_ue_s1ap_id = g_icsReqInfo->enb_s1ap_ue_id;
 	ieCnt++;
 
-	value->data[ieCnt].ue_aggrt_max_bit_rate.uEaggregateMaxBitRateDL =
+	value->data[ieCnt].val.ue_aggrt_max_bit_rate.uEaggregateMaxBitRateDL =
 			g_icsReqInfo->exg_max_dl_bitrate;
-	value->data[ieCnt].ue_aggrt_max_bit_rate.uEaggregateMaxBitRateUL =
+	value->data[ieCnt].val.ue_aggrt_max_bit_rate.uEaggregateMaxBitRateUL =
 				g_icsReqInfo->exg_max_ul_bitrate;
 	ieCnt++;
 
 	/* E-RABToBeSetupItemCtxtSUReq start */
-	ERABSetup *e_rab = &(value->data[ieCnt].E_RABToBeSetupItemCtxtSUReq);
+	ERABSetup *e_rab = &(value->data[ieCnt].val.E_RABToBeSetupItemCtxtSUReq);
 	/* TODO: Remove hardcoded values. */
 	e_rab->e_RAB_ID = 1;
 	e_rab->e_RAB_QoS_Params.qci = 9;
@@ -252,7 +252,7 @@ get_icsreq_protoie_value(struct proto_IE *value)
 			SECURITY_KEY_SIZE);
 	*/
 
-	memcpy(value->data[ieCnt].sec_key, g_icsReqInfo->sec_key,
+	memcpy(value->data[ieCnt].val.sec_key, g_icsReqInfo->sec_key,
 			SECURITY_KEY_SIZE);
 
 	ieCnt++;
@@ -324,7 +324,7 @@ icsreq_processing()
 	datalen = 2;
 	/* TODO need to add proper handling*/
 	unsigned char mme_ue_id[3];
-	datalen = copyU16(mme_ue_id, s1apPDU.value.data[0].mme_ue_s1ap_id);
+	datalen = copyU16(mme_ue_id, s1apPDU.value.data[0].val.mme_ue_s1ap_id);
 	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_ics_buffer, mme_ue_id, datalen);
 
@@ -336,7 +336,7 @@ icsreq_processing()
 					sizeof(protocolIe_criticality));
 	/* TODO needs proper handling*/
 	unsigned char enb_ue_id[3];
-	datalen = copyU16(enb_ue_id, s1apPDU.value.data[1].enb_ue_s1ap_id);
+	datalen = copyU16(enb_ue_id, s1apPDU.value.data[1].val.enb_ue_s1ap_id);
 	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
 	buffer_copy(&g_ics_buffer, enb_ue_id, datalen);
 
@@ -373,7 +373,7 @@ icsreq_processing()
 
 
 	/* id-E-RABToBeSetupListCtxtSUReq */
-	ERABSetup *erab = &(s1apPDU.value.data[3].E_RABToBeSetupItemCtxtSUReq);
+	ERABSetup *erab = &(s1apPDU.value.data[3].val.E_RABToBeSetupItemCtxtSUReq);
 	protocolIe_Id = id_ERABToBeSetupListCtxtSUReq;
 	copyU16(tmpStr, protocolIe_Id);
 	buffer_copy(&g_ics_buffer, tmpStr, sizeof(protocolIe_Id));
@@ -501,19 +501,12 @@ icsreq_processing()
 			sizeof(ies[3].esm_msg.eps_qos));
 
 	/* apn */
-	{
 	char apn_name[25]={};
-	//apn_name[0]=0x04;
-	/*strncpy(apn_name, (char *)ies[3].esm_msg.apn.val, ies[3].esm_msg.apn.len);
-	strcat(apn_name+1, ".mnc010.mcc208.gprs"); //TODO: code like engineer*/
-	strncpy(apn_name, " apn", sizeof(" apn"));
-	strcat(apn_name, ".TestNetwork");
-	datalen =24;// ies[3].esm_msg.apn.len;
+	strncpy(apn_name, (char *)ies[3].esm_msg.apn.val, ies[3].esm_msg.apn.len);
+	datalen = ies[3].esm_msg.apn.len;
 	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
-	//buffer_copy(&g_ics_buffer, ies[3].esm_msg.apn.val, datalen);
-	buffer_copy(&g_ics_buffer, apn_name, datalen);
-	}
-
+	buffer_copy(&g_ics_buffer, (char *)ies[3].esm_msg.apn.val, datalen);
+	
 	/* pdn address */
 	//datalen = sizeof(ies[3].esm_msg.pdn_addr);
 	datalen = 5; //sizeof(ies[3].esm_msg.pdn_addr);
@@ -626,7 +619,7 @@ icsreq_processing()
 					sizeof(protocolIe_criticality));
 	datalen = SECURITY_KEY_SIZE;
 	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
-	buffer_copy(&g_ics_buffer, s1apPDU.value.data[5].sec_key,
+	buffer_copy(&g_ics_buffer, s1apPDU.value.data[5].val.sec_key,
 					SECURITY_KEY_SIZE);
 
 
@@ -637,7 +630,7 @@ icsreq_processing()
 	/* TODO: temp fix */
 	g_ics_buffer.buf[1] = 0x09;
 
-	free(s1apPDU.value.data[3].E_RABToBeSetupItemCtxtSUReq.nas.elements);
+	free(s1apPDU.value.data[3].val.E_RABToBeSetupItemCtxtSUReq.nas.elements);
 	free(s1apPDU.value.data);
 	return SUCCESS;
 }

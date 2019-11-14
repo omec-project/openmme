@@ -27,6 +27,7 @@ struct authresp_Q_msg {
 	int ue_idx;
 	int status;
 	struct XRES res;
+	struct AUTS auts;
 	//struct TAI tai;
 	//TODO: need to pass enb ue id for validation?
 };

@@ -36,24 +36,37 @@ extern int g_enb_fd;
 extern ipc_handle ipcHndl_icsresp;
 
 int
-s1_init_ctx_resp_handler(char *msg)
+s1_init_ctx_resp_handler(SuccessfulOutcome_t *msg)
 {
 	struct proto_IE s1_ics_ies;
 	struct initctx_resp_Q_msg ics_resp;
 
-	unsigned short msg_len = get_length(&msg);
-
-	char *buffer;
-	log_msg(LOG_INFO, "S1AP_INITIAL_CTX_RESP msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
-	free(buffer);
-
 	/*****Message structure****/
 	log_msg(LOG_INFO, "Parse int ctx s1ap response message:--\n");
-	parse_IEs(msg, &s1_ics_ies, S1AP_INITIAL_CTX_RESP_CODE);
+    convertInitCtxRspToProtoIe(msg, &s1_ics_ies);
 
-	ics_resp.ue_idx = s1_ics_ies.data[0].mme_ue_s1ap_id;
-	ics_resp.transp_layer_addr = s1_ics_ies.data[2].erab.elements[0].su_res.transp_layer_addr;
-	ics_resp.gtp_teid = s1_ics_ies.data[2].erab.elements[0].su_res.gtp_teid;
+    for(int i = 0; i < s1_ics_ies.no_of_IEs; i++)
+    {
+        switch(s1_ics_ies.data[i].IE_type)
+        {
+            case S1AP_IE_MME_UE_ID:
+                {
+	                ics_resp.ue_idx = s1_ics_ies.data[i].val.mme_ue_s1ap_id;
+                }break;
+            case S1AP_ERAB_SETUP_CTX_SUR:
+                {
+                    for(int j = 0; j < s1_ics_ies.data[i].val.erab.no_of_elements; j++)
+                    {
+                        /*TBD: Handle multiple erabs in ics rsp*/
+	                    ics_resp.transp_layer_addr = s1_ics_ies.data[i].val.erab.elements[j].su_res.transp_layer_addr;
+	                    ics_resp.gtp_teid = s1_ics_ies.data[i].val.erab.elements[j].su_res.gtp_teid;
+                        break;
+                    }
+                }break;
+            default:
+                log_msg(LOG_WARNING,"Unhandled IE");
+        }
+    }
 
 	int i = write_ipc_channel(ipcHndl_icsresp, (char *)&ics_resp, S1AP_ICSRESP_STAGE7_BUF_SIZE);
 

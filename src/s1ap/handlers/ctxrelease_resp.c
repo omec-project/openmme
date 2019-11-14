@@ -36,22 +36,16 @@ extern int g_enb_fd;
 extern ipc_handle ipcHndl_ctx_release_complete;
 
 int
-s1_ctx_release_resp_handler(char *msg)
+s1_ctx_release_resp_handler(InitiatingMessage_t *msg)
 {
 	struct ctx_release_complete_Q_msg release_complete;
 	struct proto_IE s1_ctx_release_ies;
 
-	unsigned short msg_len = get_length(&msg);
-
-	char *buffer;
-	log_msg(LOG_INFO, "S1AP_UE_CTX_RELEASE msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
-	free(buffer);
-
-	parse_IEs(msg, &s1_ctx_release_ies, S1AP_UE_CTX_RELEASE_CODE);
+    convertToInitUeProtoIe(msg, &s1_ctx_release_ies);
 
 	/*TODO: Validate all eNB info*/
 
-	release_complete.ue_idx = s1_ctx_release_ies.data[0].mme_ue_s1ap_id;
+	release_complete.ue_idx = s1_ctx_release_ies.data[0].val.mme_ue_s1ap_id;
 
 	int i = 0;
 	i = write_ipc_channel(ipcHndl_ctx_release_complete,

@@ -23,21 +23,36 @@
 #include "s1ap_structs.h"
 #include "log.h"
 #include "s1ap_ie.h"
+#include "InitiatingMessage.h"
+#include "SuccessfulOutcome.h"
+#include "UnsuccessfulOutcome.h"
 
 int
-s1_init_ctx_resp_handler(char *msg);
+s1_init_ctx_resp_handler(SuccessfulOutcome_t *msg);
 
 int
 parse_IEs(char *msg, struct proto_IE *proto_ies, unsigned short proc_code);
 
+int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies);
+int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies);
+int convertInitCtxRspToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_ies);
 int
-s1_setup_handler(char *msg, int enb_fd);
+s1_setup_handler(InitiatingMessage_t *msg, int enb_fd);
 
 int
 s1_init_ue_handler(struct proto_IE *s1_init_ies, int enb_fd);
 
 void
 handle_s1ap_message(void *message);
+
+int
+s1ap_mme_decode_initiating (InitiatingMessage_t *initiating_p, int enb_fd);
+
+int
+s1ap_mme_decode_successfull_outcome (SuccessfulOutcome_t *initiating_p);
+
+int
+s1ap_mme_decode_unsuccessfull_outcome (UnsuccessfulOutcome_t *initiating_p);
 
 int
 init_s1ap();
@@ -53,6 +68,7 @@ int s1_esm_resp_handler(struct proto_IE *s1_esm_resp_ies);
 int s1_secmode_resp_handler(struct proto_IE *s1_sec_resp_ies);
 
 int s1_auth_resp_handler(struct proto_IE *s1_auth_resp_ies);
+int s1_auth_fail_handler(struct proto_IE *s1_auth_resp_ies);
 
 int s1_attach_complete_handler(struct proto_IE *s1_esm_resp_ies);
 
@@ -60,7 +76,7 @@ int
 detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit);
 
 int
-s1_ctx_release_resp_handler(char *msg);
+s1_ctx_release_resp_handler(InitiatingMessage_t *msg);
 
 int
 copyU16(unsigned char *buffer, uint32_t val);

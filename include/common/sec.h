@@ -43,6 +43,11 @@ typedef struct XRES {
 	unsigned char val[AIA_RES_SIZE];
 } XRES;
 
+typedef struct AUTS {
+	unsigned char len;
+	unsigned char val[AIA_AUTS_SIZE];
+} AUTS;
+
 typedef struct AUTN {
 	unsigned char len;
 	unsigned char val[AIA_AUTN_SIZE];
