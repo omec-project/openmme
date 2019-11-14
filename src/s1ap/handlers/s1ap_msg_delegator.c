@@ -624,18 +624,14 @@ init_ue_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 	//TODO: use static instead of synamic for perf.
 	struct proto_IE proto_ies;
 
-	unsigned short msg_len = get_length(&msg);
-
-	char *buffer = NULL;
-	log_msg(LOG_INFO, "S1AP_INITIAL_UE_MSG msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
-	log_buffer_free(&buffer);
+	log_msg(LOG_INFO, "S1AP_INITIAL_UE_MSG msg: \n");
 
     convertToInitUeProtoIe(msg, &proto_ies);
 	/*Check nas message type*/
 	//TODO: check through all proto IEs for which is nas
 	//currentlyy hard coding to 2 looking at packets
 	log_msg(LOG_INFO, "NAS msg type parsed = %x\n", proto_ies.data[1].val.nas.header.message_type);
-	switch(proto_ies.data[1].nas.header.message_type) {
+	switch(proto_ies.data[1].val.nas.header.message_type) {
 	case NAS_ATTACH_REQUEST:
 		s1_init_ue_handler(&proto_ies, enb_fd);
 		break;
@@ -656,11 +652,7 @@ UL_NAS_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 	//TODO: use static instead of synamic for perf.
 	struct proto_IE proto_ies;
 
-	unsigned short msg_len = get_length(&msg);
-
-	char *buffer = NULL;
-	log_msg(LOG_INFO, "S1AP_UL_NAS_TX_MSG msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
-	log_buffer_free(&buffer);
+	log_msg(LOG_INFO, "S1AP_UL_NAS_TX_MSG msg \n");
 
     convertUplinkNasToProtoIe(msg, &proto_ies);
 
@@ -1065,9 +1057,3 @@ int convertInitCtxRspToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_
     return 0;
 }
 
-void log_buffer_free(char** buffer)
-{
-    if(*buffer != NULL)
-        free(*buffer);
-    *buffer = NULL;
-}

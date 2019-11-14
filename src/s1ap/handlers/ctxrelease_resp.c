@@ -41,16 +41,6 @@ s1_ctx_release_resp_handler(InitiatingMessage_t *msg)
 	struct ctx_release_complete_Q_msg release_complete;
 	struct proto_IE s1_ctx_release_ies;
 
-	unsigned short msg_len = get_length(&msg);
-
-	char *buffer = NULL;
-	log_msg(LOG_INFO, "S1AP_UE_CTX_RELEASE msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
-	if(buffer)
-    {
-        free(buffer);
-        buffer = NULL;
-    }
-
     convertToInitUeProtoIe(msg, &s1_ctx_release_ies);
 
 	/*TODO: Validate all eNB info*/

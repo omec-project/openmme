@@ -41,12 +41,6 @@ s1_init_ctx_resp_handler(SuccessfulOutcome_t *msg)
 	struct proto_IE s1_ics_ies;
 	struct initctx_resp_Q_msg ics_resp;
 
-	unsigned short msg_len = get_length(&msg);
-
-	char *buffer;
-	log_msg(LOG_INFO, "S1AP_INITIAL_CTX_RESP msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
-	free(buffer);
-
 	/*****Message structure****/
 	log_msg(LOG_INFO, "Parse int ctx s1ap response message:--\n");
     convertInitCtxRspToProtoIe(msg, &s1_ics_ies);
