@@ -23,21 +23,21 @@
 #include <stdbool.h>
 
 #include "log.h"
-bool g_nolog = false;
-enum log_levels g_log_level = LOG_WARNING;
 
-static const char *log_level_name[] = { "INFO", "DEBUG", "WARN", "ERROR" };
+#ifndef LOG_LEVEL
+#define LOG_LEVEL LOG_WARNING
+#endif
+
+static const char *log_level_name[] = { "DEBUG", "INFO", "WARN", "ERROR" };
 
 void log_message(int l, const char *file, int line, const char *fmt, ...)
 {
 	va_list arg;
-	if (g_nolog) return;
-	if(g_log_level > l) return;
+	if(LOG_LEVEL > l) return;
 
 	fprintf(stderr,"%s-%s:%d:", log_level_name[l], file, line);
 	va_start(arg, fmt);
 	vfprintf(stderr, fmt, arg);
 	va_end(arg);
-//	fprintf(stderr, "\n");
 }
 

@@ -23,16 +23,15 @@ extern "C"{
 #endif
 
 enum log_levels{
-	LOG_INFO,
 	LOG_DEBUG,
+	LOG_INFO,
 	LOG_WARNING,
 	LOG_ERROR,
+	LOG_NEVER 
 };
 
 void log_message(int l, const char *file, int line, const char *fmt, ...);
-//#define log_msg(LOG_LEVEL, ARGS) set_log(#LOG_LEVEL, __FILE__, __LINE__, __VA_ARGS__)
-#define log_msg(LOG_LEVEL, ...) log_message( LOG_LEVEL, __FILE__, __LINE__,  __VA_ARGS__)
-//#define log_msg(LOG_LEVEL, ...) ;
+#define log_msg(LOG_LEVEL, ...) log_message(LOG_LEVEL, __FILE__, __LINE__,  __VA_ARGS__)
 
 #ifdef __cplusplus
 }
