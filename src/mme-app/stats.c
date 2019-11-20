@@ -42,6 +42,7 @@ void* stat_report(void *data)
 {
 	while(1)  {
 
+#if 0
 		printf("\033[H\033[J");
 
 		printf("Atch_Stg1       Atch_Stg2       Atch_Stg3       Atch_Stg4       Atch_Stg5       Atch_Stg6       Atch_Stg7       Atch_Stg8\n\n");
@@ -54,6 +55,7 @@ void* stat_report(void *data)
 
 		printf("Dtch_Stg1       Dtch_Stg2       Dtch_Stg3\n\n");
 		printf("%8u        %8u        %8u\n",detach_stage1_counter,detach_stage2_counter,detach_stage3_counter);
+#endif
 		sleep(3);
 
 	}

@@ -35,7 +35,7 @@
 #include "message_queues.h"
 
 /*Globals and externs*/
-extern mme_config g_mme_cfg;
+mme_config g_mme_cfg;
 
 /*List of UEs attached to MME*/
 struct UE_info* g_UE_list[UE_POOL_SIZE];
@@ -205,6 +205,7 @@ init_stage_handlers()
 	return SUCCESS;
 }
 
+
 /**
  * @brief MME-app main function.
  * @param None
@@ -213,8 +214,7 @@ init_stage_handlers()
 int main()
 {
 	/*Read MME configurations*/
-	init_parser("conf/mme.json");
-	parse_mme_conf();
+    mme_parse_config(&g_mme_cfg); 
 
 	/*Initialize MME*/
 	init_mme();
@@ -226,11 +226,25 @@ int main()
 	stat_init();
 #endif
 
+	log_msg(LOG_INFO, "Register for config Triggers \n");
+    register_config_updates();
+
 	log_msg(LOG_INFO, "MME connections are ready. Start other dependent"\
 			"processess s1ap, s6a, s11...)\n");
+
 
 	/*Start main thread*/
 	start_mme();
 
 	return SUCCESS;
 }
+
+void mme_parse_config(mme_config *config)
+{
+	/*Read MME configurations*/
+	init_parser("conf/mme.json");
+	parse_mme_conf(config);
+    /* Lets apply logging setting */
+    set_logging_level(config->logging);
+}
+
