@@ -37,6 +37,8 @@ uint32_t detach_stage1_counter = 0;
 uint32_t detach_stage2_counter = 0;
 uint32_t detach_stage3_counter = 0;
 
+uint32_t paging_counter = 0;
+
 
 void* stat_report(void *data)
 {
@@ -56,6 +58,9 @@ void* stat_report(void *data)
 		printf("%8u        %8u        %8u\n",detach_stage1_counter,detach_stage2_counter,detach_stage3_counter);
 		sleep(3);
 
+		printf("paging\n\n");
+		printf("%8u\n",paging_counter);
+		sleep(3);
 	}
 
 	return NULL;
