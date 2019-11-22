@@ -17,8 +17,6 @@
 
 #include<stdio.h>
 #include<unistd.h>
-#include "s11.h"
-#include "s1ap.h"
 
 int
 start_mme()

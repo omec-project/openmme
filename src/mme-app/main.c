@@ -33,6 +33,7 @@
 #include "hash.h"
 #include "ipc_api.h"
 #include "message_queues.h"
+#include "local_timer.h"
 
 /*Globals and externs*/
 extern mme_config g_mme_cfg;
@@ -205,6 +206,19 @@ init_stage_handlers()
 	return SUCCESS;
 }
 
+void mme_tick_timer(void *data)
+{
+    // start timer again.. we dont support multi-shot timer
+    // if we want timer to fire again the start the timer again
+    static int count;
+    time_t t = time(NULL);
+    /* want to keep this code to just make sure time is working fine */
+    log_msg(LOG_INFO, "MME timer callback called Count %d Time %lu ", count++, t);
+    fflush(NULL); /* I dont know why..logs are not coming immediately. */
+    start_timer(10, mme_tick_timer, NULL);
+    return;
+}
+
 /**
  * @brief MME-app main function.
  * @param None
@@ -216,8 +230,15 @@ int main()
 	init_parser("conf/mme.json");
 	parse_mme_conf();
 
+    /* Initlaize timer lib. */
+    init_timer_lib();
+
+    /* Start Tick timer..*/
+    start_timer(10, mme_tick_timer, NULL);
+
 	/*Initialize MME*/
 	init_mme();
+
 
 	/*Initialize workers*/
 	init_stage_handlers();
