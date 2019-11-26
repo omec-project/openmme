@@ -41,6 +41,8 @@ uint32_t detach_stage3_counter = 0;
 void* stat_report(void *data)
 {
 	while(1)  {
+#if 0
+// want to disable stats for time being..Its taking all log space
 
 		printf("\033[H\033[J");
 
@@ -54,6 +56,7 @@ void* stat_report(void *data)
 
 		printf("Dtch_Stg1       Dtch_Stg2       Dtch_Stg3\n\n");
 		printf("%8u        %8u        %8u\n",detach_stage1_counter,detach_stage2_counter,detach_stage3_counter);
+#endif
 		sleep(3);
 
 	}
