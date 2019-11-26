@@ -20,6 +20,7 @@
 struct paging_Q_msg {
 	int ue_idx;
 	unsigned char IMSI[BINARY_IMSI_LEN];
+	struct TAI tai;
 };
 
 #define S1AP_PAGING_INFO_BUF_SIZE sizeof(struct paging_Q_msg)

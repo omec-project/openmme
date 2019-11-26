@@ -103,9 +103,10 @@ read_next_msg()
 static int
 DDN_processing()
 {
-/*
+#ifdef UNCOMMENT_WHEN_S11_DDN_IS_DONE
+
 	struct DDN_Q_msg *ddn_info = (struct DDN_Q_msg *)buf;
-*/
+
 	struct UE_info *ue_entry ;/* =  GET_UE_ENTRY(ddn_info->ue_idx);*/
 
 	/*Change UE state */
@@ -114,6 +115,7 @@ DDN_processing()
 	/*Collect information for next processing*/
 
 	/*post to next processing*/
+#endif /*UNCOMMENT_WHEN_S11_DDN_IS_DONE*/
 	return SUCCESS;
 }
 
@@ -123,6 +125,9 @@ DDN_processing()
 static int
 post_to_next()
 {
+
+#ifdef UNCOMMENT_WHEN_S11_DDN_IS_DONE
+
 /*
 	struct DDN_Q_msg *ddn_info = (struct DDN_Q_msg *)buf;
 */
@@ -134,7 +139,11 @@ post_to_next()
 	paging_msg.ue_idx = 0;/* ddn_info->ue_idx;*/
 	memcpy(&(paging_msg.IMSI), &(ue_entry->IMSI), BINARY_IMSI_LEN);
 
+	/*TODO: Add TAI information in paging message*/
+
 	write_ipc_channel(g_Q_paging_fd, (char *)&(paging_msg), S1AP_PAGING_INFO_BUF_SIZE);
+
+#endif /*UNCOMMENT_WHEN_S11_DDN_IS_DONE*/
 
 	log_msg(LOG_INFO, "Post for paging processing. SUCCESS\n");
 	return SUCCESS;

@@ -89,18 +89,22 @@ read_next_msg()
 static int
 paging_processing()
 {
-struct s1ap_PDU s1apPDU;
-
 	g_paging_buf = (struct paging_Q_msg *) buf;
+#ifdef REPLACE_WITH_S1AP_ENCODING_DONE
+	struct s1ap_PDU s1apPDU;
+
 	ProtocolIE_Container_129P22_t paging_buf;
 	PagingIEs_t *paging_ie = NULL;
 
 	paging_buf.list.count = 1;
 	
-	paging_ie = &(paging_buf.list.array[0]);
+	//paging_ie = &(paging_buf.list.array[0]);
 
 	paging_ie->id = ProtocolIE_ID_id_UEPagingID;
 
+	/*TODO : Write code for encoding Paging s1ap API*/
+
+#endif /*REPLACE_WITH_S1AP_ENCODING_DONE*/
 	return SUCCESS;
 }
 
@@ -110,7 +114,8 @@ struct s1ap_PDU s1apPDU;
 static int
 post_to_next()
 {
-//	send_sctp_msg(g_authreqInfo->enb_fd, g_buffer.buf, g_buffer.pos, 1);
+/*TODO : uncomment this to send message when s1ap encoding is done.
+	send_sctp_msg(g_authreqInfo->enb_fd, g_buffer.buf, g_buffer.pos, 1);*/
 	log_msg(LOG_INFO, "\n-----Paging request completed.---\n");
 	return SUCCESS;
 }
