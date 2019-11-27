@@ -60,6 +60,7 @@ ipc_handle ipcHndl_smc;
 ipc_handle ipcHndl_esm;
 ipc_handle ipcHndl_ics;
 ipc_handle ipcHndl_detach_accept;
+ipc_handle ipcHndl_paging;
 
 ipc_handle ipcHndl_sctpsend_reader;
 ipc_handle ipcHndl_sctpsend_writer;
@@ -70,6 +71,7 @@ pthread_t esmReq_t;
 pthread_t icsReq_t;
 pthread_t detachAcpt_t;
 pthread_t acceptSctp_t;
+pthread_t paging_t;
 
 struct time_stat g_attach_stats[65535];
 /**End: global and externs**/
@@ -392,6 +394,7 @@ start_mme_resp_handlers()
 	pthread_create(&esmReq_t, &attr, &esmreq_handler, NULL);
 	pthread_create(&icsReq_t, &attr, &icsreq_handler, NULL);
 	pthread_create(&detachAcpt_t, &attr, &detach_accept_handler, NULL);
+	pthread_create(&paging_t, &attr, &paging_handler, NULL);
 
 	pthread_attr_destroy(&attr);
 	return SUCCESS;

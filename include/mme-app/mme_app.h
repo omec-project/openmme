@@ -75,6 +75,7 @@ void* stage8_handler(void *);
 void* detach_stage1_mme_handler(void *);
 void* detach_stage2_handler(void *);
 void* detach_stage3_handler(void *);
+void* DDN_handler(void *);
 
 //for testing, delete it
 void
