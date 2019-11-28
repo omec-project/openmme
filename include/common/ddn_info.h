@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2003-2019, Great Software Laboratory Pvt. Ltd.
- *
+ * 
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,15 +16,18 @@
  * limitations under the License.
  */
 
-#ifndef __PAGING_INFO_H_
-#define __PAGING_INFO_H_
+#ifndef __DDN_INFO_H_
+#define __DDN_INFO_H_
 
-struct paging_Q_msg {
+/*Reference - 29.274 - section 7.2.11*/
+struct DDN_Q_msg {
 	int ue_idx;
-	unsigned char IMSI[BINARY_IMSI_LEN];
-	struct TAI tai;
+	unsigned char eps_bearer_identity;
+
+	/*Allocation/retntion policy*/
+	/*Paging and service informatin*/
 };
 
-#define S1AP_PAGING_INFO_BUF_SIZE sizeof(struct paging_Q_msg)
+#define S11_DDN_INFO_BUF_SIZE sizeof(struct DDN_Q_msg)
 
-#endif /*_PAGING_INFO_H_*/
+#endif /*_DDN_INFO_H_*/

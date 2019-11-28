@@ -110,11 +110,11 @@ Message queues used across MME, S1ap, S11, S6a
 
 /********* STAGE 3 DETACH END    ***************/
 
-/********* PAGING MESSAGE ***************/
+/********* DDN/PAGING MESSAGE ***************/
 
-#define S6A_DDN_QUEUE  "/tmp/s1ap/s6ap_DDN_Q"
+#define S11_DDN_QUEUE  "/tmp/s11/s11_DDN_Q"
 #define S1AP_PAGING_QUEUE  "/tmp/s1ap/s1ap_paging_Q"
 
-/********* PAGING END    ***************/
+/********* DDN/PAGING END    ***************/
 
 #endif /*__MESSAGE_QUEUES_H*/

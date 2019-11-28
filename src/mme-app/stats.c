@@ -56,7 +56,6 @@ void* stat_report(void *data)
 
 		printf("Dtch_Stg1       Dtch_Stg2       Dtch_Stg3\n\n");
 		printf("%8u        %8u        %8u\n",detach_stage1_counter,detach_stage2_counter,detach_stage3_counter);
-		sleep(3);
 
 		printf("paging\n\n");
 		printf("%8u\n",paging_counter);

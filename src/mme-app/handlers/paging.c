@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
+ * Copyright (c) 2003-2019, Great Software Laboratory Pvt. Ltd.
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +26,7 @@
 #include "err_codes.h"
 #include "message_queues.h"
 #include "ipc_api.h"
+#include "ddn_info.h"
 #include "paging_info.h"
 
 /************************************************************************
@@ -35,15 +38,14 @@ Flow : 36.413 - release 15 - Section 8.5
 
 /****Globals and externs ***/
 
+extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
 
 static int g_Q_paging_fd;
 static int g_Q_DDN_fd;
 
 /*Making global just to avoid stack passing*/
-static char DDN_buf[10];//[S6A_DDN_BUF_SIZE];
-/*tmp defined*/
-#define S6A_DDN_BUF_SIZE 10
+static char DDN_buf[S11_DDN_INFO_BUF_SIZE];
 
 extern uint32_t paging_counter;
 /****Global and externs end***/
@@ -57,9 +59,9 @@ init_stage()
 {
 	log_msg(LOG_INFO, "DDN reader complete: waiting\n");
 	if ((g_Q_DDN_fd  = open_ipc_channel(
-					S6A_DDN_QUEUE, IPC_READ)) == -1){
+					S11_DDN_QUEUE, IPC_READ)) == -1){
 		log_msg(LOG_ERROR, "Error in opening reader - DDN"
-				"S6A IPC channel.\n");
+				"S11 IPC channel.\n");
 		pthread_exit(NULL);
 	}
 	log_msg(LOG_INFO, "DDN reader complete: Connected\n");
@@ -81,12 +83,12 @@ read_next_msg()
 {
 	int bytes_read=0;
 
-	memset(DDN_buf, 0, S6A_DDN_BUF_SIZE);
-	while (bytes_read < S6A_DDN_BUF_SIZE) {//TODO : Recheck condition
+	memset(DDN_buf, 0, S11_DDN_INFO_BUF_SIZE);
+	while (bytes_read < S11_DDN_INFO_BUF_SIZE) {//TODO : Recheck condition
 		if ((bytes_read = read_ipc_channel(
 						g_Q_DDN_fd,
 						DDN_buf,
-						S6A_DDN_BUF_SIZE)) == -1) {
+						S11_DDN_INFO_BUF_SIZE)) == -1) {
 			log_msg(LOG_ERROR, "Error in reading \n");
 			/* TODO : Add proper error handling */
 		}
@@ -103,19 +105,18 @@ read_next_msg()
 static int
 DDN_processing()
 {
-#ifdef UNCOMMENT_WHEN_S11_DDN_IS_DONE
 
-	struct DDN_Q_msg *ddn_info = (struct DDN_Q_msg *)buf;
+	struct DDN_Q_msg *ddn_info = (struct DDN_Q_msg *)DDN_buf;
 
-	struct UE_info *ue_entry ;/* =  GET_UE_ENTRY(ddn_info->ue_idx);*/
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ddn_info->ue_idx);
 
 	/*Change UE state */
 	/*DDN throtelling if required*/
+		/*Bearer check in case of throtelling*/
 
 	/*Collect information for next processing*/
 
 	/*post to next processing*/
-#endif /*UNCOMMENT_WHEN_S11_DDN_IS_DONE*/
 	return SUCCESS;
 }
 
@@ -126,24 +127,18 @@ static int
 post_to_next()
 {
 
-#ifdef UNCOMMENT_WHEN_S11_DDN_IS_DONE
-
-/*
-	struct DDN_Q_msg *ddn_info = (struct DDN_Q_msg *)buf;
-*/
-	struct UE_info *ue_entry ;/* =  GET_UE_ENTRY(ddn_info->ue_idx);*/
+	struct DDN_Q_msg *ddn_info = (struct DDN_Q_msg *)DDN_buf;
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ddn_info->ue_idx);
 	struct paging_Q_msg paging_msg;
 
 	log_msg(LOG_INFO, "Post for s1ap paging processing.\n");
 
-	paging_msg.ue_idx = 0;/* ddn_info->ue_idx;*/
+	paging_msg.ue_idx = ddn_info->ue_idx;
 	memcpy(&(paging_msg.IMSI), &(ue_entry->IMSI), BINARY_IMSI_LEN);
 
 	/*TODO: Add TAI information in paging message*/
 
 	write_ipc_channel(g_Q_paging_fd, (char *)&(paging_msg), S1AP_PAGING_INFO_BUF_SIZE);
-
-#endif /*UNCOMMENT_WHEN_S11_DDN_IS_DONE*/
 
 	log_msg(LOG_INFO, "Post for paging processing. SUCCESS\n");
 	return SUCCESS;
