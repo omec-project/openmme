@@ -173,6 +173,10 @@ post_to_next()
 			KENB_SIZE);
 	memcpy(&(icr_msg.pti), &(ue_entry->pti), 1);
 
+	/* Keep GUTI to IMSI mapping Or GUTI to ue-index mapping 
+	* send GUTI to UE
+	* save GUTI in the UE Record 
+	*/
 	write_ipc_channel(g_Q_icsreq_fd, (char *)&(icr_msg), S1AP_ICSREQ_STAGE6_BUF_SIZE);
 
 	/*Call DUMMY MB funcion*/

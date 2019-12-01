@@ -75,6 +75,9 @@ int s1_attach_complete_handler(struct proto_IE *s1_esm_resp_ies);
 int
 detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit);
 
+int 
+s1_identity_resp_handler(struct proto_IE *s1);
+
 int
 s1_ctx_release_resp_handler(InitiatingMessage_t *msg);
 

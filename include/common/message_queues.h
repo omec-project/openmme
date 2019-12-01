@@ -110,4 +110,9 @@ Message queues used across MME, S1ap, S11, S6a
 
 /********* STAGE 3 DETACH END    ***************/
 
+#define S1AP_REQ_REJECT_QUEUE "/tmp/s1ap/s1ap_reject_Q"
+
+#define S1AP_ID_REQ_QUEUE "/tmp/s1ap/s1ap_id_req_Q"
+#define S1AP_ID_RSP_QUEUE "/tmp/s1ap/s1ap_id_rsp_Q"
+
 #endif /*__MESSAGE_QUEUES_H*/
