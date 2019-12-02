@@ -67,10 +67,19 @@ enum ue_stages{
   DETACH_STAGE2_DS_DONE,
   DETACH_STAGE2,
   DETACH_DONE,
+  S1AP_HANDLE_MESSAGE_STAGE,
+  PAGING_START,
+  PAGING_WF_SVC_REQ,
+  SVC_REQ_WF_INIT_CTXT_RESP,
+  SVC_REQ_WF_MODIFY_BEARER_RESP,
   UE_ERROR=200,
 };
-#define TOTAL_STAGES  11
+#define TOTAL_STAGES  20
 
+enum ecm_states{
+ ECM_IDLE,
+ ECM_CONNECTED
+};
 struct secinfo {
 	uint8_t int_key[NAS_INT_KEY_SIZE];
 	uint8_t kenb_key[KENB_SIZE];
@@ -88,10 +97,12 @@ struct AMBR {
 struct UE_info{
 	int             enb_fd;
 	enum ue_stages  ue_state;
+	enum ecm_states ecm_state;
 	int             s1ap_enb_ue_id;
 	unsigned char   IMSI[BINARY_IMSI_LEN];
 	struct TAI      tai;//TODO: will be list of 16 TAI's for UE.
 	struct CGI      utran_cgi;
+	struct STMSI 	s_tmsi;		//Service Request
 	struct E_UTRAN_sec_vector *aia_sec_info; /*TODO: Check whether this
 						info is needed after attach. If yes then make it static array.*/
 	struct MS_net_capab  ms_net_capab;
@@ -110,6 +121,12 @@ struct UE_info{
 	unsigned int    access_restriction_data;
 	/**/
 
+	/**Information received from Service Request*/
+	unsigned int ksi;
+	unsigned int seq_no;
+	unsigned short mac;
+	/**/
+
 	unsigned short  dl_seq_no;
 	unsigned short  ul_seq_no;
 
@@ -124,9 +141,10 @@ struct UE_info{
 	unsigned short eRAB_id;
 
 	struct secinfo ue_sec_info;
-
+	uint8_t cause;
 	bool esm_info_tx_required;
 	unsigned char pti;
+	uint8_t arp;
 };
 
 int get_index_from_list();

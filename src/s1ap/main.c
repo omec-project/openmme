@@ -54,6 +54,7 @@ ipc_handle ipcHndl_icsresp;
 ipc_handle ipcHndl_attachomplete;
 ipc_handle ipcHndl_detach;
 ipc_handle ipcHndl_ctx_release_complete;
+ipc_handle ipcHndl_s1ap_msgs;;
 
 ipc_handle ipcHndl_auth;
 ipc_handle ipcHndl_smc;
@@ -61,6 +62,7 @@ ipc_handle ipcHndl_esm;
 ipc_handle ipcHndl_ics;
 ipc_handle ipcHndl_detach_accept;
 ipc_handle ipcHndl_paging;
+ipc_handle ipcHndl_mme_to_s1ap_msg;
 
 ipc_handle ipcHndl_sctpsend_reader;
 ipc_handle ipcHndl_sctpsend_writer;
@@ -72,6 +74,7 @@ pthread_t icsReq_t;
 pthread_t detachAcpt_t;
 pthread_t acceptSctp_t;
 pthread_t paging_t;
+pthread_t mme_to_s1ap_msg_t;
 
 struct time_stat g_attach_stats[65535];
 /**End: global and externs**/
@@ -371,6 +374,10 @@ init_writer_ipc()
 			S1AP_CTXRELRESP_STAGE3_QUEUE, IPC_WRITE)) == -E_FAIL)
 		return -E_FAIL;
 
+	if ((ipcHndl_s1ap_msgs = open_ipc_channel(
+			S1AP_MME_QUEUE, IPC_WRITE)) == -E_FAIL)
+		return -E_FAIL;
+
 	log_msg(LOG_INFO, "Writer IPCs initialized\n");
 
 	return SUCCESS;
@@ -395,6 +402,7 @@ start_mme_resp_handlers()
 	pthread_create(&icsReq_t, &attr, &icsreq_handler, NULL);
 	pthread_create(&detachAcpt_t, &attr, &detach_accept_handler, NULL);
 	pthread_create(&paging_t, &attr, &paging_handler, NULL);
+	pthread_create(&mme_to_s1ap_msg_t, &attr, &mme_to_s1ap_msg_handler, NULL);
 
 	pthread_attr_destroy(&attr);
 	return SUCCESS;

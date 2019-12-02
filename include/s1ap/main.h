@@ -71,6 +71,9 @@ void
 *paging_handler(void *);
 
 void
+*mme_to_s1ap_msg_handler(void *);
+
+void
 calculate_mac(uint8_t *int_key, uint32_t seq_no, uint8_t direction,
 		uint8_t bearer, uint8_t *data, uint16_t data_len,
 		uint8_t *mac);

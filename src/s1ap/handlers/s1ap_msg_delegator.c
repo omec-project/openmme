@@ -636,6 +636,10 @@ init_ue_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 		s1_init_ue_handler(&proto_ies, enb_fd);
 		break;
 
+	case NAS_SERVICE_REQUEST:
+		s1_init_ue_service_req_handler(&proto_ies, enb_fd);
+		break;
+
 	case NAS_DETACH_REQUEST:
 		detach_stage1_handler(&proto_ies, true);
 		break;
@@ -748,6 +752,9 @@ s1ap_mme_decode_successfull_outcome (SuccessfulOutcome_t* msg)
 	case S1AP_INITIAL_CTX_RESP_CODE:
 		s1_init_ctx_resp_handler(msg);
 		break;
+	case S1AP_UE_CTX_RELEASE_CODE:
+		s1_ctx_release_resp_handler(msg);
+		break;
 	default:
 		log_msg(LOG_ERROR, "Unknown procedure code - %d\n",
 		         msg->procedureCode & 0x00FF);
@@ -782,8 +789,8 @@ s1ap_mme_decode_initiating (InitiatingMessage_t *initiating_p, int enb_fd)
 		UL_NAS_msg_handler(initiating_p, enb_fd);
 		break;
 
-	case S1AP_UE_CTX_RELEASE_CODE:
-		s1_ctx_release_resp_handler(initiating_p);
+	case S1AP_UE_CTX_RELEASE_REQ_CODE:
+		s1_ctx_release_req_handler(initiating_p);
 		break;
 
 	default:
@@ -1057,3 +1064,194 @@ int convertInitCtxRspToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_
     return 0;
 }
 
+int convertUeCtxRelComplToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_ies)
+{
+    proto_ies->procedureCode = msg->procedureCode;
+    proto_ies->criticality = msg->criticality;
+	int no_of_IEs = 0;
+
+    if(msg->value.present == SuccessfulOutcome__value_PR_UEContextReleaseComplete)
+    {
+        ProtocolIE_Container_129P25_t* protocolIes 
+            = &msg->value.choice.UEContextReleaseComplete.protocolIEs;
+        no_of_IEs = protocolIes->list.count;
+        proto_ies->no_of_IEs = no_of_IEs;
+
+        log_msg(LOG_INFO, "No of IEs = %d\n", no_of_IEs);
+        proto_ies->data = calloc(sizeof(struct proto_IE_data), no_of_IEs);
+        if(proto_ies->data == NULL)
+        {
+            log_msg(LOG_ERROR,"Malloc failed for protocol IE.");
+            return -1;
+        }
+		for (int i = 0; i < protocolIes->list.count; i++) {
+			UEContextReleaseComplete_IEs_t *ie_p;
+			ie_p = protocolIes->list.array[i];
+			switch(ie_p->id) {
+				case ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+					{
+                        ENB_UE_S1AP_ID_t *s1apENBUES1APID_p = NULL;
+                        if(UEContextReleaseComplete_IEs__value_PR_ENB_UE_S1AP_ID == ie_p->value.present)
+                        {
+						    s1apENBUES1APID_p = &ie_p->value.choice.ENB_UE_S1AP_ID;
+                        }
+						
+                        if (s1apENBUES1APID_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE eNB_UE_S1AP_ID failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_ENB_UE_ID; 
+						memcpy(&proto_ies->data[i].val.enb_ue_s1ap_id, s1apENBUES1APID_p, sizeof(ENB_UE_S1AP_ID_t));
+						s1apENBUES1APID_p = NULL;
+					} break;
+				case ProtocolIE_ID_id_MME_UE_S1AP_ID:
+					{
+                        MME_UE_S1AP_ID_t *s1apMMEUES1APID_p = NULL;
+                        if(UEContextReleaseComplete_IEs__value_PR_MME_UE_S1AP_ID == ie_p->value.present)
+                        {
+						    s1apMMEUES1APID_p = &ie_p->value.choice.MME_UE_S1AP_ID;
+                        }
+						
+                        if (s1apMMEUES1APID_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE MME_UE_S1AP_ID failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_MME_UE_ID; 
+						memcpy(&proto_ies->data[i].val.mme_ue_s1ap_id, s1apMMEUES1APID_p, sizeof(MME_UE_S1AP_ID_t));
+						s1apMMEUES1APID_p = NULL;
+					} break;
+                default:
+                    {
+                        log_msg(LOG_WARNING, "Unhandled IE %d\n", ie_p->id);
+                    }
+			}
+		}
+     }
+
+    return 0;
+}
+
+int convertUeCtxRelReqToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
+{
+    proto_ies->procedureCode = msg->procedureCode;
+    proto_ies->criticality = msg->criticality;
+	int no_of_IEs = 0;
+
+    if(msg->value.present == InitiatingMessage__value_PR_UEContextReleaseRequest)
+    {
+        ProtocolIE_Container_129P23_t* protocolIes 
+            = &msg->value.choice.UEContextReleaseRequest.protocolIEs;
+        no_of_IEs = protocolIes->list.count;
+        proto_ies->no_of_IEs = no_of_IEs;
+
+        log_msg(LOG_INFO, "No of IEs = %d\n", no_of_IEs);
+        proto_ies->data = calloc(sizeof(struct proto_IE_data), no_of_IEs);
+        if(proto_ies->data == NULL)
+        {
+            log_msg(LOG_ERROR,"Malloc failed for protocol IE.");
+            return -1;
+        }
+		for (int i = 0; i < protocolIes->list.count; i++) {
+			UEContextReleaseRequest_IEs_t *ie_p;
+			ie_p = protocolIes->list.array[i];
+			switch(ie_p->id) {
+				case ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+					{
+                        ENB_UE_S1AP_ID_t *s1apENBUES1APID_p = NULL;
+                        if(UEContextReleaseRequest_IEs__value_PR_ENB_UE_S1AP_ID == ie_p->value.present)
+                        {
+						    s1apENBUES1APID_p = &ie_p->value.choice.ENB_UE_S1AP_ID;
+                        }
+						
+                        if (s1apENBUES1APID_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE eNB_UE_S1AP_ID failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_ENB_UE_ID; 
+						memcpy(&proto_ies->data[i].val.enb_ue_s1ap_id, s1apENBUES1APID_p, sizeof(ENB_UE_S1AP_ID_t));
+						s1apENBUES1APID_p = NULL;
+					} break;
+				case ProtocolIE_ID_id_MME_UE_S1AP_ID:
+					{
+                        MME_UE_S1AP_ID_t *s1apMMEUES1APID_p = NULL;
+                        if(UEContextReleaseRequest_IEs__value_PR_MME_UE_S1AP_ID == ie_p->value.present)
+                        {
+						    s1apMMEUES1APID_p = &ie_p->value.choice.MME_UE_S1AP_ID;
+                        }
+						
+                        if (s1apMMEUES1APID_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE MME_UE_S1AP_ID failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_MME_UE_ID; 
+						memcpy(&proto_ies->data[i].val.mme_ue_s1ap_id, s1apMMEUES1APID_p, sizeof(MME_UE_S1AP_ID_t));
+						s1apMMEUES1APID_p = NULL;
+					} break;
+				case ProtocolIE_ID_id_Cause:
+					{
+                        Cause_t *s1apCause_p = NULL;
+                        if(UEContextReleaseRequest_IEs__value_PR_Cause == ie_p->value.present)
+                        {
+						    s1apCause_p = &ie_p->value.choice.Cause;
+                        }
+						
+                        if (s1apCause_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE Cause failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_CAUSE;
+                        proto_ies->data[i].val.cause.present = s1apCause_p->present;
+                        switch(s1apCause_p->present)
+                        {
+                            case Cause_PR_radioNetwork:
+							    log_msg (LOG_DEBUG, "RadioNetwork case : %d\n",
+                                          s1apCause_p->choice.radioNetwork);
+                                proto_ies->data[i].val.cause.choice.radioNetwork
+                                    = s1apCause_p->choice.radioNetwork;
+                                break;
+                            case Cause_PR_transport:
+							    log_msg (LOG_DEBUG, "Transport case : %d\n",
+                                          s1apCause_p->choice.transport);
+                                proto_ies->data[i].val.cause.choice.transport
+                                    = s1apCause_p->choice.transport;
+                                break;
+                            case Cause_PR_nas:
+							    log_msg (LOG_DEBUG, "Nas case : %d\n",
+                                          s1apCause_p->choice.nas);
+                                proto_ies->data[i].val.cause.choice.nas
+                                    = s1apCause_p->choice.nas;
+                                break;
+                            case Cause_PR_protocol:
+							    log_msg (LOG_DEBUG, "Protocol case : %d\n",
+                                          s1apCause_p->choice.protocol);
+                                proto_ies->data[i].val.cause.choice.protocol
+                                    = s1apCause_p->choice.protocol;
+                                break;
+                            case Cause_PR_misc:
+							    log_msg (LOG_DEBUG, "Misc case : %d\n",
+                                          s1apCause_p->choice.misc);
+                                proto_ies->data[i].val.cause.choice.misc
+                                    = s1apCause_p->choice.misc;
+                                break;
+                            case Cause_PR_NOTHING:
+                            default:
+                                log_msg(LOG_WARNING, "Unknown cause %d\n", s1apCause_p->present);
+
+                        }
+						s1apCause_p = NULL;
+					} break;
+                default:
+                    {
+                        log_msg(LOG_WARNING, "Unhandled IE %d\n", ie_p->id);
+                    }
+			}
+		}
+     }
+
+    return 0;
+}

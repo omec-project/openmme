@@ -116,7 +116,12 @@ stage7_processing()
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ics_res->ue_idx);
 
 	/**validations/checks*/
+	if(SVC_REQ_WF_INIT_CTXT_RESP == ue_entry->ue_state) {
+		
+		ue_entry->ue_state = SVC_REQ_WF_MODIFY_BEARER_RESP;
 
+	}
+	
 	ue_entry->eRAB_id = ics_res->eRAB_id;
 	/*hard code to ipv4 for now. TODO v6 support from s1ap*/
 	ue_entry->s1u_enb_u_fteid.header.v4 = 1;

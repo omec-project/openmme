@@ -30,15 +30,16 @@
 #include "ipc_api.h"
 #include "main.h"
 #include "sctp_conn.h"
-#include "paging_info.h"
+#include "common_proc_info.h"
 
 /****Globals and externs ***/
 
 /*Making global just to avoid stack passing*/
-static char buf[S1AP_PAGING_INFO_BUF_SIZE];
+static char buf[S1AP_COMMON_REQ_BUF_SIZE];
 extern ipc_handle ipcHndl_paging;
+static Buffer g_paging_buffer;
 
-static struct paging_Q_msg *g_paging_buf;
+static struct s1ap_common_req_Q_msg *g_paging_buf;
 
 /****Global and externs end***/
 
@@ -68,11 +69,11 @@ read_next_msg()
 {
 	int bytes_read=0;
 
-	memset(buf, 0, S1AP_PAGING_INFO_BUF_SIZE);
-	while (bytes_read < S1AP_PAGING_INFO_BUF_SIZE) {//TODO : Recheck condition
+	memset(buf, 0, S1AP_COMMON_REQ_BUF_SIZE);
+	while (bytes_read < S1AP_COMMON_REQ_BUF_SIZE) {//TODO : Recheck condition
 		if ((bytes_read = read_ipc_channel(
 				ipcHndl_paging, buf,
-				S1AP_PAGING_INFO_BUF_SIZE)) == -1) {
+				S1AP_COMMON_REQ_BUF_SIZE)) == -1) {
 					log_msg(LOG_ERROR, "Error reading paging req Q\n");
 					/* TODO : Add proper error handling */
 				}
@@ -89,22 +90,19 @@ read_next_msg()
 static int
 paging_processing()
 {
-	g_paging_buf = (struct paging_Q_msg *) buf;
-#ifdef REPLACE_WITH_S1AP_ENCODING_DONE
-	struct s1ap_PDU s1apPDU;
+	uint32_t length = 0;
+    uint8_t *buffer = NULL;
+	g_paging_buf = (struct s1ap_common_req_Q_msg *) buf;
 
-	ProtocolIE_Container_129P22_t paging_buf;
-	PagingIEs_t *paging_ie = NULL;
+    int ret = s1ap_mme_encode_initiating(g_paging_buf, &buffer, &length);
+    if(ret == -1)
+    {
+        log_msg(LOG_ERROR, "Encoding Paging request failed.\n");
+        return E_FAIL;
+    }
 
-	paging_buf.list.count = 1;
-	
-	//paging_ie = &(paging_buf.list.array[0]);
+	buffer_copy(&g_paging_buffer, buffer, length);
 
-	paging_ie->id = ProtocolIE_ID_id_UEPagingID;
-
-	/*TODO : Write code for encoding Paging s1ap API*/
-
-#endif /*REPLACE_WITH_S1AP_ENCODING_DONE*/
 	return SUCCESS;
 }
 
@@ -114,8 +112,8 @@ paging_processing()
 static int
 post_to_next()
 {
-/*TODO : uncomment this to send message when s1ap encoding is done.
-	send_sctp_msg(g_authreqInfo->enb_fd, g_buffer.buf, g_buffer.pos, 1);*/
+	send_sctp_msg(g_paging_buf->enb_fd, 
+                    g_paging_buffer.buf, g_paging_buffer.pos, 1);
 	log_msg(LOG_INFO, "\n-----Paging request completed.---\n");
 	return SUCCESS;
 }

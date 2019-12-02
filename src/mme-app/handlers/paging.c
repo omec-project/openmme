@@ -25,6 +25,9 @@
 #include "message_queues.h"
 #include "ipc_api.h"
 #include "paging_info.h"
+#include "common_proc_info.h"
+#include "ddn_info.h"
+#include "gtpv2c_ie.h"
 
 /************************************************************************
 Paging handler.
@@ -35,15 +38,16 @@ Flow : 36.413 - release 15 - Section 8.5
 
 /****Globals and externs ***/
 
+extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
 
+static int g_Q_ddn_fd;
+static int g_Q_ddn_ack_fd;
 static int g_Q_paging_fd;
-static int g_Q_DDN_fd;
 
 /*Making global just to avoid stack passing*/
-static char DDN_buf[10];//[S6A_DDN_BUF_SIZE];
-/*tmp defined*/
-#define S6A_DDN_BUF_SIZE 10
+static char DDN_buf[S11_DDN_BUF_SIZE];
+static struct ddn_ack_Q_msg ddn_ack_msg;
 
 extern uint32_t paging_counter;
 /****Global and externs end***/
@@ -56,7 +60,7 @@ static void
 init_stage()
 {
 	log_msg(LOG_INFO, "DDN reader complete: waiting\n");
-	if ((g_Q_DDN_fd  = open_ipc_channel(
+	if ((g_Q_ddn_fd  = open_ipc_channel(
 					S6A_DDN_QUEUE, IPC_READ)) == -1){
 		log_msg(LOG_ERROR, "Error in opening reader - DDN"
 				"S6A IPC channel.\n");
@@ -70,6 +74,14 @@ init_stage()
 	}
 	log_msg(LOG_INFO, "s1ap Paging writer: Connected\n");
 
+	/*Open destination queue for writing*/
+	log_msg(LOG_INFO, "Ddn writer  - s11 Downlink data Notification Acknowledge: waiting\n");
+	g_Q_ddn_ack_fd = open_ipc_channel(S11_DDN_ACK_QUEUE, IPC_WRITE);
+	if (g_Q_ddn_ack_fd == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel:s11 ddn Acknowledge\n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "Ddn writer - s11 DDN Acknowledge: Connected\n");
 	return;
 }
 
@@ -81,12 +93,12 @@ read_next_msg()
 {
 	int bytes_read=0;
 
-	memset(DDN_buf, 0, S6A_DDN_BUF_SIZE);
-	while (bytes_read < S6A_DDN_BUF_SIZE) {//TODO : Recheck condition
+	memset(DDN_buf, 0, S11_DDN_BUF_SIZE);
+	while (bytes_read < S11_DDN_BUF_SIZE) {//TODO : Recheck condition
 		if ((bytes_read = read_ipc_channel(
-						g_Q_DDN_fd,
+						g_Q_ddn_fd,
 						DDN_buf,
-						S6A_DDN_BUF_SIZE)) == -1) {
+						S11_DDN_BUF_SIZE)) == -1) {
 			log_msg(LOG_ERROR, "Error in reading \n");
 			/* TODO : Add proper error handling */
 		}
@@ -103,47 +115,57 @@ read_next_msg()
 static int
 DDN_processing()
 {
-#ifdef UNCOMMENT_WHEN_S11_DDN_IS_DONE
+	struct ddn_Q_msg *ddn_info = (struct ddn_Q_msg *)DDN_buf;
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ddn_info->ue_idx);
 
-	struct DDN_Q_msg *ddn_info = (struct DDN_Q_msg *)buf;
+	if (ue_entry == NULL) {
+		ddn_ack_msg.cause = GTPV2C_CAUSE_CONTEXT_NOT_FOUND;
+	} else {
+		ddn_ack_msg.cause = GTPV2C_CAUSE_REQUEST_ACCEPTED;
+		// populate page msg struct
 
-	struct UE_info *ue_entry ;/* =  GET_UE_ENTRY(ddn_info->ue_idx);*/
-
-	/*Change UE state */
-	/*DDN throtelling if required*/
-
-	/*Collect information for next processing*/
+		//set UE State
+		ue_entry->ue_state = PAGING_WF_SVC_REQ;
+	}
 
 	/*post to next processing*/
-#endif /*UNCOMMENT_WHEN_S11_DDN_IS_DONE*/
-	return SUCCESS;
+	return ddn_info->ue_idx;
 }
 
 /**
 * Post message to next handler of the stage
 */
 static int
-post_to_next()
+post_to_next(int ue_idx)
 {
+    log_msg(LOG_DEBUG, "ue index : %d.\n",ue_idx);
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_idx);
+    if(NULL == ue_entry)
+    {
+        log_msg(LOG_ERROR,"UE entry not found.\n");
+        return -1;
+    }
 
-#ifdef UNCOMMENT_WHEN_S11_DDN_IS_DONE
+    write_ipc_channel(g_Q_ddn_ack_fd, 
+			  (char *)(&ddn_ack_msg),
+			  S11_DDN_ACK_BUF_SIZE);
 
-/*
-	struct DDN_Q_msg *ddn_info = (struct DDN_Q_msg *)buf;
-*/
-	struct UE_info *ue_entry ;/* =  GET_UE_ENTRY(ddn_info->ue_idx);*/
-	struct paging_Q_msg paging_msg;
+	log_msg(LOG_INFO, "Posted Downlink data Notification acknowledge message to s11-app.\n");
 
-	log_msg(LOG_INFO, "Post for s1ap paging processing.\n");
+	struct s1ap_common_req_Q_msg req;
 
-	paging_msg.ue_idx = 0;/* ddn_info->ue_idx;*/
-	memcpy(&(paging_msg.IMSI), &(ue_entry->IMSI), BINARY_IMSI_LEN);
+    log_msg(LOG_INFO, "Send Paging request for UE %d\n", ue_idx);
 
-	/*TODO: Add TAI information in paging message*/
+    /*Create message to send to S1ap*/
 
-	write_ipc_channel(g_Q_paging_fd, (char *)&(paging_msg), S1AP_PAGING_INFO_BUF_SIZE);
+    req.IE_type = S1AP_PAGING_REQ;
+    req.enb_fd = ue_entry->enb_fd;
+    req.ue_idx = ue_idx;
+    req.cn_domain = CN_DOMAIN_PS;
+    memcpy(req.imsi, ue_entry->IMSI, BINARY_IMSI_LEN);
+    memcpy(&req.tai, &ue_entry->tai, sizeof(struct TAI));
 
-#endif /*UNCOMMENT_WHEN_S11_DDN_IS_DONE*/
+	write_ipc_channel(g_Q_paging_fd, (char *)&(req), S1AP_COMMON_REQ_BUF_SIZE);
 
 	log_msg(LOG_INFO, "Post for paging processing. SUCCESS\n");
 	return SUCCESS;
@@ -155,7 +177,8 @@ post_to_next()
 void
 shutdown_paging()
 {
-	close_ipc_channel(g_Q_DDN_fd);
+	close_ipc_channel(g_Q_ddn_fd);
+	close_ipc_channel(g_Q_ddn_ack_fd);
 	close_ipc_channel(g_Q_paging_fd);
 	log_msg(LOG_INFO, "Shutdown DDN/Paging handlers. \n");
 	pthread_exit(NULL);
@@ -168,6 +191,7 @@ shutdown_paging()
 void*
 DDN_handler(void *data)
 {
+    int ue_index = -1;
 	init_stage();
 	log_msg(LOG_INFO, "DDN stage ready.\n");
 	g_mme_hdlr_status <<= 1;
@@ -177,10 +201,11 @@ DDN_handler(void *data)
 	while(1){
 		read_next_msg();
 
-		DDN_processing();
+		ue_index = DDN_processing();
 
-		post_to_next();
+		post_to_next(ue_index);
 		paging_counter++;
+        ue_index = -1;
 	}
 
 	return NULL;

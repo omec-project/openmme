@@ -29,6 +29,13 @@
 #include "s11.h"
 #include "s11_config.h"
 #include "s11_structs.h"
+#include "gtpV2StackWrappers.h"
+
+extern struct GtpV2Stack* gtpStack_gp;
+//int s11_CS_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr);
+//int s11_MB_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr);
+//int s11_DS_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr);
+//int s11_Ddn_handler(MsgBuffer* message, GtpV2MessageHeader* hdr);
 
 /*
   Get count of no of IEs in gtpv2c msg
@@ -71,7 +78,7 @@ parse_bearer_ctx(struct bearer_ctx *bearer, char* data, short len)
 
 		switch(header->ie_type){
 		case S11_IE_CAUSE:
-			memcpy(&(bearer->cause), value, sizeof(struct Cause));
+			memcpy(&(bearer->cause), value, sizeof(struct gtp_cause));
 			break;
 
 		case S11_IE_FTEID_C:{
@@ -123,7 +130,7 @@ parse_gtpv2c_IEs(char *msg, int len, struct s11_proto_IE *proto_ies)
 
 		switch(ie->header.ie_type){
 		case S11_IE_CAUSE:
-			memcpy(&(ie->data.cause), data, sizeof(struct Cause));
+			memcpy(&(ie->data.cause), data, sizeof(struct gtp_cause));
 			break;
 
 		case S11_IE_FTEID_C:{
@@ -164,23 +171,37 @@ parse_gtpv2c_IEs(char *msg, int len, struct s11_proto_IE *proto_ies)
 void
 handle_s11_message(void *message)
 {
-	struct gtpv2c_header *header = (struct gtpv2c_header*)message;
-	
 	log_msg(LOG_INFO, "S11 recv msg handler.\n");
 
-	switch(header->gtp.message_type){
+	MsgBuffer* msgBuf_p = (MsgBuffer*)(message);
+	
+	GtpV2MessageHeader msgHeader;
+
+	bool rc = GtpV2Stack_decodeMessageHeader(gtpStack_gp, &msgHeader, msgBuf_p);
+
+	switch(msgHeader.msgType){
 	case S11_GTP_CREATE_SESSION_RESP:
-		s11_CS_resp_handler(message);
+		s11_CS_resp_handler(msgBuf_p, &msgHeader);
 		break;
 
 	case S11_GTP_MODIFY_BEARER_RESP:
-		s11_MB_resp_handler(message);
+		s11_MB_resp_handler(msgBuf_p, &msgHeader);
 		break;
 
 	case S11_GTP_DELETE_SESSION_RESP:
-		s11_DS_resp_handler(message);
+		s11_DS_resp_handler(msgBuf_p, &msgHeader);
 		break;
 
+	case S11_GTP_REL_ACCESS_BEARER_RESP:
+		s11_RABR_resp_handler(msgBuf_p, &msgHeader);
+		break;
+
+	case S11_GTP_DOWNLINK_DATA_NOTIFICATION:
+		s11_Ddn_handler(msgBuf_p, &msgHeader);
+		break;
 	}
+
+	MsgBuffer_free(msgBuf_p);
+
 	return;
 }
