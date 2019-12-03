@@ -161,8 +161,7 @@ create_session_processing()
 	struct gtpv2c_header *gtpv2c_s11_tx =
 			(struct gtpv2c_header *)g_udp_buf;
 
-	set_gtpv2c_header(gtpv2c_s11_tx, GTP_CREATE_SESSION_REQ,
-			g_csReqInfo->ue_idx, g_s11_sequence);
+	set_gtpv2c_header(gtpv2c_s11_tx, GTP_CREATE_SESSION_REQ, 0, g_s11_sequence);
 
 	gtpv2c_ie ies[15];
 
