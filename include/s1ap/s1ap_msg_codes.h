@@ -43,6 +43,7 @@
 #define S1AP_IE_NAS_PDU  26
 #define S1AP_IE_TAI  67
 #define S1AP_IE_UTRAN_CGI  100
+#define S1AP_IE_S_TMSI  96
 #define S1AP_IE_RRC_EST_CAUSE  134
 #define S1AP_ERAB_SETUP_CTX_SUR 51
 

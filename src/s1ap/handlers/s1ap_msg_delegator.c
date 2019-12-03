@@ -157,7 +157,20 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
 
 		if(0 != sec_header_type) { /*security header*/
-			log_msg(LOG_INFO, "Security header\n");
+            log_msg(LOG_INFO, "Security header\n");
+            if(SERVICE_REQ_SECURITY_HEADER == sec_header_type)
+            {
+                log_msg(LOG_INFO, "Recvd security header for Service request.");
+                nas->header.security_header_type = sec_header_type;
+                nas->header.proto_discriminator = protocol_discr;
+                msg += 1;
+                nas->header.ksi = msg[0] >> 4;
+                nas->header.seq_no = msg[0] & 0x0F;
+                msg += 1;
+                memcpy(nas->header.short_mac, msg, SHORT_MAC_SIZE);
+                nas->header.message_type = NAS_SERVICE_REQUEST;
+                return;
+            }
 
 			memcpy(&nas_header_sec, msg, sizeof(nas_pdu_header_sec));
 
@@ -606,6 +619,28 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
                         proto_ies->data[i].IE_type = S1AP_IE_RRC_EST_CAUSE; 
 						proto_ies->data[i].val.rrc_est_cause = (enum ie_RRC_est_cause) *s1apRRCEstCause_p;
 						s1apRRCEstCause_p = NULL;
+					} break;
+				case ProtocolIE_ID_id_S_TMSI:
+					{
+			            S_TMSI_t*	 s1apStmsi_p = NULL;;
+                        if(InitialUEMessage_IEs__value_PR_S_TMSI == ie_p->value.present)
+                        {
+						    s1apStmsi_p = &ie_p->value.choice.S_TMSI;
+                        }
+						
+                        if (s1apStmsi_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE STMSI failed\n");
+							return -1;
+						}
+
+                        log_msg(LOG_DEBUG, "STMSI decode Success\n", no_of_IEs);
+                        //struct STMSI     s_tmsi
+                        proto_ies->data[i].IE_type = S1AP_IE_S_TMSI; 
+						memcpy(&proto_ies->data[i].val.s_tmsi.mme_code, 
+                               s1apStmsi_p->mMEC.buf, sizeof(uint8_t));
+						memcpy(&proto_ies->data[i].val.s_tmsi.m_TMSI, 
+                                s1apStmsi_p->m_TMSI.buf, sizeof(uint32_t));
+						s1apStmsi_p = NULL;
 					} break;
                 default:
                     {

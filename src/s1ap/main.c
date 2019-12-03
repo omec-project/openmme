@@ -53,8 +53,9 @@ ipc_handle ipcHndl_esmresp;
 ipc_handle ipcHndl_icsresp;
 ipc_handle ipcHndl_attachomplete;
 ipc_handle ipcHndl_detach;
+ipc_handle ipcHndl_service_req;
 ipc_handle ipcHndl_ctx_release_complete;
-ipc_handle ipcHndl_s1ap_msgs;;
+ipc_handle ipcHndl_s1ap_msgs;
 
 ipc_handle ipcHndl_auth;
 ipc_handle ipcHndl_smc;
@@ -376,6 +377,10 @@ init_writer_ipc()
 
 	if ((ipcHndl_s1ap_msgs = open_ipc_channel(
 			S1AP_MME_QUEUE, IPC_WRITE)) == -E_FAIL)
+		return -E_FAIL;
+
+	if ((ipcHndl_service_req = open_ipc_channel(
+			S1AP_SERVICEREQ_QUEUE, IPC_WRITE)) == -E_FAIL)
 		return -E_FAIL;
 
 	log_msg(LOG_INFO, "Writer IPCs initialized\n");

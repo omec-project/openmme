@@ -93,6 +93,9 @@ int
 detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit);
 
 int
+s1_init_ue_service_req_handler(struct proto_IE *service_req_ies, int enb_fd);
+
+int
 s1_ctx_release_resp_handler(SuccessfulOutcome_t *msg);
 
 int

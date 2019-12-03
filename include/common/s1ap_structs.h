@@ -42,6 +42,8 @@
 #define ICS_REQ_NO_OF_NAS_IES 5
 
 #define AUTHREQ_NAS_SECURITY_PARAM 0x01
+#define SERVICE_REQ_SECURITY_HEADER 0x1100
+#define SHORT_MAC_SIZE 2
 
 #define MSISDN_STR_LEN 10
 
@@ -327,6 +329,8 @@ typedef struct nas_pdu_header {
 	unsigned char security_integrity_algo:4;
 	unsigned char nas_security_param;
 	unsigned char mac[MAC_SIZE];
+	unsigned char short_mac[SHORT_MAC_SIZE];
+	unsigned char ksi;
 	unsigned char seq_no;
 	unsigned char eps_bearer_identity;
 	unsigned char procedure_trans_identity;
@@ -405,6 +409,7 @@ typedef union nas_pdu_elements {
 	unsigned char rand[NAS_RAND_SIZE];
 	unsigned char autn[NAS_AUTN_SIZE];
 	unsigned char IMSI[BINARY_IMSI_LEN];
+	unsigned char short_mac[SHORT_MAC_SIZE];
 	struct esm_sec_info esm_info;
 	enum drx_params drx;
 	struct MS_net_capab ms_network;
