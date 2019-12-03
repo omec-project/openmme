@@ -96,6 +96,7 @@ struct fd_dict_objects {
 	struct dict_object *req_EUTRAN_auth_info;
 	struct dict_object *no_of_req_vectors;
 	struct dict_object *immediate_resp_pref;
+	struct dict_object *resync_info;
 
 	/*AIA elements*/
 	struct dict_object *auth_info;
@@ -167,6 +168,7 @@ struct fd_dict_data {
 	struct dict_avp_data req_EUTRAN_auth_info;
 	struct dict_avp_data no_of_req_vectors;
 	struct dict_avp_data immediate_resp_pref;
+	struct dict_avp_data resync_info;
 
 	/*AIA data*/
 	struct dict_avp_data auth_info;

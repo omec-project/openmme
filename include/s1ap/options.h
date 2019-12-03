@@ -25,5 +25,6 @@
 
 #define REQ_ARGS 0x0000
 void parse_args(int argc, char **argv);
+void log_buffer_free(char** buffer);
 
 #endif /* OPTIONS_H_ */

@@ -78,6 +78,26 @@ bswap8_array(uint8_t *src, uint8_t *dest, uint32_t len)
 }
 
 /**
+ Transform the imsi format for s11 interface packet
+*/
+void
+format_imsi_for_s11(uint8_t *src, uint8_t *dest, uint32_t len)
+{
+        // Change it to a human readable number
+        uint8_t imsi_tmp[BINARY_IMSI_LEN];
+        bswap8_array(src, imsi_tmp, BINARY_IMSI_LEN);
+
+        // Remove the extra 4 bits and fill in 1 according to the spec
+        for (uint32_t i = 0; i < len - 1; i++){
+                dest[i] = ( ( imsi_tmp[i] & 0x0F ) << 4 ) | ( ( imsi_tmp[i + 1] & 0xF0 ) >> 4 );
+        }
+        dest[len - 1] = ( ( imsi_tmp[len - 1] & 0x0f ) << 4 ) | ( 0xF0 >> 4) ;
+        bswap8_array(dest, dest, BINARY_IMSI_LEN);
+
+        return;
+}
+
+/**
 Initialize the stage settings, Q,
 destination communication etc.
 */
@@ -141,12 +161,21 @@ create_session_processing()
 	struct gtpv2c_header *gtpv2c_s11_tx =
 			(struct gtpv2c_header *)g_udp_buf;
 
-	set_gtpv2c_header(gtpv2c_s11_tx, GTP_CREATE_SESSION_REQ,
-			g_csReqInfo->ue_idx, g_s11_sequence);
+	set_gtpv2c_header(gtpv2c_s11_tx, GTP_CREATE_SESSION_REQ, 0, g_s11_sequence);
 
 	gtpv2c_ie ies[15];
 
-	bswap8_array(g_csReqInfo->IMSI, imsi, BINARY_IMSI_LEN);
+	// check imsi odd or even, then handle it differently.The current IMSI stores
+	// the 4 bits of EPS mobility identity, which indicates "Odd/even indication"
+	// and "Type of identity", so here we use IMSI to check.
+	if ( (g_csReqInfo->IMSI[0] & 0x08) != 0  ){
+		// odd
+		format_imsi_for_s11(g_csReqInfo->IMSI, imsi, BINARY_IMSI_LEN);
+	}else {
+		// even
+		bswap8_array(g_csReqInfo->IMSI, imsi, BINARY_IMSI_LEN);
+
+	}
 	ies[ieCount].type = IE_IMSI;
 	ies[ieCount].length = htons(BINARY_IMSI_LEN);
 	ies[ieCount].instance = INSTANCE_ZERO;
@@ -156,7 +185,7 @@ create_session_processing()
 	ies[ieCount].type = IE_MSISDN;
 	ies[ieCount].length = htons(5);
 	ies[ieCount].instance = INSTANCE_ZERO;
-	memcpy(ies[ieCount].value, g_csReqInfo->MSISDN, 5);
+	bswap8_array(g_csReqInfo->MSISDN, ies[ieCount].value, 5);
 	ieCount++;
 
 	ies[ieCount].type = IE_ULI;

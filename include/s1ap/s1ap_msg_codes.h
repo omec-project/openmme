@@ -47,6 +47,7 @@
 /*NAS message type codes*/
 #define NAS_ESM_RESP 0xda
 #define NAS_AUTH_RESP 0x53
+#define NAS_AUTH_FAILURE 0x5c
 #define NAS_SEC_MODE_COMPLETE 0x5e
 #define NAS_ATTACH_REQUEST 0x41
 #define NAS_ATTACH_COMPLETE 0x43

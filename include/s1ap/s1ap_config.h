@@ -29,8 +29,6 @@
 typedef struct s1ap_config
 {
 	unsigned short sctp_port;
-	unsigned short enb_port;
-	unsigned int enb_ip;
 	char  *mme_name;
 	unsigned int s1ap_local_ip;
 	unsigned short mme_group_id;

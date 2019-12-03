@@ -19,8 +19,6 @@
 	"s1ap": {
 		"s1ap_local_addr": "10.2.10.20",
 		"sctp_port": 36412,
-		"enb_addr": "10.1.10.1",
-		"enb_port": 32767,
 		"egtp_default_hostname": "sutlej.ccin.ccpu.com"
 	},
 	"s11": {

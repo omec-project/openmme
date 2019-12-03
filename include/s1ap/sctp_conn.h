@@ -33,7 +33,7 @@ int accept_sctp_socket(int sockfd);
 
 int recv_sctp_msg(int sockfd, unsigned char *buf, size_t len);
 
-int send_sctp_msg(int sockfd, unsigned char *buf, size_t len);
+int send_sctp_msg(int connSock, unsigned char *buffer, size_t len, uint16_t stream_no);
 
 int close_sctp_socket(int sockfd);
 
