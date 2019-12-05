@@ -147,13 +147,16 @@ detach_stage1_processing()
 			detach_req->ue_idx);
 
 	/* TODO: Revisit */
+#if 0
 	if (ue_entry->ue_state != ATTACH_DONE) {
 		log_msg(LOG_INFO, "Repeated Detach request received for ue %d\n",
 			detach_req->ue_idx);
 		return -1; /* TODO: define error code */
 	}
+#endif
 
 	ue_entry->ul_seq_no++;
+	ue_entry->s1ap_enb_ue_id = detach_req->s1ap_enb_ue_id;
 
 	g_ds_msg.bearer_id = ue_entry->bearer_id;
 

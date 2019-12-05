@@ -91,8 +91,16 @@ process_MB_resp()
 
 	log_msg(LOG_INFO, "Modify beader for UE idx = %d\n", mbr_msg->ue_idx);
 
-	if(STAGE8_NAS_ATCH_DONE == ue_entry->ue_state){
+	if (SVC_REQ_WF_MODIFY_BEARER_RESP == ue_entry->ue_state)
+	{
 		ue_entry->ue_state = ATTACH_DONE;
+		ue_entry->ecm_state =  ECM_CONNECTED;
+		log_msg(LOG_ERROR, "=====SERVICE_REQ COMPLETE UE - %d======\n", mbr_msg->ue_idx);
+
+	} else if(STAGE8_NAS_ATCH_DONE == ue_entry->ue_state)
+	{
+		ue_entry->ue_state = ATTACH_DONE;
+		ue_entry->ecm_state =  ECM_CONNECTED;
 		attach_stage8_counter++;
 		log_msg(LOG_ERROR, "=====ATTACH COMPLETE UE - %d======\n", mbr_msg->ue_idx);
 	}
@@ -115,6 +123,7 @@ process_att_complete_resp()
 
 	if(STAGE8_MBR_DONE == ue_entry->ue_state) {
 		ue_entry->ue_state = ATTACH_DONE;
+		ue_entry->ecm_state =  ECM_CONNECTED;
 		attach_stage8_counter++;
 		log_msg(LOG_ERROR, "=====ATTACH COMPLETE UE - %d======\n", atch_msg->ue_idx);
 	}

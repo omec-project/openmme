@@ -42,7 +42,8 @@ ifeq ($(DEBUG),false)
 	CFLAGS += -O3
 endif
 
-INCS := $(INC_DIRS)
+INCS := $(INC_DIRS) \
+	-I../gtpV2Codec -I../cmn \
 
 LIBS := -lpthread -lcrypto
 #-L$(LIB_PATH) -ls6a

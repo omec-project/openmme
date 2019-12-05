@@ -57,7 +57,7 @@ void
 check_mme_hdlr_status()
 {
 	/*TODO: not thread-safe*/
-	if(!(g_mme_hdlr_status ^ 511)) /*111111111 - 1 bit for init of 1 stage */
+	if(!(g_mme_hdlr_status ^ 131071)) /*1 1111 1111 1111 1111 - 1 bit for init of 1 stage */
 		log_msg(LOG_INFO, "MME setup is ready. Let's dance.\n");
 }
 
@@ -176,6 +176,35 @@ init_mme()
 
 	unlink(S1AP_CTXRELRESP_STAGE3_QUEUE);
 	create_ipc_channel(S1AP_CTXRELRESP_STAGE3_QUEUE);
+
+    unlink(S11_DDN_QUEUE);
+	create_ipc_channel(S11_DDN_QUEUE);
+
+	unlink(S1AP_PAGING_QUEUE);
+	create_ipc_channel(S1AP_PAGING_QUEUE);
+	
+	unlink(S1AP_MME_QUEUE);
+	create_ipc_channel(S1AP_MME_QUEUE);
+   
+	unlink(S11_SEND_REQ_STAGE_QUEUE);
+	create_ipc_channel(S11_SEND_REQ_STAGE_QUEUE);
+   
+	unlink(S11_RECV_RSP_STAGE_QUEUE);
+	create_ipc_channel(S11_RECV_RSP_STAGE_QUEUE);
+   
+	unlink(S1AP_MME_TO_S1AP_QUEUE);
+	create_ipc_channel(S1AP_MME_TO_S1AP_QUEUE);
+
+	unlink(S11_DDN_ACK_QUEUE);
+	create_ipc_channel(S11_DDN_ACK_QUEUE);
+
+	unlink(S11_DDN_FAIL_QUEUE);
+        create_ipc_channel(S11_DDN_FAIL_QUEUE);
+	
+	//Service Request
+	unlink(S1AP_SERVICEREQ_QUEUE);
+	create_ipc_channel(S1AP_SERVICEREQ_QUEUE);
+ 
 	return SUCCESS;
 }
 
@@ -205,7 +234,12 @@ init_stage_handlers()
 	pthread_create(&stage_tid[8], &attr, &detach_stage1_mme_handler, NULL);
 	pthread_create(&stage_tid[9], &attr, &detach_stage2_handler, NULL);
 	pthread_create(&stage_tid[10], &attr, &detach_stage3_handler, NULL);
-	pthread_create(&stage_tid[11], &attr, &identity_rsp_handler, NULL);
+	pthread_create(&stage_tid[11], &attr, &DDN_handler, NULL);
+	pthread_create(&stage_tid[12], &attr, &s1ap_req_common_mme_handler, NULL);
+	pthread_create(&stage_tid[13], &attr, &s11_rsp_common_mme_handler, NULL);
+	pthread_create(&stage_tid[14], &attr, &service_request_handler, NULL);
+	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
+  
 	pthread_attr_destroy(&attr);
 	return SUCCESS;
 }

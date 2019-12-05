@@ -29,6 +29,7 @@
 #include "message_queues.h"
 #include "s11.h"
 #include "s11_config.h"
+#include "gtpV2StackWrappers.h"
 
 /**Global and externs **/
 extern s11_config g_s11_cfg;
@@ -44,15 +45,29 @@ socklen_t g_client_addr_size;
 int g_Q_CSresp_fd;
 int g_Q_MBresp_fd;
 int g_Q_DSresp_fd;
+int g_Q_S11_Incoming_fd;
+int g_Q_Ddn_fd;
 
 pthread_t g_cs_tid;
 pthread_t g_mb_tid;
 pthread_t g_ds_tid;
+pthread_t g_s11_tid;
+pthread_t g_ddn_tid;
 
 pthread_mutex_t s11_net_lock = PTHREAD_MUTEX_INITIALIZER;
 
 struct thread_pool *g_tpool;
 /**End: global and externs**/
+
+
+//gtpV2 stack vars
+struct GtpV2Stack* gtpStack_gp = NULL;
+extern struct MsgBuffer* csReqMsgBuf_p;
+extern struct MsgBuffer* mbReqMsgBuf_p;
+extern struct MsgBuffer* dsReqMsgBuf_p;
+extern struct MsgBuffer* ddnAckMsgBuf_p;
+extern struct MsgBuffer* rabrMsgBuf_p;
+
 
 int
 init_s11_workers()
@@ -66,6 +81,8 @@ init_s11_workers()
 	pthread_create(&g_cs_tid, &attr, &create_session_handler, NULL);
 	pthread_create(&g_mb_tid, &attr, &modify_bearer_handler, NULL);
 	pthread_create(&g_ds_tid, &attr, &delete_session_handler, NULL);
+	pthread_create(&g_s11_tid, &attr, &s11_out_msg_handler, NULL);
+	pthread_create(&g_ddn_tid, &attr, &ddn_ack_handler, NULL);
 
 	pthread_attr_destroy(&attr);
 	return 0;
@@ -128,6 +145,22 @@ init_s11_ipc()
 		pthread_exit(NULL);
 	}
 	log_msg(LOG_INFO, "DS response - mme-app IPC: Connected.\n");
+	
+    log_msg(LOG_INFO, "Connecting to mme-app S11 response queue\n");
+	g_Q_S11_Incoming_fd = open_ipc_channel(S11_RECV_RSP_STAGE_QUEUE , IPC_WRITE);
+	if (g_Q_S11_Incoming_fd == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel for all Response\n");
+		pthread_exit(NULL);
+	}
+
+	log_msg(LOG_INFO, "Connecting to mme-app S11 ddn queue\n");
+	g_Q_Ddn_fd = open_ipc_channel(S11_DDN_QUEUE , IPC_WRITE);
+	if (g_Q_Ddn_fd == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel:S11 Ddn\n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "DDN - mme-app IPC: Connected.\n");
+
 
 	return 0;
 }
@@ -152,9 +185,14 @@ s11_reader()
 			unsigned char *tmp_buf = (unsigned char *)
 					calloc(sizeof(char), len);
 			memcpy(tmp_buf, buffer, len);
-			//tmpBuf[len] = '\0';
+
+			MsgBuffer* tmp_buf_p = createMsgBuffer(len);
+			MsgBuffer_writeBytes(tmp_buf_p, buffer, len, true);
+			MsgBuffer_rewind(tmp_buf_p);
+
 			log_msg(LOG_INFO, "S11 Received msg len : %d \n",len);
-			insert_job(g_tpool, handle_s11_message, tmp_buf);
+
+			insert_job(g_tpool, handle_s11_message, tmp_buf_p);
 		}
 
 	}
@@ -165,6 +203,26 @@ main(int argc, char **argv)
 {
 	init_parser("conf/s11.json");
 	parse_s11_conf();
+
+	// init stack
+	gtpStack_gp = createGtpV2Stack();
+	if (gtpStack_gp == NULL)
+	{
+		log_msg(LOG_ERROR, "Error in initializing ipc.\n");
+		return -1;
+	}
+
+	csReqMsgBuf_p = createMsgBuffer(4096);
+	mbReqMsgBuf_p = createMsgBuffer(4096);
+	dsReqMsgBuf_p = createMsgBuffer(4096);
+	ddnAckMsgBuf_p = createMsgBuffer(4096);
+
+	if (csReqMsgBuf_p == NULL || mbReqMsgBuf_p == NULL || dsReqMsgBuf_p == NULL)
+	{
+		log_msg(LOG_ERROR, "Error in initializing msg buffers required by gtp codec.\n");
+		return -1;
+	}
+
 
 	/*Init writer sockets*/
 	if (init_s11_ipc() != 0) {

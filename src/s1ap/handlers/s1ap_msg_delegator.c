@@ -70,113 +70,188 @@ void
 parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		unsigned short proc_code)
 {
-    log_msg(LOG_INFO, "NAS PDU proc code: %u\n", proc_code);
+	log_msg(LOG_INFO, "NAS PDU proc code: %u\n", proc_code);
 
-    unsigned short msg_len = nas_msg_len;
+	unsigned short msg_len = nas_msg_len;
 
-    char *buffer = NULL;
-    log_msg(LOG_INFO, "NAS PDU msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
-    log_buffer_free(&buffer);
+	char *buffer = NULL;
+	log_msg(LOG_INFO, "NAS PDU msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
+	log_buffer_free(&buffer);
 
-    nas_pdu_header_sec nas_header_sec;
-    nas_pdu_header_short nas_header_short;
-    nas_pdu_header_long nas_header_long;
+#if 0
+	if(S1AP_UL_NAS_TX_MSG_CODE == proc_code) {
+		/*check whether there is security header*/
+		unsigned char header_type;
+		memcpy(&header_type, msg+1, 1);
+		header_type >>= 4;
+		if(0 == header_type) { /*not security header*/
+			log_msg(LOG_INFO, "No security header\n");
+			memcpy(&(nas->header), msg+1, 2);/*copy only till msg type*/
+		} else {
+			log_msg(LOG_INFO, "Security header\n");
+			/*now for esm resp, there is procedure tx identity, why the hell it was not there before.*/
+			/*one more donkey logic, do something!!*/
+			if(4 == header_type || ((7 == (*(msg+7) & 7)))) {
+				memcpy(&(nas->header), msg+7, 2);/*copy only till msg type*/
+				offset = 9;
+			} else {
+				unsigned char tmp;
+				memcpy(&(nas->header.message_type), msg+9, 1);/*copy only till msg type*/
+				memcpy(&(tmp), msg+7, 1);/*copy only till msg type*/
+				nas->header.security_header_type = tmp;
+				offset = 10;
+			}
+		}
+	} else {
+		memcpy(&(nas->header), msg+2, sizeof(nas_pdu_header));
+	}
 
-    unsigned char sec_header_type;
-    unsigned char protocol_discr;
+	if(S1AP_UL_NAS_TX_MSG_CODE == proc_code) {
+		/*check whether there is security header*/
+		unsigned char header_type = 0;
 
-    sec_header_type = msg[0] >> 4;
-    protocol_discr = msg[0] & 0x0F;
-    unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
-    log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
-    log_msg(LOG_INFO, "Protocol discriminator=%d\n", protocol_discr);
-    log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
+		memcpy(&header_type, msg+1, 1);
+		header_type >>= 4;
+		if(0 == header_type) { /*not security header*/
+			log_msg(LOG_INFO, "No security header\n");
+			memcpy(&(nas->header), msg+1, 2);/*copy only till msg type*/
+		} else {
+			log_msg(LOG_INFO, "Security header\n");
+			/*now for esm resp, there is procedure tx identity, why the hell it was not there before.*/
+			/*one more donkey logic, do something!!*/
+			if(4 == header_type || ((7 == (*(msg+7) & 7)))) {
+				log_msg(LOG_INFO, "header == 4 || 7\n");
+				if(header_type == 4 || header_type == 2) {
+				log_msg(LOG_INFO, "security - cihpered\n");
+				 memcpy(&(nas->header), msg+7, 2);/*copy only till msg type*/
+				 offset = 9;
+				}
+				else {
+				log_msg(LOG_INFO, "security - noned\n");
+				memcpy(&(nas->header), msg+1, 2);/*copy only till msg type*/
+				offset = 3;
+				}
+			} else {
+				unsigned char tmp;
+				memcpy(&(nas->header.message_type), msg+9, 1);/*copy only till msg type*/
+				memcpy(&(tmp), msg+7, 1);/*copy only till msg type*/
+				nas->header.security_header_type = tmp;
+				offset = 10;
+			}
+		}
+	} else if (S1AP_INITIAL_UE_MSG_CODE == proc_code ) {
+#endif
 
-    if(0 != sec_header_type) { /*security header*/
-      log_msg(LOG_INFO, "Security header\n");
+		nas_pdu_header_sec nas_header_sec;
+		nas_pdu_header_short nas_header_short;
+		nas_pdu_header_long nas_header_long;
 
-      memcpy(&nas_header_sec, msg, sizeof(nas_pdu_header_sec));
+		unsigned char sec_header_type;
+		unsigned char protocol_discr;
 
-      char *buffer = NULL;
-      log_msg(LOG_INFO, "mac=%s\n", msg_to_hex_str((char *)nas_header_sec.mac, MAC_SIZE, &buffer));
-      log_buffer_free(&buffer);
+		sec_header_type = (msg[0] >> 4) & 0x0F;
+		protocol_discr = msg[0] & 0x0F;
+		unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
+		log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
+		log_msg(LOG_INFO, "Protocol discriminator=%d\n", protocol_discr);
+		log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
 
-      log_msg(LOG_INFO, "seq no=%x\n", nas_header_sec.seq_no);
-      msg += 6;
+		if(0 != sec_header_type) { /*security header*/
+            log_msg(LOG_INFO, "Security header\n");
+            if(SERVICE_REQ_SECURITY_HEADER == sec_header_type)
+            {
+                log_msg(LOG_INFO, "Recvd security header for Service request.");
+                nas->header.security_header_type = sec_header_type;
+                nas->header.proto_discriminator = protocol_discr;
+                msg += 1;
+                nas->header.ksi = msg[0] >> 4;
+                nas->header.seq_no = msg[0] & 0x0F;
+                msg += 1;
+                memcpy(nas->header.short_mac, msg, SHORT_MAC_SIZE);
+                nas->header.message_type = NAS_SERVICE_REQUEST;
+                return;
+            }
 
-      sec_header_type = msg[0] >> 4;
-      protocol_discr = msg[0] & 0x0F;
-      unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
-      log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
-      log_msg(LOG_INFO, "Protocol discriminator=%d\n", protocol_discr);
-      log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
-      if (is_ESM) {
-              log_msg(LOG_INFO, "NAS PDU is ESM\n");
-              memcpy(&nas_header_long, msg, sizeof(nas_header_long)); /*copy only till msg type*/
-              msg += 3;
+			memcpy(&nas_header_sec, msg, sizeof(nas_pdu_header_sec));
 
-              nas->header.security_header_type = nas_header_long.security_header_type;
-              nas->header.proto_discriminator = nas_header_long.proto_discriminator;
-              nas->header.procedure_trans_identity = nas_header_long.procedure_trans_identity;
-              nas->header.message_type = nas_header_long.message_type;
-      } else {
-              log_msg(LOG_INFO, "NAS PDU is EMM\n");
-              memcpy(&nas_header_short, msg, sizeof(nas_header_short)); /*copy only till msg type*/
-              msg += 2;
+			char *buffer = NULL;
+			log_msg(LOG_INFO, "mac=%s\n", msg_to_hex_str((char *)nas_header_sec.mac, MAC_SIZE, &buffer));
+	        log_buffer_free(&buffer);
 
-              nas->header.security_header_type = nas_header_short.security_header_type;
-              nas->header.proto_discriminator = nas_header_short.proto_discriminator;
-              nas->header.message_type = nas_header_short.message_type;
-      }
-    } else {
-            log_msg(LOG_INFO, "No security header\n");
-            memcpy(&nas_header_short, msg, sizeof(nas_header_short)); /*copy only till msg type*/
-            msg += 2;
+			log_msg(LOG_INFO, "seq no=%x\n", nas_header_sec.seq_no);
+			msg += 6;
 
-            nas->header.security_header_type = nas_header_short.security_header_type;
-            nas->header.proto_discriminator = nas_header_short.proto_discriminator;
-            nas->header.message_type = nas_header_short.message_type;
-    }
+			sec_header_type = msg[0] >> 4;
+			protocol_discr = msg[0] & 0x0F;
+			unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
+			log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
+			log_msg(LOG_INFO, "Protocol discriminator=%d\n", protocol_discr);
+			log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
+			if (is_ESM) {
+				log_msg(LOG_INFO, "NAS PDU is ESM\n");
+				memcpy(&nas_header_long, msg, sizeof(nas_header_long)); /*copy only till msg type*/
+				msg += 3;
+
+				nas->header.security_header_type = nas_header_long.security_header_type;
+				nas->header.proto_discriminator = nas_header_long.proto_discriminator;
+				nas->header.procedure_trans_identity = nas_header_long.procedure_trans_identity;
+				nas->header.message_type = nas_header_long.message_type;
+			} else {
+				log_msg(LOG_INFO, "NAS PDU is EMM\n");
+				memcpy(&nas_header_short, msg, sizeof(nas_header_short)); /*copy only till msg type*/
+				msg += 2;
+
+				nas->header.security_header_type = nas_header_short.security_header_type;
+				nas->header.proto_discriminator = nas_header_short.proto_discriminator;
+				nas->header.message_type = nas_header_short.message_type;
+			}
+		} else {
+			log_msg(LOG_INFO, "No security header\n");
+			memcpy(&nas_header_short, msg, sizeof(nas_header_short)); /*copy only till msg type*/
+			msg += 2;
+
+			nas->header.security_header_type = nas_header_short.security_header_type;
+			nas->header.proto_discriminator = nas_header_short.proto_discriminator;
+			nas->header.message_type = nas_header_short.message_type;
+		}
 
 
-    log_msg(LOG_INFO, "Nas msg type: %X\n", nas->header.message_type);
+	log_msg(LOG_INFO, "Nas msg type: %X\n", nas->header.message_type);
 
-    switch(nas->header.message_type) {
-      case NAS_ESM_RESP:{
-        log_msg(LOG_INFO, "NAS_ESM_RESP recvd\n");
+	switch(nas->header.message_type) {
+	case NAS_ESM_RESP:{
+		log_msg(LOG_INFO, "NAS_ESM_RESP recvd\n");
 
-        unsigned char element_id;
-        memcpy(&element_id, msg, 1);
-        msg++;
-        nas->elements_len +=1;
+		unsigned char element_id;
+		memcpy(&element_id, msg, 1);
+		msg++;
+		nas->elements_len +=1;
 
-        /* We are handling only APN. 
-         * TODO : handle other parameters in the ESM info response 
-         */
-        nas->elements = calloc(sizeof(nas_pdu_elements), 2);
-        //if(NULL == nas.elements)...
+		nas->elements = calloc(sizeof(nas_pdu_elements), 2);
+		//if(NULL == nas.elements)...
 
-        memcpy(&(nas->elements[0].apn.len), msg, 1);
-        msg++;
-        memcpy(nas->elements[0].apn.val, msg, nas->elements[0].apn.len);
-        log_msg(LOG_INFO, "APN name - %s\n", nas->elements[0].apn.val);
-        break;
-        }
+		memcpy(&(nas->elements[0].apn.len), msg, 1);
+		msg++;
+		memcpy(nas->elements[0].apn.val, msg, nas->elements[0].apn.len);
+		log_msg(LOG_INFO, "APN name - %s\n", nas->elements[0].apn.val);
+		break;
+		}
 
-      case NAS_SEC_MODE_COMPLETE:
-        log_msg(LOG_INFO, "NAS_SEC_MODE_COMPLETE recvd\n");
-        break;
+	case NAS_SEC_MODE_COMPLETE:
+		log_msg(LOG_INFO, "NAS_SEC_MODE_COMPLETE recvd\n");
+		break;
 
-      case NAS_AUTH_RESP:
-        log_msg(LOG_INFO, "NAS_AUTH_RESP recvd\n");
-        nas->elements_len = 1;
-        /* TODO : Get rid of hardcoding */
-        nas->elements = calloc(sizeof(nas_pdu_elements), 5);
-        //if(NULL == nas.elements)...
-        unsigned short len = get_length(&msg);
-        memcpy(&(nas->elements[0].auth_resp), msg, sizeof(struct XRES));
+	case NAS_AUTH_RESP:
+		log_msg(LOG_INFO, "NAS_AUTH_RESP recvd\n");
+		nas->elements_len = 1;
+		nas->elements = calloc(sizeof(nas_pdu_elements), 5);
+		//if(NULL == nas.elements)...
+		unsigned short len = get_length(&msg);
+		memcpy(&(nas->elements[0].auth_resp), msg, sizeof(struct XRES));
 
-        break;
+		break;
+
+
 
       case NAS_AUTH_FAILURE:
         nas->elements_len = 1;
@@ -306,11 +381,12 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
                                        nas->elements_len = 1;
                                        nas->elements = calloc(sizeof(nas_pdu_elements), 1);
 
-                                       /*EPS mobility identity*/
-                                       memcpy(&(nas->elements[0].mi_guti), msg + 11, sizeof(guti));
-                                       log_msg(LOG_INFO, "M-TMSI - %d\n", nas->elements[0].mi_guti.m_TMSI);
-                                       break;
-                               }
+
+		/*EPS mobility identity*/
+		memcpy(&(nas->elements[0].mi_guti), msg + 1, sizeof(guti));
+		log_msg(LOG_INFO, "M-TMSI - %d\n", nas->elements[0].mi_guti.m_TMSI);
+		break;
+	}
 
       default:
                                log_msg(LOG_ERROR, "Unknown NAS IE type- 0x%x\n", nas->header.message_type);
@@ -566,6 +642,28 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 						proto_ies->data[i].val.rrc_est_cause = (enum ie_RRC_est_cause) *s1apRRCEstCause_p;
 						s1apRRCEstCause_p = NULL;
 					} break;
+				case ProtocolIE_ID_id_S_TMSI:
+					{
+			            S_TMSI_t*	 s1apStmsi_p = NULL;;
+                        if(InitialUEMessage_IEs__value_PR_S_TMSI == ie_p->value.present)
+                        {
+						    s1apStmsi_p = &ie_p->value.choice.S_TMSI;
+                        }
+						
+                        if (s1apStmsi_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE STMSI failed\n");
+							return -1;
+						}
+
+                        log_msg(LOG_DEBUG, "STMSI decode Success\n", no_of_IEs);
+                        //struct STMSI     s_tmsi
+                        proto_ies->data[i].IE_type = S1AP_IE_S_TMSI; 
+						memcpy(&proto_ies->data[i].val.s_tmsi.mme_code, 
+                               s1apStmsi_p->mMEC.buf, sizeof(uint8_t));
+						memcpy(&proto_ies->data[i].val.s_tmsi.m_TMSI, 
+                                s1apStmsi_p->m_TMSI.buf, sizeof(uint32_t));
+						s1apStmsi_p = NULL;
+					} break;
                 default:
                     {
                         log_msg(LOG_WARNING, "Unhandled IE %d", ie_p->id);
@@ -602,6 +700,10 @@ init_ue_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 	switch(proto_ies.data[1].val.nas.header.message_type) {
 	case NAS_ATTACH_REQUEST:
 		s1_init_ue_handler(&proto_ies, enb_fd);
+		break;
+
+	case NAS_SERVICE_REQUEST:
+		s1_init_ue_service_req_handler(&proto_ies, enb_fd);
 		break;
 
 	case NAS_DETACH_REQUEST:
@@ -722,6 +824,9 @@ s1ap_mme_decode_successfull_outcome (SuccessfulOutcome_t* msg)
 	case S1AP_INITIAL_CTX_RESP_CODE:
 		s1_init_ctx_resp_handler(msg);
 		break;
+	case S1AP_UE_CTX_RELEASE_CODE:
+		s1_ctx_release_resp_handler(msg);
+		break;
 	default:
 		log_msg(LOG_ERROR, "Unknown procedure code - %d\n",
 		         msg->procedureCode & 0x00FF);
@@ -741,30 +846,34 @@ s1ap_mme_decode_unsuccessfull_outcome (UnsuccessfulOutcome_t *msg)
 int
 s1ap_mme_decode_initiating (InitiatingMessage_t *initiating_p, int enb_fd) 
 {
-    log_msg(LOG_INFO, "proc code %d\n", initiating_p->procedureCode);
-    switch (initiating_p->procedureCode) {
-      case S1AP_SETUP_REQUEST_CODE:
-              s1_setup_handler(initiating_p, enb_fd);
-              break;
+  log_msg(LOG_INFO, "proc code %d\n", initiating_p->procedureCode);
+  switch (initiating_p->procedureCode) {
 
-      case S1AP_INITIAL_UE_MSG_CODE:
-              init_ue_msg_handler(initiating_p, enb_fd);
-              break;
+	case S1AP_SETUP_REQUEST_CODE:
+		s1_setup_handler(initiating_p, enb_fd);
+		break;
 
-      case S1AP_UL_NAS_TX_MSG_CODE:
-              UL_NAS_msg_handler(initiating_p, enb_fd);
-              break;
+	case S1AP_INITIAL_UE_MSG_CODE:
+		init_ue_msg_handler(initiating_p, enb_fd);
+		break;
 
-      case S1AP_UE_CTX_RELEASE_CODE:
-              s1_ctx_release_resp_handler(initiating_p);
-              break;
+	case S1AP_UL_NAS_TX_MSG_CODE:
+		UL_NAS_msg_handler(initiating_p, enb_fd);
+		break;
 
-      default:
-              log_msg(LOG_ERROR, "Unknown procedure code - %d\n",
-                              initiating_p->procedureCode & 0x00FF);
-              break;
-    }
-    return 0;
+	case S1AP_UE_CTX_RELEASE_REQ_CODE:
+		s1_ctx_release_req_handler(initiating_p);
+		break;
+
+	default:
+		log_msg(LOG_ERROR, "Unknown procedure code - %d\n",
+			initiating_p->procedureCode & 0x00FF);
+		break;
+	}
+	
+  //free(msg);
+	return 0;
+
 }
 
 int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
@@ -1023,3 +1132,194 @@ int convertInitCtxRspToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_
     return 0;
 }
 
+int convertUeCtxRelComplToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_ies)
+{
+    proto_ies->procedureCode = msg->procedureCode;
+    proto_ies->criticality = msg->criticality;
+	int no_of_IEs = 0;
+
+    if(msg->value.present == SuccessfulOutcome__value_PR_UEContextReleaseComplete)
+    {
+        ProtocolIE_Container_129P25_t* protocolIes 
+            = &msg->value.choice.UEContextReleaseComplete.protocolIEs;
+        no_of_IEs = protocolIes->list.count;
+        proto_ies->no_of_IEs = no_of_IEs;
+
+        log_msg(LOG_INFO, "No of IEs = %d\n", no_of_IEs);
+        proto_ies->data = calloc(sizeof(struct proto_IE_data), no_of_IEs);
+        if(proto_ies->data == NULL)
+        {
+            log_msg(LOG_ERROR,"Malloc failed for protocol IE.");
+            return -1;
+        }
+		for (int i = 0; i < protocolIes->list.count; i++) {
+			UEContextReleaseComplete_IEs_t *ie_p;
+			ie_p = protocolIes->list.array[i];
+			switch(ie_p->id) {
+				case ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+					{
+                        ENB_UE_S1AP_ID_t *s1apENBUES1APID_p = NULL;
+                        if(UEContextReleaseComplete_IEs__value_PR_ENB_UE_S1AP_ID == ie_p->value.present)
+                        {
+						    s1apENBUES1APID_p = &ie_p->value.choice.ENB_UE_S1AP_ID;
+                        }
+						
+                        if (s1apENBUES1APID_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE eNB_UE_S1AP_ID failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_ENB_UE_ID; 
+						memcpy(&proto_ies->data[i].val.enb_ue_s1ap_id, s1apENBUES1APID_p, sizeof(ENB_UE_S1AP_ID_t));
+						s1apENBUES1APID_p = NULL;
+					} break;
+				case ProtocolIE_ID_id_MME_UE_S1AP_ID:
+					{
+                        MME_UE_S1AP_ID_t *s1apMMEUES1APID_p = NULL;
+                        if(UEContextReleaseComplete_IEs__value_PR_MME_UE_S1AP_ID == ie_p->value.present)
+                        {
+						    s1apMMEUES1APID_p = &ie_p->value.choice.MME_UE_S1AP_ID;
+                        }
+						
+                        if (s1apMMEUES1APID_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE MME_UE_S1AP_ID failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_MME_UE_ID; 
+						memcpy(&proto_ies->data[i].val.mme_ue_s1ap_id, s1apMMEUES1APID_p, sizeof(MME_UE_S1AP_ID_t));
+						s1apMMEUES1APID_p = NULL;
+					} break;
+                default:
+                    {
+                        log_msg(LOG_WARNING, "Unhandled IE %d\n", ie_p->id);
+                    }
+			}
+		}
+     }
+
+    return 0;
+}
+
+int convertUeCtxRelReqToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
+{
+    proto_ies->procedureCode = msg->procedureCode;
+    proto_ies->criticality = msg->criticality;
+	int no_of_IEs = 0;
+
+    if(msg->value.present == InitiatingMessage__value_PR_UEContextReleaseRequest)
+    {
+        ProtocolIE_Container_129P23_t* protocolIes 
+            = &msg->value.choice.UEContextReleaseRequest.protocolIEs;
+        no_of_IEs = protocolIes->list.count;
+        proto_ies->no_of_IEs = no_of_IEs;
+
+        log_msg(LOG_INFO, "No of IEs = %d\n", no_of_IEs);
+        proto_ies->data = calloc(sizeof(struct proto_IE_data), no_of_IEs);
+        if(proto_ies->data == NULL)
+        {
+            log_msg(LOG_ERROR,"Malloc failed for protocol IE.");
+            return -1;
+        }
+		for (int i = 0; i < protocolIes->list.count; i++) {
+			UEContextReleaseRequest_IEs_t *ie_p;
+			ie_p = protocolIes->list.array[i];
+			switch(ie_p->id) {
+				case ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+					{
+                        ENB_UE_S1AP_ID_t *s1apENBUES1APID_p = NULL;
+                        if(UEContextReleaseRequest_IEs__value_PR_ENB_UE_S1AP_ID == ie_p->value.present)
+                        {
+						    s1apENBUES1APID_p = &ie_p->value.choice.ENB_UE_S1AP_ID;
+                        }
+						
+                        if (s1apENBUES1APID_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE eNB_UE_S1AP_ID failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_ENB_UE_ID; 
+						memcpy(&proto_ies->data[i].val.enb_ue_s1ap_id, s1apENBUES1APID_p, sizeof(ENB_UE_S1AP_ID_t));
+						s1apENBUES1APID_p = NULL;
+					} break;
+				case ProtocolIE_ID_id_MME_UE_S1AP_ID:
+					{
+                        MME_UE_S1AP_ID_t *s1apMMEUES1APID_p = NULL;
+                        if(UEContextReleaseRequest_IEs__value_PR_MME_UE_S1AP_ID == ie_p->value.present)
+                        {
+						    s1apMMEUES1APID_p = &ie_p->value.choice.MME_UE_S1AP_ID;
+                        }
+						
+                        if (s1apMMEUES1APID_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE MME_UE_S1AP_ID failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_MME_UE_ID; 
+						memcpy(&proto_ies->data[i].val.mme_ue_s1ap_id, s1apMMEUES1APID_p, sizeof(MME_UE_S1AP_ID_t));
+						s1apMMEUES1APID_p = NULL;
+					} break;
+				case ProtocolIE_ID_id_Cause:
+					{
+                        Cause_t *s1apCause_p = NULL;
+                        if(UEContextReleaseRequest_IEs__value_PR_Cause == ie_p->value.present)
+                        {
+						    s1apCause_p = &ie_p->value.choice.Cause;
+                        }
+						
+                        if (s1apCause_p == NULL) {
+							log_msg (LOG_ERROR, "Decoding of IE Cause failed\n");
+							return -1;
+						}
+
+                        proto_ies->data[i].IE_type = S1AP_IE_CAUSE;
+                        proto_ies->data[i].val.cause.present = s1apCause_p->present;
+                        switch(s1apCause_p->present)
+                        {
+                            case Cause_PR_radioNetwork:
+							    log_msg (LOG_DEBUG, "RadioNetwork case : %d\n",
+                                          s1apCause_p->choice.radioNetwork);
+                                proto_ies->data[i].val.cause.choice.radioNetwork
+                                    = s1apCause_p->choice.radioNetwork;
+                                break;
+                            case Cause_PR_transport:
+							    log_msg (LOG_DEBUG, "Transport case : %d\n",
+                                          s1apCause_p->choice.transport);
+                                proto_ies->data[i].val.cause.choice.transport
+                                    = s1apCause_p->choice.transport;
+                                break;
+                            case Cause_PR_nas:
+							    log_msg (LOG_DEBUG, "Nas case : %d\n",
+                                          s1apCause_p->choice.nas);
+                                proto_ies->data[i].val.cause.choice.nas
+                                    = s1apCause_p->choice.nas;
+                                break;
+                            case Cause_PR_protocol:
+							    log_msg (LOG_DEBUG, "Protocol case : %d\n",
+                                          s1apCause_p->choice.protocol);
+                                proto_ies->data[i].val.cause.choice.protocol
+                                    = s1apCause_p->choice.protocol;
+                                break;
+                            case Cause_PR_misc:
+							    log_msg (LOG_DEBUG, "Misc case : %d\n",
+                                          s1apCause_p->choice.misc);
+                                proto_ies->data[i].val.cause.choice.misc
+                                    = s1apCause_p->choice.misc;
+                                break;
+                            case Cause_PR_NOTHING:
+                            default:
+                                log_msg(LOG_WARNING, "Unknown cause %d\n", s1apCause_p->present);
+
+                        }
+						s1apCause_p = NULL;
+					} break;
+                default:
+                    {
+                        log_msg(LOG_WARNING, "Unhandled IE %d\n", ie_p->id);
+                    }
+			}
+		}
+     }
+
+    return 0;
+}
