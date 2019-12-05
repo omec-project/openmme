@@ -1,3 +1,22 @@
+/*
+* Copyright 2019-present Open Networking Foundation
+*
+* SPDX-License-Identifier: Apache-2.0
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*  http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -68,23 +87,25 @@ read_next_msg()
 * Stage specific message processing.
 */
 static int
-stage3_processing()
+identity_response_processing()
 {
 	/*Parse and validate  the buffer*/
 	struct identityResp_Q_msg *id_resp = (struct identityResp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(id_resp->ue_idx);
 
-	ue_entry->ue_state = STAGE3_WAITING;
 	/*Check the state*/
 	if(SUCCESS != id_resp->status) 
     {
 	  return E_FAIL; 
 	}
-	log_msg(LOG_INFO, "Stage 3: Auth resp done for UE: %d\n",
+	log_msg(LOG_INFO, "Identity response done for UE: %d\n",
 		id_resp->ue_idx);
 
-    /* validate IMSI ?? */
-	/*Ready post to next processing*/
+    /* 
+     * update the IMSI and continue attach procedure  
+     */
+    memcpy(ue_entry->IMSI, id_resp->IMSI, BINARY_IMSI_LEN);
+	/* Ready post to next processing*/
 	return SUCCESS;
 }
 
@@ -96,7 +117,8 @@ post_to_next()
 {
 	struct identityResp_Q_msg *idresp = (struct identityResp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(idresp->ue_idx);
-	log_msg(LOG_ERROR, "Stich the fsm and pass this identity response to UE fsm. UE-%d.\n", idresp->ue_idx);
+	log_msg(LOG_INFO, "Stich the fsm and pass this identity response to UE fsm. UE-%d.\n", idresp->ue_idx);
+    post_to_hss_stage(ue_entry->ue_index); 
 	return SUCCESS;
 }
 
@@ -128,7 +150,7 @@ identity_rsp_handler(void *data)
 	while(1){
 		read_next_msg();
 
-		int ret = stage3_processing();
+		int ret = identity_response_processing();
 
         if(ret == SUCCESS)
         {

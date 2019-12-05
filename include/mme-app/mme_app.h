@@ -78,6 +78,7 @@ void* detach_stage2_handler(void *);
 void* detach_stage3_handler(void *);
 void  guti_attach_post_to_next(int index);
 void *identity_rsp_handler(void *);
+int post_to_hss_stage(int idx);
 
 //for testing, delete it
 void
