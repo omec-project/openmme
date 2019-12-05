@@ -77,6 +77,7 @@
 #include "arpIe.h"
 #include "throttlingIe.h"
 #include "pagingAndServiceInformationIe.h"
+#include "bearerContextIe.h"
 
 GtpV2IeFactory::GtpV2IeFactory() 
 {
@@ -284,6 +285,9 @@ GtpV2IeFactory::GtpV2IeFactory()
 
     PagingAndServiceInformationIe* pagingAndServiceInformationIe_p = new (PagingAndServiceInformationIe);
     ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(PagingAndServiceInformationIeType, pagingAndServiceInformationIe_p));
+
+    BearerContextIe* bearerContextIe_p = new (BearerContextIe);
+    ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(BearerContextIeType, bearerContextIe_p));
 
 
 }

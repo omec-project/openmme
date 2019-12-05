@@ -8,8 +8,8 @@
 #ifndef GTPV2MESSAGE_H_
 #define GTPV2MESSAGE_H_
 
-#include "../../../cmn/basicTypes.h"
-#include "../../../cmn/msgBuffer.h"
+#include "basicTypes.h"
+#include "msgBuffer.h"
 #include "../../../gtpV2Codec/msgClasses/gtpV2MsgDataTypes.h"
 
 class GtpV2Message {

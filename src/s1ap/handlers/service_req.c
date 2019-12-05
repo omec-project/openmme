@@ -93,7 +93,7 @@ s1_init_ue_service_req_handler(struct proto_IE *service_req_ies, int enb_fd)
                        == g_s1ap_cfg.mme_code)
                     {
                         log_msg(LOG_INFO, "Service Req MME Code matched.\n");
-                        req.ue_idx = service_req_ies->data[i].val.s_tmsi.m_TMSI;
+                        req.ue_idx = ntohl(service_req_ies->data[i].val.s_tmsi.m_TMSI);
                         memcpy(&req.s_tmsi, 
                         &service_req_ies->data[i].val.s_tmsi,
                          sizeof(struct STMSI));

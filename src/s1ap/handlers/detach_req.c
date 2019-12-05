@@ -64,11 +64,15 @@ detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit)
                         req.ue_idx = detach_ies->data[i].val.mme_ue_s1ap_id;
                     }
                 }break;
+            case S1AP_IE_ENB_UE_ID:
+                {
+                    req.s1ap_enb_ue_id = detach_ies->data[i].val.enb_ue_s1ap_id;
+                }break;
             case S1AP_IE_NAS_PDU:
                 {
                     if(retransmit)
                     {
-                        req.ue_idx = ntohl(detach_ies->data[i].val.nas.elements[0].mi_guti.m_TMSI);
+                        req.ue_idx = detach_ies->data[i].val.nas.elements[0].mi_guti.m_TMSI;
                     }
                 }break;
             default:

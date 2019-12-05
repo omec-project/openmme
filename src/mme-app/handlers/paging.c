@@ -61,9 +61,9 @@ init_stage()
 {
 	log_msg(LOG_INFO, "DDN reader complete: waiting\n");
 	if ((g_Q_ddn_fd  = open_ipc_channel(
-					S6A_DDN_QUEUE, IPC_READ)) == -1){
+					S11_DDN_QUEUE, IPC_READ)) == -1){
 		log_msg(LOG_ERROR, "Error in opening reader - DDN"
-				"S6A IPC channel.\n");
+				"S11 IPC channel.\n");
 		pthread_exit(NULL);
 	}
 	log_msg(LOG_INFO, "DDN reader complete: Connected\n");

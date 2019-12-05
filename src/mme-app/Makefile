@@ -43,7 +43,7 @@ ifeq ($(DEBUG),false)
 endif
 
 INCS := $(INC_DIRS) \
-	-I../gtpV2Codec \
+	-I../gtpV2Codec -I../cmn \
 
 LIBS := -lpthread -lcrypto
 #-L$(LIB_PATH) -ls6a

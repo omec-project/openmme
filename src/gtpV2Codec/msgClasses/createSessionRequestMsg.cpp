@@ -246,6 +246,29 @@ bool CreateSessionRequestMsg::encodeCreateSessionRequestMsg(MsgBuffer &buffer,
         }
     }
 
+    // Encode the Ie Header
+    header.ieType = RatTypeIeType;
+    header.instance = 0;
+    header.length = 0; // We will encode the IE first and then update the length
+    GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+    startIndex = buffer.getCurrentIndex(); 
+    RatTypeIe ratType=
+     dynamic_cast<
+	 RatTypeIe&>(GtpV2IeFactory::getInstance().getIeObject(RatTypeIeType));
+	 rc = ratType.encodeRatTypeIe(buffer, data.ratType);
+    endIndex = buffer.getCurrentIndex();
+    length = endIndex - startIndex;
+
+    // encode the length value now
+    buffer.goToIndex(startIndex - 3);
+    buffer.writeUint16(length, false);
+    buffer.goToIndex(endIndex);
+
+    if (!(rc))
+    { 
+      errorStream.add("Failed to encode IE: ratType\n");
+      return false;
+    }
 
     if (data.indicationFlagsIePresent)
     {
@@ -275,6 +298,30 @@ bool CreateSessionRequestMsg::encodeCreateSessionRequestMsg(MsgBuffer &buffer,
         }
     }
 
+    // Encode the Ie Header
+    header.ieType = FTeidIeType;
+    header.instance = 0;
+    header.length = 0; // We will encode the IE first and then update the length
+    GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+    startIndex = buffer.getCurrentIndex(); 
+    FTeidIe fTeid=
+     dynamic_cast<
+		 FTeidIe&>(GtpV2IeFactory::getInstance().getIeObject(FTeidIeType));
+    rc = fTeid.encodeFTeidIe(buffer, data.senderFTeidForControlPlane);
+    endIndex = buffer.getCurrentIndex();
+    length = endIndex - startIndex;
+
+    // encode the length value now
+    buffer.goToIndex(startIndex - 3);
+    buffer.writeUint16(length, false);
+    buffer.goToIndex(endIndex);
+
+    if (!(rc))
+    { 
+      errorStream.add("Failed to encode IE: senderFTeidForControlPlane\n");
+      return false;
+    }
+    
 
     if (data.pgwS5S8AddressForControlPlaneOrPmipIePresent)
     {
@@ -332,6 +379,31 @@ bool CreateSessionRequestMsg::encodeCreateSessionRequestMsg(MsgBuffer &buffer,
             return false;
         }
     }
+
+    // Encode the Ie Header
+    header.ieType = ApnIeType;
+    header.instance = 0;
+    header.length = 0; // We will encode the IE first and then update the length
+    GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+    startIndex = buffer.getCurrentIndex(); 
+    ApnIe apn=
+     dynamic_cast<
+	 ApnIe&>(GtpV2IeFactory::getInstance().getIeObject(ApnIeType));
+    rc = apn.encodeApnIe(buffer, data.accessPointName);
+    endIndex = buffer.getCurrentIndex();
+    length = endIndex - startIndex;
+
+    // encode the length value now
+    buffer.goToIndex(startIndex - 3);
+    buffer.writeUint16(length, false);
+    buffer.goToIndex(endIndex);
+
+    if (!(rc))
+    { 
+      errorStream.add("Failed to encode IE: accessPointName\n");
+      return false;
+    }
+
 
     if (data.pdnTypeIePresent)
     {
@@ -445,6 +517,7 @@ bool CreateSessionRequestMsg::encodeCreateSessionRequestMsg(MsgBuffer &buffer,
         }
     }
 
+
     if (data.linkedEpsBearerIdIePresent)
     {
             
@@ -527,6 +600,44 @@ bool CreateSessionRequestMsg::encodeCreateSessionRequestMsg(MsgBuffer &buffer,
             errorStream.add("Failed to encode IE: protocolConfigurationOptions\n");
             return false;
         }
+    }
+
+ // First validate if the applicatoin provided more than the expected cardinality
+ if (data.bearerContextsToBeCreatedCount > 11)
+ {
+     errorStream.add("Number of entries of bearerContextsToBeCreated exceeded\n");
+     errorStream.add("Expected count: 11 Received count: ");
+     errorStream.add("data.bearerContextsToBeCreatedCount");
+     errorStream.endOfLine();
+     return false;
+ }
+ for (Uint8 i = 0; i < data.bearerContextsToBeCreatedCount; i++)
+ {
+     // Encode the Ie Header
+      header.ieType = BearerContextIeType;
+      header.instance = 0;
+      header.length = 0; // We will encode the IE first and then update the length
+      GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+      startIndex = buffer.getCurrentIndex(); 
+      BearerContextIe bearerContext=
+      dynamic_cast<
+      BearerContextIe&>(GtpV2IeFactory::getInstance().
+      getIeObject(BearerContextIeType));
+      BearerContextsToBeCreatedInCreateSessionRequest groupedIeInstance = dynamic_cast<BearerContextsToBeCreatedInCreateSessionRequest&>(bearerContext.getGroupedIe(msgType, 0));
+      rc = groupedIeInstance.encodeBearerContextsToBeCreatedInCreateSessionRequest(buffer, data.bearerContextsToBeCreated[i]);
+     endIndex = buffer.getCurrentIndex();
+     length = endIndex - startIndex;
+
+     // encode the length value now
+     buffer.goToIndex(startIndex - 3);
+     buffer.writeUint16(length, false);
+     buffer.goToIndex(endIndex);
+  }
+
+    if (!(rc))
+    { 
+      errorStream.add("Failed to encode IE: bearerContextsToBeCreated\n");
+      return false;
     }
 
 

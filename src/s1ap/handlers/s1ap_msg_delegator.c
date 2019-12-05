@@ -149,7 +149,7 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		unsigned char sec_header_type;
 		unsigned char protocol_discr;
 
-		sec_header_type = msg[0] >> 4;
+		sec_header_type = (msg[0] >> 4) & 0x0F;
 		protocol_discr = msg[0] & 0x0F;
 		unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
 		log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
@@ -358,7 +358,7 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		nas->elements = calloc(sizeof(nas_pdu_elements), 1);
 
 		/*EPS mobility identity*/
-		memcpy(&(nas->elements[0].mi_guti), msg + 11, sizeof(guti));
+		memcpy(&(nas->elements[0].mi_guti), msg + 1, sizeof(guti));
 		log_msg(LOG_INFO, "M-TMSI - %d\n", nas->elements[0].mi_guti.m_TMSI);
 		break;
 	}

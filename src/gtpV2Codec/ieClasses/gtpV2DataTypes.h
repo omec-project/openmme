@@ -8,7 +8,7 @@
 #ifndef GTPV2DATATYPES_H_
 #define GTPV2DATATYPES_H_
 
-#include "../../cmn/basicTypes.h"
+#include "basicTypes.h"
 
 typedef struct
 {

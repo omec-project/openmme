@@ -90,14 +90,14 @@ convert_imsi_to_digits_array(uint8_t *src, uint8_t *dest, uint32_t len)
 
 	for(uint32_t i = 1; i <= len; i++)
 	{
-		msb_digit = (src[i-1] & 0xF0 >> 4);
+		msb_digit = ((src[i-1] & 0xF0) >> 4);
 		dest[(i-1)*2] = msb_digit;
 
 		if (msb_digit != 0x0F)
 			num_of_digits++;
 
 		if (i != len) {
-			lsb_digit = (src[i] & 0x0F << 4 );
+			lsb_digit = (src[i] & 0x0F);
 			dest[(i*2)-1] = lsb_digit;
 
 			if (lsb_digit != 0x0F)

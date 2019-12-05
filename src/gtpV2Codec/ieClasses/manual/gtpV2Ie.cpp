@@ -7,7 +7,7 @@
 
 #include "../../../gtpV2Codec/ieClasses/manual/gtpV2Ie.h"
 
-#include "../../../cmn/msgBuffer.h"
+#include "msgBuffer.h"
 
 #define GTP_V2_IE_HEADER_LENGTH 4
 GtpV2Ie::GtpV2Ie() {

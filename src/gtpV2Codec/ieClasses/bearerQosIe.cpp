@@ -96,6 +96,7 @@ bool BearerQosIe::decodeBearerQosIe(MsgBuffer &buffer, BearerQosIeData &data, Ui
         errorStream.add("Attempt to read beyond IE boundary: pl\n");
         return false;
     }
+    buffer.skipBits(1);
     data.pvi = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)

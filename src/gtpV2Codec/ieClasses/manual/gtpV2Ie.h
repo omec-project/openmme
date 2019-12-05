@@ -8,8 +8,8 @@
 #ifndef GTPV2IE_H_
 #define GTPV2IE_H_
 
-#include "../../../cmn/basicTypes.h"
-#include "../../../cmn/msgBuffer.h"
+#include "basicTypes.h"
+#include "msgBuffer.h"
 #include "../gtpV2IeDataTypes.h"
 
 #define IE_HEADER_SIZE 4
