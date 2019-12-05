@@ -221,6 +221,7 @@ get_icsreq_protoie_value(struct proto_IE *value)
 	get_negotiated_qos_value(&nasIEs[nasIeCnt].esm_msg.negotiated_qos);
 	nasIeCnt++;
 
+        /* Send the allocated GUTI to UE  */
 	nasIEs[nasIeCnt].mi_guti.odd_even_indication = 0;
 	nasIEs[nasIeCnt].mi_guti.id_type = 6;
 	memcpy(&(nasIEs[nasIeCnt].mi_guti.plmn_id),

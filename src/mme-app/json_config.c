@@ -60,5 +60,11 @@ parse_mme_conf()
 	g_mme_cfg.mnc_dig3 = get_int_scalar("mme.mnc.dig3");
 	if(E_PARSING_FAILED == g_mme_cfg.mcc_dig1) return E_PARSING_FAILED;
 
+	g_mme_cfg.mme_group_id = get_int_scalar("mme.group_id");
+	if(-1 == g_mme_cfg.mme_group_id) return -1;
+
+	g_mme_cfg.mme_code = get_int_scalar("mme.code");
+	if(-1 == g_mme_cfg.mme_code) return -1;
+
 	return SUCCESS;
 }

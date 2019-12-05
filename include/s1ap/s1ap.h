@@ -92,6 +92,9 @@ int s1_attach_complete_handler(struct proto_IE *s1_esm_resp_ies);
 int
 detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit);
 
+int 
+s1_identity_resp_handler(struct proto_IE *s1);
+
 int
 s1_init_ue_service_req_handler(struct proto_IE *service_req_ies, int enb_fd);
 

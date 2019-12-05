@@ -24,6 +24,8 @@
 
 int g_index_list_queue[UE_POOL_CNT+1];
 
+/*Counter UE list. Add each element sequentially when UE attaches*/
+int g_UE_cnt = 0;
 int g_out_index= 0;
 int g_in_index = 1;
 
@@ -31,6 +33,25 @@ int g_in_index = 1;
  * Input :
  * Output: Get the index of the detached UE from the list.
  */
+
+int allocate_ue_index()
+{
+  int index = ++g_UE_cnt;
+  if (index%UE_POOL_CNT == 0) {
+  
+  	log_msg(LOG_INFO, "UE Buffer Pool is full \n");
+  	g_UE_cnt--;
+  	index = get_index_from_list();
+  
+  	if (index != -1) {
+  		log_msg(LOG_INFO, "Index is  received from the list\n");
+  	} else {
+  		log_msg(LOG_ERROR, "Error: No Index found in the list \n");
+  	}
+  
+  }
+  return index;
+}
 
 
 int get_index_from_list()

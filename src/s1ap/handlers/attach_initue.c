@@ -74,10 +74,25 @@ s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
                 {
                     ue_info.esm_info_tx_required =
                         s1_init_ies->data[i].val.nas.elements[2].esm_info_tx_required;
-                    memcpy(&(ue_info.IMSI), &(s1_init_ies->data[i].val.nas.elements[0].IMSI),
-                           BINARY_IMSI_LEN);
+                    ue_info.flags = s1_init_ies->data[i].val.nas.flags;
+        	        if(UE_ID_IMSI(s1_init_ies->data[i].val.nas.flags))
+        	        { 
+		                memcpy(&(ue_info.IMSI), &(s1_init_ies->data[i].val.nas.elements[0].IMSI),
+   			                BINARY_IMSI_LEN);
+        	        }
+        	        else if(UE_ID_GUTI(s1_init_ies->data[i].val.nas.flags))
+		            {
+	                    memcpy(&(ue_info.mi_guti), &(s1_init_ies->data[i].val.nas.elements[0].mi_guti),
+ 	   		            sizeof(struct guti));
+		            }
+                    // If not IMSI & not GUTI then its IMEI..
+                    // NEW REQUIREMENT : emergency call handling 
+
+	                memcpy(&(ue_info.tai), &(s1_init_ies->data[i].val.tai), sizeof(struct TAI));
+	                memcpy(&(ue_info.utran_cgi), &(s1_init_ies->data[i].val.utran_cgi),
+ 			                sizeof(struct CGI));
                     memcpy(&(ue_info.ue_net_capab),
-                           &(s1_init_ies->data[i].val.nas.elements[1].ue_network),
+                           &(s1_init_ies->data[i].val.nas.elements[i].ue_network),
                            sizeof(struct UE_net_capab));
                     memcpy(&(ue_info.ms_net_capab),
                            &(s1_init_ies->data[i].val.nas.elements[4].ms_network),

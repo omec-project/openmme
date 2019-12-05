@@ -251,111 +251,136 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 
 		break;
 
-	case NAS_AUTH_FAILURE:
-		nas->elements_len = 1;
-		nas->elements = calloc(sizeof(nas_pdu_elements), 1);
-		//if(NULL == nas.elements)...
+
+
+      case NAS_AUTH_FAILURE:
+        nas->elements_len = 1;
+        nas->elements = calloc(sizeof(nas_pdu_elements), 1);
+        //if(NULL == nas.elements)...
         char err = *(char*)(msg);
         if(err == AUTH_SYNC_FAILURE)
         {
-            log_msg(LOG_INFO, "AUTH Sync Failure. Start Re-Sync");
-            memcpy(&(nas->elements[0].auth_fail_resp), msg + 2, sizeof(struct AUTS));
+                log_msg(LOG_INFO, "AUTH Sync Failure. Start Re-Sync");
+                memcpy(&(nas->elements[0].auth_fail_resp), msg + 2, sizeof(struct AUTS));
         }
         else
         {
-            log_msg(LOG_ERROR, "Authentication Failure. Mac Failure");
+                log_msg(LOG_ERROR, "Authentication Failure. Mac Failure");
         }
 
-		break;
+        break;
 
-	case NAS_ATTACH_REQUEST:{
-		log_msg(LOG_INFO, "NAS_ATTACH_REQUEST recvd\n");
-		//msg += offset;
-		//short offset = 0;
-		unsigned char tmp = msg[0];
-		nas->header.security_encryption_algo = (tmp & 0xF0) >> 4;
-		nas->header.security_integrity_algo = tmp & 0x0F;
-		msg++;
+      case NAS_ATTACH_REQUEST:{
+        log_msg(LOG_INFO, "NAS_ATTACH_REQUEST recvd\n");
+        unsigned char tmp = msg[0];
+        /* 1 byte is NAS Key set Id + EPS attach Type.. i am confused with following 
+         * variable names 
+         */
+        nas->header.security_encryption_algo = (tmp & 0xF0) >> 4;
+        nas->header.security_integrity_algo = tmp & 0x0F;
+        msg++;
 
-		nas->elements_len = 6;
-		nas->elements = calloc(sizeof(nas_pdu_elements), 6);
-		//if(NULL == nas.elements)...
+        nas->elements_len = 6;
+        nas->elements = calloc(sizeof(nas_pdu_elements), 6);
+        //if(NULL == nas.elements)...
 
-		/*EPS mobility identity*/
-		//memcpy(&(nas->elements[0].IMSI), msg+6, BINARY_IMSI_LEN);
-		/*TODO: This encoding/decoding has issue with sprirent and ng40. IMSI
-		 * is packed differently.*/
-		/*Code working with ng40 */
-		unsigned short imsi_len = get_length(&msg);
-		log_msg(LOG_INFO, "IMSI len=%u - %u\n", imsi_len, BINARY_IMSI_LEN);
-		memcpy(&(nas->elements[0].IMSI), msg, imsi_len);
-		msg += imsi_len;
+        /*EPS mobility identity*/
+        unsigned short imsi_len = get_length(&msg);
+        // TODO : support even number of digits in IMSI 
+        bool odd = msg[0] & 0x08; // if this bit is set then odd number of digits in identity
+        unsigned char eps_identity = msg[0] & 0x07;
+        switch(eps_identity) {
+          case 0x01: {
+            // Mobile Identity contains imsi
+            nas->flags |= NAS_MSG_UE_IE_IMSI;
+            log_msg(LOG_INFO, "IMSI len=%u - %u\n", imsi_len, BINARY_IMSI_LEN);
+            memcpy(&(nas->elements[0].IMSI), msg, imsi_len);
+            break;
+          } 
+          case 0x06: {
+            log_msg(LOG_INFO, "Mobile identity GUTI Rcvd \n");
+            // Mobile Identity contains GUTI
+            // MCC+MNC offset = 3
+            // MME Group Id   = 2
+            // MME Code       = 1
+            // MTMSI offset from start of this AVP = 3 + 2 + 1
+            memcpy(&nas->elements[0].mi_guti.plmn_id.idx, &msg[1], 3);
+            nas->elements[0].mi_guti.mme_grp_id = ntohs(*(short int *)(&msg[4]));
+            nas->elements[0].mi_guti.mme_code = msg[6];
+            nas->elements[0].mi_guti.m_TMSI = ntohl(*((unsigned int *)(&msg[7])));
+            log_msg(LOG_INFO, "NAS Attach Request Rcvd ID: GUTI. PLMN id %d %d %d \n", nas->elements[0].mi_guti.plmn_id.idx[0], nas->elements[0].mi_guti.plmn_id.idx[1], nas->elements[0].mi_guti.plmn_id.idx[2] );
+            log_msg(LOG_INFO, "NAS Attach Request Rcvd ID: GUTI. mme group id = %d, MME code %d  mtmsi = %d\n", nas->elements[0].mi_guti.mme_grp_id, nas->elements[0].mi_guti.mme_code, nas->elements[0].mi_guti.m_TMSI);
+            nas->flags |= NAS_MSG_UE_IE_GUTI;
+            break;
+          }
+          case 0x03: {
+            // Mobile Identity contains imei
+            break;
+          } 
+        }
 
-		/*Code working with sprirent and Polaris*/
-		/*
-		memcpy(&(nas->elements[0].IMSI), msg+5, BINARY_IMSI_LEN);
-		offset = 5 + BINARY_IMSI_LEN ;
-		*/
+        msg += imsi_len;
 
-		char *buffer = NULL;
-		log_msg(LOG_INFO, "IMSI=%s [to be read nibble-swapped]\n",
-			msg_to_hex_str((char *)nas->elements[0].IMSI, imsi_len, &buffer));
-	    log_buffer_free(&buffer);
+        char *buffer = NULL;
+        log_msg(LOG_INFO, "IMSI=%s [to be read nibble-swapped]\n",
+                        msg_to_hex_str((char *)nas->elements[0].IMSI, imsi_len, &buffer));
+        log_buffer_free(&buffer);
 
-		/*UE network capacity*/
-		nas->elements[1].ue_network.len = msg[0];
-		msg++;
-		memcpy((nas->elements[1].ue_network.capab), msg, nas->elements[1].ue_network.len);
-		msg += nas->elements[1].ue_network.len;
+        /*UE network capability*/
+        nas->elements[1].ue_network.len = msg[0];
+        msg++;
+        memcpy((nas->elements[1].ue_network.capab), msg, nas->elements[1].ue_network.len);
+        msg += nas->elements[1].ue_network.len;
 
-		/*ESM msg container*/
-		len = msg[0] << 8 | msg[1];
-		msg += 2;
-		log_msg(LOG_INFO, "len=%x\n", len);
-		log_msg(LOG_INFO, "msg[0]=%x\n", msg[0]);
-		nas->elements[5].pti = msg[1];
-		unsigned char val = msg[4];
-		log_msg(LOG_INFO, "pti=%x\n", nas->elements[5].pti);
-		log_msg(LOG_INFO, "val=%x\n", val);
-		/*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
-		 * +pdn_type(1)*/
-		/*element id 13(1101....) = "esm required" flag*/
-		nas->elements[2].esm_info_tx_required = false;
-		if(13 == (val>>4)) {
-			nas->elements[2].esm_info_tx_required = true;
-			if(val & 1) {
-				nas->elements[2].esm_info_tx_required = true;
-			}
-		}
-		msg += len;
+        /*ESM msg container*/
+        len = msg[0] << 8 | msg[1];
+        msg += 2;
+        log_msg(LOG_INFO, "len=%x\n", len);
+        log_msg(LOG_INFO, "msg[0]=%x\n", msg[0]);
+        nas->elements[5].pti = msg[1];
+        unsigned char val = msg[4];
+        log_msg(LOG_INFO, "pti=%x\n", nas->elements[5].pti);
+        log_msg(LOG_INFO, "val=%x\n", val);
+        /*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
+         * +pdn_type(1)*/
+        /*element id 13(1101....) = "esm required" flag*/
+        nas->elements[2].esm_info_tx_required = false;
+        if(13 == (val>>4)) {
+                nas->elements[2].esm_info_tx_required = true;
+                if(val & 1) {
+                        nas->elements[2].esm_info_tx_required = true;
+                }
+        }
+        msg += len;
 
-		/*DRX parameter*/
-		msg += 3;
+        /*DRX parameter*/
+        msg += 3;
 
-		/*MS network capability*/
-		nas->elements[4].ms_network.element_id = msg[0];
-		msg++;
-		nas->elements[4].ms_network.len = msg[0];
-		msg++;
-		memcpy(nas->elements[4].ms_network.capab, msg,
-			nas->elements[4].ms_network.len);
-		log_msg(LOG_INFO, "element_id=%x\n", nas->elements[4].ms_network.element_id);
-		log_msg(LOG_INFO, "len=%x\n", nas->elements[4].ms_network.len);
-		log_msg(LOG_INFO, "network.capab=%s\n", msg_to_hex_str((char *)nas->elements[4].ms_network.capab, nas->elements[4].ms_network.len, &buffer));
-		log_buffer_free(&buffer);
+        /*MS network capability*/
+        nas->elements[4].ms_network.element_id = msg[0];
+        msg++;
+        nas->elements[4].ms_network.len = msg[0];
+        msg++;
+        memcpy(nas->elements[4].ms_network.capab, msg,
+                        nas->elements[4].ms_network.len);
+        log_msg(LOG_INFO, "element_id=%x\n", nas->elements[4].ms_network.element_id);
+        log_msg(LOG_INFO, "len=%x\n", nas->elements[4].ms_network.len);
+        log_msg(LOG_INFO, "network.capab=%s\n", msg_to_hex_str((char *)nas->elements[4].ms_network.capab, nas->elements[4].ms_network.len, &buffer));
+        log_buffer_free(&buffer);
 
-		break;
-		}
+        break;
+        }
 
-	case NAS_ATTACH_COMPLETE:
-		log_msg(LOG_INFO, "NAS_ATTACH_COMPLETE recvd\n");
-		/*Other than error check there seems no information to pass to mme. Marking TODO for protocol study*/
-		break;
+      case NAS_ATTACH_COMPLETE:
+                              log_msg(LOG_INFO, "NAS_ATTACH_COMPLETE recvd\n");
+                              /*Other than error check there seems no information to pass to mme. Marking TODO for protocol study*/
+                              break;
 
-	case NAS_DETACH_REQUEST: {
-		log_msg(LOG_INFO, "NAS_DETACH_REQUEST recvd\n");
-		nas->elements_len = 1;
-		nas->elements = calloc(sizeof(nas_pdu_elements), 1);
+      case NAS_DETACH_REQUEST: {
+                                       log_msg(LOG_INFO, "NAS_DETACH_REQUEST recvd\n");
+                                       nas->elements_len = 1;
+                                       nas->elements = calloc(sizeof(nas_pdu_elements), 1);
+
 
 		/*EPS mobility identity*/
 		memcpy(&(nas->elements[0].mi_guti), msg + 1, sizeof(guti));
@@ -363,11 +388,11 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 		break;
 	}
 
-	default:
-		log_msg(LOG_ERROR, "Unknown NAS IE type- 0x%x\n", nas->header.message_type);
-		break;
+      default:
+                               log_msg(LOG_ERROR, "Unknown NAS IE type- 0x%x\n", nas->header.message_type);
+                               break;
 
-	}
+    }
 }
 
 
@@ -505,19 +530,16 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 {
     proto_ies->procedureCode = msg->procedureCode;
     proto_ies->criticality = msg->criticality;
-	int no_of_IEs = 0;
 
     if(msg->value.present == InitiatingMessage__value_PR_InitialUEMessage)
     {
         ProtocolIE_Container_129P32_t* protocolIes = &msg->value.choice.InitialUEMessage.protocolIEs;
-        no_of_IEs = protocolIes->list.count;
-        proto_ies->no_of_IEs = no_of_IEs;
+        proto_ies->no_of_IEs = protocolIes->list.count;
 
-        log_msg(LOG_INFO, "No of IEs = %d\n", no_of_IEs);
-        proto_ies->data = calloc(sizeof(struct proto_IE_data), no_of_IEs);
-        if(proto_ies->data == NULL)
-        {
-            log_msg(LOG_ERROR,"Malloc failed for protocol IE.");
+        log_msg(LOG_INFO, "No of IEs = %d\n", proto_ies->no_of_IEs);
+        proto_ies->data = calloc(sizeof(struct proto_IE_data), proto_ies->no_of_IEs);
+        if(proto_ies->data == NULL) {
+            log_msg(LOG_ERROR,"Calloc failed for protocol IE.");
             return -1;
         }
 		for (int i = 0; i < protocolIes->list.count; i++) {
@@ -537,7 +559,7 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 							return -1;
 						}
 
-                        log_msg(LOG_DEBUG, "ENB UE S1ap ID decode Success\n", no_of_IEs);
+                        log_msg(LOG_DEBUG, "ENB UE S1ap ID decode Success\n");
                         proto_ies->data[i].IE_type = S1AP_IE_ENB_UE_ID; 
 						memcpy(&proto_ies->data[i].val.enb_ue_s1ap_id, s1apENBUES1APID_p, sizeof(ENB_UE_S1AP_ID_t));
 						s1apENBUES1APID_p = NULL;
@@ -555,7 +577,7 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 							return -1;
 						}
 
-                        log_msg(LOG_DEBUG, "NAS PDU decode Success\n", no_of_IEs);
+                        log_msg(LOG_DEBUG, "NAS PDU decode Success\n");
                         proto_ies->data[i].IE_type = S1AP_IE_NAS_PDU; 
                         parse_nas_pdu((char*)s1apNASPDU_p->buf, s1apNASPDU_p->size, 
                                        &proto_ies->data[i].val.nas, msg->procedureCode);
@@ -574,7 +596,7 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 							return -1;
 						}
 
-                        log_msg(LOG_DEBUG, "TAI decode Success\n", no_of_IEs);
+                        log_msg(LOG_DEBUG, "TAI decode Success\n");
                         proto_ies->data[i].IE_type = S1AP_IE_TAI; 
 						memcpy(&proto_ies->data[i].val.tai.tac, s1apTAI_p->tAC.buf, s1apTAI_p->tAC.size);
 						memcpy(&proto_ies->data[i].val.tai.plmn_id, 
@@ -594,7 +616,7 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 							return -1;
 						}
 
-                        log_msg(LOG_DEBUG, "CGI decode Success\n", no_of_IEs);
+                        log_msg(LOG_DEBUG, "CGI decode Success\n");
                         proto_ies->data[i].IE_type = S1AP_IE_UTRAN_CGI; 
 						memcpy(&proto_ies->data[i].val.utran_cgi.cell_id, 
                                s1apCGI_p->cell_ID.buf, s1apCGI_p->cell_ID.size);
@@ -615,7 +637,7 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 							return -1;
 						}
 
-                        log_msg(LOG_DEBUG, "RRC Cause decode Success\n", no_of_IEs);
+                        log_msg(LOG_DEBUG, "RRC Cause decode Success\n");
                         proto_ies->data[i].IE_type = S1AP_IE_RRC_EST_CAUSE; 
 						proto_ies->data[i].val.rrc_est_cause = (enum ie_RRC_est_cause) *s1apRRCEstCause_p;
 						s1apRRCEstCause_p = NULL;
@@ -656,12 +678,21 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 static int
 init_ue_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 {
-	//TODO: use static instead of synamic for perf.
+	//TODO: use static instead of dynamic for perf.
 	struct proto_IE proto_ies;
 
 	log_msg(LOG_INFO, "S1AP_INITIAL_UE_MSG msg: \n");
 
-    convertToInitUeProtoIe(msg, &proto_ies);
+    /* TODO : Error handling. Bad message will lead crash. 
+     * Preferably reject the message, increment stats.
+     */
+	int decode_result = convertToInitUeProtoIe(msg, &proto_ies);
+    if(decode_result < 0 )
+    {
+	  log_msg(LOG_ERROR, "S1ap message decode failed. Dropping message");
+      return E_FAIL;
+    }
+
 	/*Check nas message type*/
 	//TODO: check through all proto IEs for which is nas
 	//currentlyy hard coding to 2 looking at packets
@@ -727,6 +758,10 @@ UL_NAS_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 	case NAS_DETACH_REQUEST:
 		detach_stage1_handler(&proto_ies, false);
 		break;
+
+    case NAS_IDENTITY_REQUEST:
+        s1_identity_resp_handler(&proto_ies);
+        break;
 	}
 
 	//TODO: free IEs
@@ -734,46 +769,48 @@ UL_NAS_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 	return SUCCESS;
 }
 
+/* Make Sure msg is freed at the end of the message procesing. 
+ */
 void
 handle_s1ap_message(void *msg)
 {
-	log_msg(LOG_INFO, "Inside handle_s1ap_message.\n");
-	/*convert message from network to host*/
+    log_msg(LOG_INFO, "Inside handle_s1ap_message.\n");
+    /*convert message from network to host*/
 
-	/*Call handler for the procedure code. TBD: Tasks pool for handlers*/
+    /*Call handler for the procedure code. TBD: Tasks pool for handlers*/
 
-	int enb_fd = 0;
+    int enb_fd = 0;
     int msg_size = 0;
-	memcpy(&enb_fd, msg, sizeof(int));
-	memcpy(&msg_size, msg + sizeof(int), sizeof(int));
-	char *message = ((char *) msg) + 2*sizeof(int);
-	S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
-	S1AP_PDU_t                             *pdu_p = &pdu;
-	asn_dec_rval_t                          dec_ret = {(RC_OK)};
-	memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
-	dec_ret = aper_decode (NULL, &asn_DEF_S1AP_PDU, (void **)&pdu_p, message, msg_size, 0, 0);
+    memcpy(&enb_fd, msg, sizeof(int));
+    memcpy(&msg_size, msg + sizeof(int), sizeof(int));
+    char *message = ((char *) msg) + 2*sizeof(int);
+    S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+    S1AP_PDU_t                             *pdu_p = &pdu;
+    asn_dec_rval_t                          dec_ret = {(RC_OK)};
+    memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+    dec_ret = aper_decode (NULL, &asn_DEF_S1AP_PDU, (void **)&pdu_p, message, msg_size, 0, 0);
 
-	if (dec_ret.code != RC_OK) {
-		log_msg(LOG_ERROR, "ASN Decode PDU Failed\n");
-        free(msg);
-		return;
-	}
+    if (dec_ret.code != RC_OK) {
+            log_msg(LOG_ERROR, "ASN Decode PDU Failed\n");
+            free(msg);
+            return;
+    }
 
-	switch (pdu_p->present) {
-	    case S1AP_PDU_PR_initiatingMessage:
-            s1ap_mme_decode_initiating (pdu_p->choice.initiatingMessage, enb_fd);
-            break;
-        case S1AP_PDU_PR_successfulOutcome:
-            s1ap_mme_decode_successfull_outcome (pdu_p->choice.successfulOutcome);
-            break;
-        case S1AP_PDU_PR_unsuccessfulOutcome:
-            s1ap_mme_decode_unsuccessfull_outcome (pdu_p->choice.unsuccessfulOutcome);
-            break;
-        default:
-            log_msg(LOG_WARNING, "Unknown message outcome (%d) or not implemented", (int)pdu_p->present);
-            break;
-      }
-
+    switch (pdu_p->present) {
+            case S1AP_PDU_PR_initiatingMessage:
+                    s1ap_mme_decode_initiating (pdu_p->choice.initiatingMessage, enb_fd);
+                    break;
+            case S1AP_PDU_PR_successfulOutcome:
+                    s1ap_mme_decode_successfull_outcome (pdu_p->choice.successfulOutcome);
+                    break;
+            case S1AP_PDU_PR_unsuccessfulOutcome:
+                    s1ap_mme_decode_unsuccessfull_outcome (pdu_p->choice.unsuccessfulOutcome);
+                    break;
+            default:
+                    log_msg(LOG_WARNING, "Unknown message outcome (%d) or not implemented", (int)pdu_p->present);
+                    break;
+    }
+    free(msg);
     return;
 }
 
@@ -782,7 +819,7 @@ s1ap_mme_decode_successfull_outcome (SuccessfulOutcome_t* msg)
 {
     log_msg(LOG_DEBUG,"successful outcome decode :");
     log_msg(LOG_INFO, "proc code %d\n", msg->procedureCode);
-  switch (msg->procedureCode) {
+    switch (msg->procedureCode) {
 
 	case S1AP_INITIAL_CTX_RESP_CODE:
 		s1_init_ctx_resp_handler(msg);
@@ -836,6 +873,7 @@ s1ap_mme_decode_initiating (InitiatingMessage_t *initiating_p, int enb_fd)
 	
   //free(msg);
 	return 0;
+
 }
 
 int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
@@ -876,7 +914,6 @@ int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_i
 
                         proto_ies->data[i].IE_type = S1AP_IE_ENB_UE_ID; 
 						memcpy(&proto_ies->data[i].val.enb_ue_s1ap_id, s1apENBUES1APID_p, sizeof(ENB_UE_S1AP_ID_t));
-						s1apENBUES1APID_p = NULL;
 					} break;
 				case ProtocolIE_ID_id_MME_UE_S1AP_ID:
 					{
@@ -893,7 +930,6 @@ int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_i
 
                         proto_ies->data[i].IE_type = S1AP_IE_MME_UE_ID; 
 						memcpy(&proto_ies->data[i].val.mme_ue_s1ap_id, s1apMMEUES1APID_p, sizeof(MME_UE_S1AP_ID_t));
-						s1apMMEUES1APID_p = NULL;
 					} break;
 				case ProtocolIE_ID_id_NAS_PDU:
 					{
@@ -911,7 +947,6 @@ int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_i
                         proto_ies->data[i].IE_type = S1AP_IE_NAS_PDU; 
                         parse_nas_pdu((char*)s1apNASPDU_p->buf, s1apNASPDU_p->size, 
                                        &proto_ies->data[i].val.nas, msg->procedureCode);
-						s1apNASPDU_p = NULL;
 					} break;
 				case ProtocolIE_ID_id_TAI:
 					{
@@ -930,7 +965,6 @@ int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_i
 						memcpy(&proto_ies->data[i].val.tai.tac, s1apTAI_p->tAC.buf, s1apTAI_p->tAC.size);
 						memcpy(&proto_ies->data[i].val.tai.plmn_id, 
                                 s1apTAI_p->pLMNidentity.buf, s1apTAI_p->pLMNidentity.size);
-						s1apTAI_p = NULL;
 					} break;
 				case ProtocolIE_ID_id_EUTRAN_CGI:
 					{
@@ -950,7 +984,6 @@ int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_i
                                s1apCGI_p->cell_ID.buf, s1apCGI_p->cell_ID.size);
 						memcpy(&proto_ies->data[i].val.utran_cgi.plmn_id.idx, 
                                 s1apCGI_p->pLMNidentity.buf, s1apCGI_p->pLMNidentity.size);
-						s1apCGI_p = NULL;
 					} break;
                 default:
                     {
@@ -967,7 +1000,7 @@ int convertInitCtxRspToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_
 {
     proto_ies->procedureCode = msg->procedureCode;
     proto_ies->criticality = msg->criticality;
-	int no_of_IEs = 0;
+    int no_of_IEs = 0;
 
     if(msg->value.present == SuccessfulOutcome__value_PR_InitialContextSetupResponse)
     {

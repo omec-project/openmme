@@ -68,6 +68,12 @@ void
 *detach_accept_handler(void *);
 
 void
+*s1ap_attach_reject_handler(void *);
+
+void 
+*s1ap_attach_id_req_handler(void *);
+
+void
 *paging_handler(void *);
 
 void

@@ -36,6 +36,8 @@
 #define ICS_REQ_NO_OF_IES 6
 #define DTCH_ACCEPT_NO_OF_IES 3
 #define UE_CTX_RELEASE_NO_OF_IES 3
+#define ATTACH_REJECT_NO_OF_IES 3 
+#define ATTACH_ID_REQUEST_NO_OF_IES 3
 
 #define AUTH_REQ_NO_OF_NAS_IES 2
 #define SEC_MODE_NO_OF_NAS_IES 1
@@ -429,10 +431,16 @@ typedef union nas_pdu_elements {
 	unsigned char pti;
 }nas_pdu_elements;
 
+#define NAS_MSG_UE_IE_GUTI  0x00000001
+#define NAS_MSG_UE_IE_IMSI  0x00000002
+#define UE_ID_IMSI(flags)   ((flags & NAS_MSG_UE_IE_IMSI) == NAS_MSG_UE_IE_IMSI)
+#define UE_ID_GUTI(flags)   ((flags & NAS_MSG_UE_IE_GUTI) == NAS_MSG_UE_IE_GUTI)
+
 typedef struct nasPDU {
 	nas_pdu_header header;
 	unsigned char elements_len;
 	nas_pdu_elements *elements;
+        unsigned int flags; 
 } nasPDU;
 
 #pragma pack(1)
@@ -598,6 +606,9 @@ struct proto_IE {
     Criticality_t    criticality;
 	short 		no_of_IEs;
 	proto_IEs	*data;
+    uint8_t     ie_nas_index;
+    uint8_t     ie_tai_index;
+    uint8_t     ie_cgi_index;
 };
 
 enum protocolie_id {
@@ -626,8 +637,10 @@ enum criticality{
 
 enum eps_nas_mesage_type {
 	AttachAccept = 0x42,
+	AttachReject = 0x44,
 	DetachAccept = 0x46,
 	AuthenticationRequest = 0x52,
+    IdentityRequest       = 0x55,
 	SecurityModeCommand = 0x5d,
 	ESMInformationRequest = 0xd9,
 };

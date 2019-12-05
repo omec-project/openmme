@@ -113,6 +113,13 @@ Message queues used across MME, S1ap, S11, S6a
 /********* STAGE 3 DETACH END    ***************/
 /********* DDN  ***************/
 
+
+#define S1AP_REQ_REJECT_QUEUE "/tmp/s1ap/s1ap_reject_Q"
+
+#define S1AP_ID_REQ_QUEUE "/tmp/s1ap/s1ap_id_req_Q"
+#define S1AP_ID_RSP_QUEUE "/tmp/s1ap/s1ap_id_rsp_Q"
+
+
 #define S11_DDN_QUEUE  "/tmp/s11/s11_ddn_Q"
 #define S11_DDN_ACK_QUEUE  "/tmp/s11/s11_ddn_ack_Q"
 #define S11_DDN_FAIL_QUEUE  "/tmp/s11/s11_ddn_fail_Q"
@@ -133,4 +140,5 @@ Message queues used across MME, S1ap, S11, S6a
 /******** SERVICE REQ *****************/
 #define S1AP_SERVICEREQ_QUEUE "/tmp/s1ap/s1ap_servicereq_Q"
 /******** SERVICE REQ *****************/
+
 #endif /*__MESSAGE_QUEUES_H*/

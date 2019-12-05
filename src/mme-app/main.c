@@ -40,8 +40,6 @@ extern mme_config g_mme_cfg;
 /*List of UEs attached to MME*/
 struct UE_info* g_UE_list[UE_POOL_SIZE];
 
-/*Counter UE list. Add each element sequentially when UE attaches*/
-int g_UE_cnt = 0;
 
 pthread_t stage_tid[TOTAL_STAGES];
 
@@ -101,6 +99,12 @@ init_mme()
 
 	unlink(INITUE_STAGE1_QUEUE);
 	create_ipc_channel(INITUE_STAGE1_QUEUE);
+
+	unlink(S1AP_REQ_REJECT_QUEUE);
+	create_ipc_channel(S1AP_REQ_REJECT_QUEUE);
+
+	unlink(S1AP_ID_REQ_QUEUE);
+	create_ipc_channel(S1AP_ID_REQ_QUEUE);
 
 	unlink(S6A_AIA_STAGE2_QUEUE);
 	create_ipc_channel(S6A_AIA_STAGE2_QUEUE);
@@ -234,6 +238,8 @@ init_stage_handlers()
 	pthread_create(&stage_tid[12], &attr, &s1ap_req_common_mme_handler, NULL);
 	pthread_create(&stage_tid[13], &attr, &s11_rsp_common_mme_handler, NULL);
 	pthread_create(&stage_tid[14], &attr, &service_request_handler, NULL);
+	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
+  
 	pthread_attr_destroy(&attr);
 	return SUCCESS;
 }

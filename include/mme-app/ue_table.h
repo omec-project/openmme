@@ -31,7 +31,7 @@ allocate next pool */
 #define UE_POOL_CNT 550000
 
 /*Macro to access UE element based on ue index*/
-#define GET_UE_ENTRY(index) &(g_UE_list[index/UE_POOL_CNT][index%UE_POOL_CNT])
+#define GET_UE_ENTRY(index) ((index >= UE_POOL_CNT) ? (NULL) : (&(g_UE_list[index/UE_POOL_CNT][index%UE_POOL_CNT])))
 
 /**
 * State table that UE attach and detach goes through.
@@ -74,7 +74,9 @@ enum ue_stages{
   SVC_REQ_WF_MODIFY_BEARER_RESP,
   UE_ERROR=200,
 };
+
 #define TOTAL_STAGES  20
+
 
 enum ecm_states{
  ECM_IDLE,
@@ -94,6 +96,8 @@ struct AMBR {
 	unsigned int max_requested_bw_ul;
 };
 
+#define UE_INFO_VALID_MAGIC 0x12345678
+#define IS_VALID_UE_INFO(ue_info) (ue_info->magic == UE_INFO_VALID_MAGIC)
 struct UE_info{
 	int             enb_fd;
 	enum ue_stages  ue_state;
@@ -144,9 +148,12 @@ struct UE_info{
 	uint8_t cause;
 	bool esm_info_tx_required;
 	unsigned char pti;
-	uint8_t arp;
+  unsigned int  magic;
+  unsigned short int ue_index;
+  uint8_t arp;
 };
 
+int allocate_ue_index();
 int get_index_from_list();
 int insert_index_into_list(int ue_index);
 
