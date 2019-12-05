@@ -655,7 +655,6 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
 							return -1;
 						}
 
-                        log_msg(LOG_DEBUG, "STMSI decode Success\n", no_of_IEs);
                         //struct STMSI     s_tmsi
                         proto_ies->data[i].IE_type = S1AP_IE_S_TMSI; 
 						memcpy(&proto_ies->data[i].val.s_tmsi.mme_code, 
