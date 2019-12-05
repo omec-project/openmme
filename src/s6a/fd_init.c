@@ -185,6 +185,10 @@ s6a_fd_objs_init()
 					"Immediate-Response-Preferred",
 					g_fd_dict_objs.immediate_resp_pref);
 
+	FD_DICT_SEARCH(DICT_AVP, AVP_BY_NAME_ALL_VENDORS,
+					"Re-Synchronization-Info",
+					g_fd_dict_objs.resync_info);
+
 	FD_DICT_SEARCH(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Authentication-Info",
 					g_fd_dict_objs.auth_info);
 
@@ -354,6 +358,10 @@ s6a_fd_data_init()
 
 	CHECK_FCT_DO(fd_dict_getval(g_fd_dict_objs.immediate_resp_pref,
 				&g_fd_dict_data.immediate_resp_pref),
+				return S6A_FD_ERROR);
+
+	CHECK_FCT_DO(fd_dict_getval(g_fd_dict_objs.resync_info,
+				&g_fd_dict_data.resync_info),
 				return S6A_FD_ERROR);
 
 	CHECK_FCT_DO(fd_dict_getval(g_fd_dict_objs.auth_info,

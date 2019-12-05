@@ -164,7 +164,7 @@ post_to_next()
 	memcpy(cs_msg.MSISDN,ue_entry->MSISDN,10);
 
 	write_ipc_channel(g_Q_CSreq_fd, (char *)&(cs_msg), S11_CSREQ_STAGE5_BUF_SIZE);
-	log_msg(LOG_INFO, "Posted Create Session message to S11-app - stage 5\n.");
+	log_msg(LOG_INFO, "Posted Create Session message to S11-app - stage 5.\n");
 	attach_stage5_counter++;
 	return SUCCESS;
 }

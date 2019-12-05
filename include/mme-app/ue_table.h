@@ -39,6 +39,7 @@ allocate next pool */
 enum ue_stages{
   UNASSIGNED_ENTRY = 0,
   ATTACH_STAGE1,
+  ATTACH_STAGE1_RESYNC,
   STAGE1_WAITING, /*STAGE1 processing is done. Keep waiting for events to move
 		  in next stage*/
   STAGE1_ULA_DONE,
@@ -125,6 +126,7 @@ struct UE_info{
 	struct secinfo ue_sec_info;
 
 	bool esm_info_tx_required;
+	unsigned char pti;
 };
 
 int get_index_from_list();

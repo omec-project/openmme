@@ -9,7 +9,7 @@ ROOT=$(PWD)
 INCLUDE_DIR=$(ROOT)/include
 
 INC_DIRS=-I$(INCLUDE_DIR)/mme-app -I$(INCLUDE_DIR)/s11 -I$(INCLUDE_DIR)/s1ap \
-	-I$(INCLUDE_DIR)/s6a \
+	-I$(INCLUDE_DIR)/s6a -I$(ROOT)/src/s1ap/asn1c/asnGenFiles \
 	-I$(INCLUDE_DIR)/common
 
 HSS_INC_DIRS = -I$(INCLUDE_DIR)/common -I$(INCLUDE_DIR)/hss

@@ -45,11 +45,6 @@ parse_s1ap_conf()
 	g_s1ap_cfg.sctp_port = get_int_scalar("s1ap.sctp_port");
 	if(-1 == g_s1ap_cfg.sctp_port) return -1;
 
-	g_s1ap_cfg.enb_ip = get_ip_scalar("s1ap.enb_addr");
-	if(-1 == g_s1ap_cfg.enb_ip) return -1;
-	g_s1ap_cfg.enb_port = get_int_scalar("s1ap.enb_port");
-	if(-1 == g_s1ap_cfg.enb_port) return -1;
-
 	g_s1ap_cfg.mme_group_id = get_int_scalar("mme.group_id");
 	if(-1 == g_s1ap_cfg.mme_group_id) return -1;
 

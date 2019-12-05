@@ -34,6 +34,7 @@ struct esm_req_Q_msg {
 	uint8_t int_key[NAS_INT_KEY_SIZE];
 	unsigned short dl_seq_no;
 	int enb_fd;
+	unsigned char pti;
 };
 
 #define S1AP_SECRESP_STAGE4_BUF_SIZE sizeof(struct secmode_resp_Q_msg)

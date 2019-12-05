@@ -63,3 +63,9 @@ void parse_args(int argc, char **argv)
 	}
 }
 
+void log_buffer_free(char** buffer)
+{
+    if(*buffer != NULL)
+        free(*buffer);
+    *buffer = NULL;
+}

@@ -171,12 +171,14 @@ post_to_next()
 			NAS_INT_KEY_SIZE);
 	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key),
 			KENB_SIZE);
+	memcpy(&(icr_msg.pti), &(ue_entry->pti), 1);
 
 	write_ipc_channel(g_Q_icsreq_fd, (char *)&(icr_msg), S1AP_ICSREQ_STAGE6_BUF_SIZE);
 
 	/*Call DUMMY MB funcion*/
 	//test: send_dummy_mbr();
 	attach_stage6_counter++;
+	log_msg(LOG_INFO, "Post for s1ap processing - stage 6. SUCCESS\n");
 	return SUCCESS;
 }
 

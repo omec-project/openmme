@@ -103,7 +103,7 @@ read_next_msg()
 			log_msg(LOG_ERROR, "Error in reading \n");
 			/* TODO : Add proper error handling */
 		}
-		log_msg(LOG_INFO, "Init UE Message Received: %d", bytes_read);
+		log_msg(LOG_INFO, "Init UE Message Received: %d\n", bytes_read);
 	}
 
 	return bytes_read;
@@ -167,6 +167,7 @@ stage1_processing()
 		sizeof(struct UE_net_capab));
 	memcpy(&(ue_entry->ms_net_capab), &(ue_info->ms_net_capab),
 		sizeof(struct MS_net_capab));
+	memcpy(&(ue_entry->pti), &(ue_info->pti), 1);
 
 	ue_entry->bearer_id = 5;
 
