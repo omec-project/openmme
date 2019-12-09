@@ -1,9 +1,19 @@
 /*
- * delayValueIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "delayValueIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +33,12 @@ bool DelayValueIe::encodeDelayValueIe(MsgBuffer &buffer, DelayValueIeData const 
 {
     if (!(data.delayValue% 50 == 0 || data.delayValue== 0))
     {
-        errorStream.add("Data validation failure: delayValue\n");
+        errorStream.add((char *)"Data validation failure: delayValue\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.delayValue)))
     {
-        errorStream.add("Encoding of delayValue failed\n");
+        errorStream.add((char *)"Encoding of delayValue failed\n");
         return false;
     }
 
@@ -44,12 +54,12 @@ bool DelayValueIe::decodeDelayValueIe(MsgBuffer &buffer, DelayValueIeData &data,
     buffer.readUint8(data.delayValue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: delayValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: delayValue\n");
         return false;
     }
     if (!(data.delayValue% 50 == 0 || data.delayValue== 0))
     {
-        errorStream.add("Data validation failure : delayValue\n");
+        errorStream.add((char *)"Data validation failure : delayValue\n");
         return false; //TODO need to add validations
     }
 
@@ -62,18 +72,18 @@ bool DelayValueIe::decodeDelayValueIe(MsgBuffer &buffer, DelayValueIeData &data,
     }
     else
     {
-        errorStream.add("Unable to decode IE DelayValueIe\n");
+        errorStream.add((char *)"Unable to decode IE DelayValueIe\n");
         return false;
     }
 }
 void DelayValueIe::displayDelayValueIe_v(DelayValueIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("DelayValueIeData:");
+    stream.add((char *)"DelayValueIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("delayValue: ");
+    stream.add((char *)"delayValue: ");
     stream.add(data.delayValue);
     stream.endOfLine();
     stream.decrIndent();

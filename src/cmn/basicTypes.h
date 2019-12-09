@@ -10,4 +10,4 @@ typedef unsigned short Uint16;
 typedef unsigned int Uint32;
 typedef unsigned long int Uint64;
 
-
+#include <stdbool.h>

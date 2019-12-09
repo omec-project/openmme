@@ -1,11 +1,19 @@
 /*
- * gtpV2Stack.cpp
- *
- *  Created on: Jul 11, 2014
- *      Author: hariharanb
- */
+* Copyright (c) 2019 Infosys Limited
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 #include <cstring>
-#include <stdint.h>
 #include "gtpV2Stack.h"
 #include "msgClasses/gtpV2MsgFactory.h"
 #include "msgClasses/manual/gtpV2Message.h"
@@ -17,6 +25,10 @@
 #include "msgClasses/deleteSessionResponseMsg.h"
 #include "msgClasses/releaseAccessBearersRequestMsg.h"
 #include "msgClasses/releaseAccessBearersResponseMsg.h"
+#include "msgClasses/createBearerRequestMsg.h"
+#include "msgClasses/createBearerResponseMsg.h"
+#include "msgClasses/deleteBearerRequestMsg.h"
+#include "msgClasses/deleteBearerResponseMsg.h"
 #include "msgClasses/downlinkDataNotificationMsg.h"
 #include "msgClasses/downlinkDataNotificationAcknowledgeMsg.h"
 #include "msgClasses/downlinkDataNotificationFailureIndicationMsg.h"
@@ -44,8 +56,7 @@ GtpV2Stack::encodeMessage (GtpV2MessageHeader & msgHeader,
     GtpV2Message & msg =
     GtpV2MsgFactory::getInstance ().getMsgObject (msgHeader.msgType);
 
-    uint16_t gtpHeaderStartIdx = buffer.getCurrentIndex();
-
+	uint16_t gtpHeaderStartIdx = buffer.getCurrentIndex();
     // Encode the header
     GtpV2Message::encodeHeader (buffer, msgHeader);
 
@@ -229,6 +240,94 @@ GtpV2Stack::encodeMessage (GtpV2MessageHeader & msgHeader,
             }
             break;
         }
+        case CreateBearerRequestMsgType:
+        {
+            if (data_p != NULL)
+            {
+                rc =
+               dynamic_cast<
+               CreateBearerRequestMsg & >(msg).
+               encodeCreateBearerRequestMsg(buffer,
+    			     *((CreateBearerRequestMsgData *)
+        			     data_p));
+            }
+            else
+            { 
+                // Application has filled the data structure provided by the stack
+                rc = 
+                dynamic_cast<
+                CreateBearerRequestMsg & >(msg).
+                encodeCreateBearerRequestMsg (buffer,
+                            createBearerRequestStackData);
+            }
+            break;
+        }
+        case CreateBearerResponseMsgType:
+        {
+            if (data_p != NULL)
+            {
+                rc =
+               dynamic_cast<
+               CreateBearerResponseMsg & >(msg).
+               encodeCreateBearerResponseMsg(buffer,
+    			     *((CreateBearerResponseMsgData *)
+        			     data_p));
+            }
+            else
+            { 
+                // Application has filled the data structure provided by the stack
+                rc = 
+                dynamic_cast<
+                CreateBearerResponseMsg & >(msg).
+                encodeCreateBearerResponseMsg (buffer,
+                            createBearerResponseStackData);
+            }
+            break;
+        }
+        case DeleteBearerRequestMsgType:
+        {
+            if (data_p != NULL)
+            {
+                rc =
+               dynamic_cast<
+               DeleteBearerRequestMsg & >(msg).
+               encodeDeleteBearerRequestMsg(buffer,
+    			     *((DeleteBearerRequestMsgData *)
+        			     data_p));
+            }
+            else
+            { 
+                // Application has filled the data structure provided by the stack
+                rc = 
+                dynamic_cast<
+                DeleteBearerRequestMsg & >(msg).
+                encodeDeleteBearerRequestMsg (buffer,
+                            deleteBearerRequestStackData);
+            }
+            break;
+        }
+        case DeleteBearerResponseMsgType:
+        {
+            if (data_p != NULL)
+            {
+                rc =
+               dynamic_cast<
+               DeleteBearerResponseMsg & >(msg).
+               encodeDeleteBearerResponseMsg(buffer,
+    			     *((DeleteBearerResponseMsgData *)
+        			     data_p));
+            }
+            else
+            { 
+                // Application has filled the data structure provided by the stack
+                rc = 
+                dynamic_cast<
+                DeleteBearerResponseMsg & >(msg).
+                encodeDeleteBearerResponseMsg (buffer,
+                            deleteBearerResponseStackData);
+            }
+            break;
+        }
         case DownlinkDataNotificationMsgType:
         {
             if (data_p != NULL)
@@ -299,10 +398,9 @@ GtpV2Stack::encodeMessage (GtpV2MessageHeader & msgHeader,
 
     Uint16 endIndex = buffer.getCurrentIndex ();
 
-    Uint16 messageLength = (endIndex - startIndex) + 8;
+    Uint16 messageLength = (endIndex - startIndex)+8;
 
-
-    buffer.goToIndex (gtpHeaderStartIdx + 2); // 2 is where length is encoded in a gtp message TODO remove hardcoding
+    buffer.goToIndex (gtpHeaderStartIdx  + 2); // 2 is where length is encoded in a gtp message TODO remove hardcoding
     buffer.writeUint16 (messageLength, false);
     buffer.goToIndex (endIndex);
     return rc;
@@ -322,6 +420,8 @@ GtpV2Stack::decodeMessage (GtpV2MessageHeader& msgHeader,
     errorStream.clearStream();
     // First decode the message header
     bool rc = false;
+      
+    
     
     Uint16 msgDataLength = msgHeader.msgLength;
     
@@ -338,10 +438,10 @@ GtpV2Stack::decodeMessage (GtpV2MessageHeader& msgHeader,
     if (msgDataLength != buffer.lengthLeft() )
     {
         // Encoded message length does not match the number of bytes left in the message
-        errorStream.add ((char*)"Message length does not match bytes in buffer\n");
-        errorStream.add ((char*)"Computed Message length: ");
+        errorStream.add ((char *)"Message length does not match bytes in buffer\n");
+        errorStream.add ((char *)"Computed Message length: ");
         errorStream.add (msgDataLength);
-        errorStream.add ((char*)"  Bytes Left in buffer: ");
+        errorStream.add ((char *)"  Bytes Left in buffer: ");
         errorStream.add (buffer.lengthLeft());
         errorStream.endOfLine ();
         return false;
@@ -559,6 +659,110 @@ GtpV2Stack::decodeMessage (GtpV2MessageHeader& msgHeader,
             }
             break;
         }
+        case CreateBearerRequestMsgType:
+        {
+            if (data_p != NULL)
+            {
+                rc =
+                dynamic_cast<
+                CreateBearerRequestMsg & >(msg).
+                decodeCreateBearerRequestMsg(buffer,
+                            *(CreateBearerRequestMsgData*)
+                             data_p, msgDataLength);
+            }
+            else
+            { 
+                // Application wants to use the data structure provided by the stack
+                // let us first clear any data present in the internal data structure
+                memset (&createBearerRequestStackData, 0,
+                sizeof (CreateBearerRequestMsgData));
+                rc =
+                dynamic_cast<
+                CreateBearerRequestMsg & >(msg).
+                decodeCreateBearerRequestMsg(buffer,
+                            createBearerRequestStackData,
+                            msgDataLength);
+            }
+            break;
+        }
+        case CreateBearerResponseMsgType:
+        {
+            if (data_p != NULL)
+            {
+                rc =
+                dynamic_cast<
+                CreateBearerResponseMsg & >(msg).
+                decodeCreateBearerResponseMsg(buffer,
+                            *(CreateBearerResponseMsgData*)
+                             data_p, msgDataLength);
+            }
+            else
+            { 
+                // Application wants to use the data structure provided by the stack
+                // let us first clear any data present in the internal data structure
+                memset (&createBearerResponseStackData, 0,
+                sizeof (CreateBearerResponseMsgData));
+                rc =
+                dynamic_cast<
+                CreateBearerResponseMsg & >(msg).
+                decodeCreateBearerResponseMsg(buffer,
+                            createBearerResponseStackData,
+                            msgDataLength);
+            }
+            break;
+        }
+        case DeleteBearerRequestMsgType:
+        {
+            if (data_p != NULL)
+            {
+                rc =
+                dynamic_cast<
+                DeleteBearerRequestMsg & >(msg).
+                decodeDeleteBearerRequestMsg(buffer,
+                            *(DeleteBearerRequestMsgData*)
+                             data_p, msgDataLength);
+            }
+            else
+            { 
+                // Application wants to use the data structure provided by the stack
+                // let us first clear any data present in the internal data structure
+                memset (&deleteBearerRequestStackData, 0,
+                sizeof (DeleteBearerRequestMsgData));
+                rc =
+                dynamic_cast<
+                DeleteBearerRequestMsg & >(msg).
+                decodeDeleteBearerRequestMsg(buffer,
+                            deleteBearerRequestStackData,
+                            msgDataLength);
+            }
+            break;
+        }
+        case DeleteBearerResponseMsgType:
+        {
+            if (data_p != NULL)
+            {
+                rc =
+                dynamic_cast<
+                DeleteBearerResponseMsg & >(msg).
+                decodeDeleteBearerResponseMsg(buffer,
+                            *(DeleteBearerResponseMsgData*)
+                             data_p, msgDataLength);
+            }
+            else
+            { 
+                // Application wants to use the data structure provided by the stack
+                // let us first clear any data present in the internal data structure
+                memset (&deleteBearerResponseStackData, 0,
+                sizeof (DeleteBearerResponseMsgData));
+                rc =
+                dynamic_cast<
+                DeleteBearerResponseMsg & >(msg).
+                decodeDeleteBearerResponseMsg(buffer,
+                            deleteBearerResponseStackData,
+                            msgDataLength);
+            }
+            break;
+        }
         case DownlinkDataNotificationMsgType:
         {
             if (data_p != NULL)
@@ -645,7 +849,7 @@ void
 GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
 {
     // Display the messageType
-    stream.add ("MessageType: ");
+    stream.add ((char *)"MessageType: ");
     stream.add (msgType);
     stream.endOfLine ();
       
@@ -654,7 +858,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
     switch (msgType){
         case CreateSessionRequestMsgType:
         {
-            stream.add ("Message: CreateSessionRequestMsg");
+            stream.add ((char *)"Message: CreateSessionRequestMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -675,7 +879,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case CreateSessionResponseMsgType:
         {
-            stream.add ("Message: CreateSessionResponseMsg");
+            stream.add ((char *)"Message: CreateSessionResponseMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -696,7 +900,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case ModifyBearerRequestMsgType:
         {
-            stream.add ("Message: ModifyBearerRequestMsg");
+            stream.add ((char *)"Message: ModifyBearerRequestMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -717,7 +921,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case ModifyBearerResponseMsgType:
         {
-            stream.add ("Message: ModifyBearerResponseMsg");
+            stream.add ((char *)"Message: ModifyBearerResponseMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -738,7 +942,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case DeleteSessionRequestMsgType:
         {
-            stream.add ("Message: DeleteSessionRequestMsg");
+            stream.add ((char *)"Message: DeleteSessionRequestMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -759,7 +963,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case DeleteSessionResponseMsgType:
         {
-            stream.add ("Message: DeleteSessionResponseMsg");
+            stream.add ((char *)"Message: DeleteSessionResponseMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -780,7 +984,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case ReleaseAccessBearersRequestMsgType:
         {
-            stream.add ("Message: ReleaseAccessBearersRequestMsg");
+            stream.add ((char *)"Message: ReleaseAccessBearersRequestMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -801,7 +1005,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case ReleaseAccessBearersResponseMsgType:
         {
-            stream.add ("Message: ReleaseAccessBearersResponseMsg");
+            stream.add ((char *)"Message: ReleaseAccessBearersResponseMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -820,9 +1024,93 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
             }
            break;
         }
+        case CreateBearerRequestMsgType:
+        {
+            stream.add ((char *)"Message: CreateBearerRequestMsg");
+            stream.endOfLine ();
+            if (data_p != NULL)
+            {
+            dynamic_cast<
+            CreateBearerRequestMsg & >(msg).
+            displayCreateBearerRequestMsgData_v (*
+                        ((CreateBearerRequestMsgData*) data_p), stream);
+            }
+            else
+            {
+            // Application wants to use the data structure provided by the stack
+            dynamic_cast<
+            CreateBearerRequestMsg & >(msg).
+            displayCreateBearerRequestMsgData_v
+                        (createBearerRequestStackData, stream);
+            }
+           break;
+        }
+        case CreateBearerResponseMsgType:
+        {
+            stream.add ((char *)"Message: CreateBearerResponseMsg");
+            stream.endOfLine ();
+            if (data_p != NULL)
+            {
+            dynamic_cast<
+            CreateBearerResponseMsg & >(msg).
+            displayCreateBearerResponseMsgData_v (*
+                        ((CreateBearerResponseMsgData*) data_p), stream);
+            }
+            else
+            {
+            // Application wants to use the data structure provided by the stack
+            dynamic_cast<
+            CreateBearerResponseMsg & >(msg).
+            displayCreateBearerResponseMsgData_v
+                        (createBearerResponseStackData, stream);
+            }
+           break;
+        }
+        case DeleteBearerRequestMsgType:
+        {
+            stream.add ((char *)"Message: DeleteBearerRequestMsg");
+            stream.endOfLine ();
+            if (data_p != NULL)
+            {
+            dynamic_cast<
+            DeleteBearerRequestMsg & >(msg).
+            displayDeleteBearerRequestMsgData_v (*
+                        ((DeleteBearerRequestMsgData*) data_p), stream);
+            }
+            else
+            {
+            // Application wants to use the data structure provided by the stack
+            dynamic_cast<
+            DeleteBearerRequestMsg & >(msg).
+            displayDeleteBearerRequestMsgData_v
+                        (deleteBearerRequestStackData, stream);
+            }
+           break;
+        }
+        case DeleteBearerResponseMsgType:
+        {
+            stream.add ((char *)"Message: DeleteBearerResponseMsg");
+            stream.endOfLine ();
+            if (data_p != NULL)
+            {
+            dynamic_cast<
+            DeleteBearerResponseMsg & >(msg).
+            displayDeleteBearerResponseMsgData_v (*
+                        ((DeleteBearerResponseMsgData*) data_p), stream);
+            }
+            else
+            {
+            // Application wants to use the data structure provided by the stack
+            dynamic_cast<
+            DeleteBearerResponseMsg & >(msg).
+            displayDeleteBearerResponseMsgData_v
+                        (deleteBearerResponseStackData, stream);
+            }
+           break;
+        }
         case DownlinkDataNotificationMsgType:
         {
-            stream.add ("Message: DownlinkDataNotificationMsg");
+            stream.add ((char *)"Message: DownlinkDataNotificationMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -843,7 +1131,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case DownlinkDataNotificationAcknowledgeMsgType:
         {
-            stream.add ("Message: DownlinkDataNotificationAcknowledgeMsg");
+            stream.add ((char *)"Message: DownlinkDataNotificationAcknowledgeMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {
@@ -864,7 +1152,7 @@ GtpV2Stack::display_v(Uint8 msgType, Debug& stream, void* data_p)
         }
         case DownlinkDataNotificationFailureIndicationMsgType:
         {
-            stream.add ("Message: DownlinkDataNotificationFailureIndicationMsg");
+            stream.add ((char *)"Message: DownlinkDataNotificationFailureIndicationMsg");
             stream.endOfLine ();
             if (data_p != NULL)
             {

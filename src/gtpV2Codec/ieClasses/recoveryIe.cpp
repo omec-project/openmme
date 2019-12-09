@@ -1,9 +1,19 @@
 /*
- * recoveryIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "recoveryIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +33,7 @@ bool RecoveryIe::encodeRecoveryIe(MsgBuffer &buffer, RecoveryIeData const &data)
 {
     if (!(buffer.writeUint8(data.restartCounter)))
     {
-        errorStream.add("Encoding of restartCounter failed\n");
+        errorStream.add((char *)"Encoding of restartCounter failed\n");
         return false;
     }
 
@@ -39,7 +49,7 @@ bool RecoveryIe::decodeRecoveryIe(MsgBuffer &buffer, RecoveryIeData &data, Uint1
     buffer.readUint8(data.restartCounter);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: restartCounter\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: restartCounter\n");
         return false;
     }
 
@@ -52,18 +62,18 @@ bool RecoveryIe::decodeRecoveryIe(MsgBuffer &buffer, RecoveryIeData &data, Uint1
     }
     else
     {
-        errorStream.add("Unable to decode IE RecoveryIe\n");
+        errorStream.add((char *)"Unable to decode IE RecoveryIe\n");
         return false;
     }
 }
 void RecoveryIe::displayRecoveryIe_v(RecoveryIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("RecoveryIeData:");
+    stream.add((char *)"RecoveryIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("restartCounter: ");
+    stream.add((char *)"restartCounter: ");
     stream.add(data.restartCounter);
     stream.endOfLine();
     stream.decrIndent();

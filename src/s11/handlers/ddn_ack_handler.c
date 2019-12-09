@@ -100,7 +100,6 @@ ddn_ack_processing()
 	DownlinkDataNotificationAcknowledgeMsgData msgData;
 	memset(&msgData, 0, sizeof(DownlinkDataNotificationAcknowledgeMsgData));
 
-	msgData.causeIePresent = true;
 	msgData.cause.causeValue = ddn_msg->cause;
 
 	GtpV2Stack_buildGtpV2Message(gtpStack_gp, ddnAckMsgBuf_p, &gtpHeader, &msgData);

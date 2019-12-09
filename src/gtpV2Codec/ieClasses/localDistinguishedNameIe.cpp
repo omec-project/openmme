@@ -1,9 +1,19 @@
 /*
- * localDistinguishedNameIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "localDistinguishedNameIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +33,7 @@ bool LocalDistinguishedNameIe::encodeLocalDistinguishedNameIe(MsgBuffer &buffer,
 {
     if (!(DataTypeCodecUtils::encodeUint8Array512(buffer, data.ldn)))
     {
-    errorStream.add("Encoding of ldn failed\n");
+    errorStream.add((char *)"Encoding of ldn failed\n");
     return false;
     }
 
@@ -38,7 +48,7 @@ bool LocalDistinguishedNameIe::decodeLocalDistinguishedNameIe(MsgBuffer &buffer,
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array512(buffer, data.ldn, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: ldn\n");
+        errorStream.add((char *)"Failed to decode: ldn\n");
         return false;
     }
 
@@ -51,18 +61,18 @@ bool LocalDistinguishedNameIe::decodeLocalDistinguishedNameIe(MsgBuffer &buffer,
     }
     else
     {
-        errorStream.add("Unable to decode IE LocalDistinguishedNameIe\n");
+        errorStream.add((char *)"Unable to decode IE LocalDistinguishedNameIe\n");
         return false;
     }
 }
 void LocalDistinguishedNameIe::displayLocalDistinguishedNameIe_v(LocalDistinguishedNameIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("LocalDistinguishedNameIeData:");
+    stream.add((char *)"LocalDistinguishedNameIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("ldn:");
+    stream.add((char *)"ldn:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array512_v(data.ldn, stream);
     stream.decrIndent();

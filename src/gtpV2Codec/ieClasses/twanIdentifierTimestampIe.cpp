@@ -1,9 +1,19 @@
 /*
- * twanIdentifierTimestampIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "twanIdentifierTimestampIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +33,7 @@ bool TwanIdentifierTimestampIe::encodeTwanIdentifierTimestampIe(MsgBuffer &buffe
 {
     if (!(buffer.writeUint32(data.twanIdentifierTimestampvalue)))
     {
-        errorStream.add("Encoding of twanIdentifierTimestampvalue failed\n");
+        errorStream.add((char *)"Encoding of twanIdentifierTimestampvalue failed\n");
         return false;
     }
 
@@ -39,7 +49,7 @@ bool TwanIdentifierTimestampIe::decodeTwanIdentifierTimestampIe(MsgBuffer &buffe
     buffer.readUint32(data.twanIdentifierTimestampvalue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: twanIdentifierTimestampvalue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: twanIdentifierTimestampvalue\n");
         return false;
     }
 
@@ -52,18 +62,18 @@ bool TwanIdentifierTimestampIe::decodeTwanIdentifierTimestampIe(MsgBuffer &buffe
     }
     else
     {
-        errorStream.add("Unable to decode IE TwanIdentifierTimestampIe\n");
+        errorStream.add((char *)"Unable to decode IE TwanIdentifierTimestampIe\n");
         return false;
     }
 }
 void TwanIdentifierTimestampIe::displayTwanIdentifierTimestampIe_v(TwanIdentifierTimestampIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("TwanIdentifierTimestampIeData:");
+    stream.add((char *)"TwanIdentifierTimestampIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("twanIdentifierTimestampvalue: ");
+    stream.add((char *)"twanIdentifierTimestampvalue: ");
     stream.add(data.twanIdentifierTimestampvalue);
     stream.endOfLine();
     stream.decrIndent();

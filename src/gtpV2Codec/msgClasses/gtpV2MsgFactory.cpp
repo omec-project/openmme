@@ -1,9 +1,18 @@
- /*
- * gtpV2MsgFactory.cpp
- *
- *  Created on: Jul 10, 2014
- *      Author: hariharanb
- */
+/*
+* Copyright (c) 2019 Infosys Limited
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "gtpV2MsgFactory.h"
 #include "createSessionRequestMsg.h"
@@ -51,6 +60,18 @@ GtpV2MsgFactory::GtpV2MsgFactory()
 
     ReleaseAccessBearersResponseMsg* releaseAccessBearersResponseMsg_p = new (ReleaseAccessBearersResponseMsg);
     msgObjectContainer.insert(std::pair<Uint8, GtpV2Message*>(ReleaseAccessBearersResponseMsgType, releaseAccessBearersResponseMsg_p));
+
+    CreateBearerRequestMsg* createBearerRequestMsg_p = new (CreateBearerRequestMsg);
+    msgObjectContainer.insert(std::pair<Uint8, GtpV2Message*>(CreateBearerRequestMsgType, createBearerRequestMsg_p));
+
+    CreateBearerResponseMsg* createBearerResponseMsg_p = new (CreateBearerResponseMsg);
+    msgObjectContainer.insert(std::pair<Uint8, GtpV2Message*>(CreateBearerResponseMsgType, createBearerResponseMsg_p));
+
+    DeleteBearerRequestMsg* deleteBearerRequestMsg_p = new (DeleteBearerRequestMsg);
+    msgObjectContainer.insert(std::pair<Uint8, GtpV2Message*>(DeleteBearerRequestMsgType, deleteBearerRequestMsg_p));
+
+    DeleteBearerResponseMsg* deleteBearerResponseMsg_p = new (DeleteBearerResponseMsg);
+    msgObjectContainer.insert(std::pair<Uint8, GtpV2Message*>(DeleteBearerResponseMsgType, deleteBearerResponseMsg_p));
 
     DownlinkDataNotificationMsg* downlinkDataNotificationMsg_p = new (DownlinkDataNotificationMsg);
     msgObjectContainer.insert(std::pair<Uint8, GtpV2Message*>(DownlinkDataNotificationMsgType, downlinkDataNotificationMsg_p));

@@ -1,9 +1,19 @@
 /*
- * chargingCharacteristicsIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "chargingCharacteristicsIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +33,7 @@ bool ChargingCharacteristicsIe::encodeChargingCharacteristicsIe(MsgBuffer &buffe
 {
     if (!(buffer.writeUint16(data.value)))
     {
-        errorStream.add("Encoding of value failed\n");
+        errorStream.add((char *)"Encoding of value failed\n");
         return false;
     }
 
@@ -39,7 +49,7 @@ bool ChargingCharacteristicsIe::decodeChargingCharacteristicsIe(MsgBuffer &buffe
     buffer.readUint16(data.value);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: value\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: value\n");
         return false;
     }
 
@@ -52,18 +62,18 @@ bool ChargingCharacteristicsIe::decodeChargingCharacteristicsIe(MsgBuffer &buffe
     }
     else
     {
-        errorStream.add("Unable to decode IE ChargingCharacteristicsIe\n");
+        errorStream.add((char *)"Unable to decode IE ChargingCharacteristicsIe\n");
         return false;
     }
 }
 void ChargingCharacteristicsIe::displayChargingCharacteristicsIe_v(ChargingCharacteristicsIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ChargingCharacteristicsIeData:");
+    stream.add((char *)"ChargingCharacteristicsIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("value: ");
+    stream.add((char *)"value: ");
     stream.add(data.value);
     stream.endOfLine();
     stream.decrIndent();

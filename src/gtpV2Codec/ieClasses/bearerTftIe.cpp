@@ -1,9 +1,19 @@
 /*
- * bearerTftIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "bearerTftIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +33,7 @@ bool BearerTftIe::encodeBearerTftIe(MsgBuffer &buffer, BearerTftIeData const &da
 {
     if (!(DataTypeCodecUtils::encodeUint8Array16(buffer, data.tft)))
     {
-    errorStream.add("Encoding of tft failed\n");
+    errorStream.add((char *)"Encoding of tft failed\n");
     return false;
     }
 
@@ -38,7 +48,7 @@ bool BearerTftIe::decodeBearerTftIe(MsgBuffer &buffer, BearerTftIeData &data, Ui
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array16(buffer, data.tft, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: tft\n");
+        errorStream.add((char *)"Failed to decode: tft\n");
         return false;
     }
 
@@ -51,18 +61,18 @@ bool BearerTftIe::decodeBearerTftIe(MsgBuffer &buffer, BearerTftIeData &data, Ui
     }
     else
     {
-        errorStream.add("Unable to decode IE BearerTftIe\n");
+        errorStream.add((char *)"Unable to decode IE BearerTftIe\n");
         return false;
     }
 }
 void BearerTftIe::displayBearerTftIe_v(BearerTftIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("BearerTftIeData:");
+    stream.add((char *)"BearerTftIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("tft:");
+    stream.add((char *)"tft:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array16_v(data.tft, stream);
     stream.decrIndent();

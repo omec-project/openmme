@@ -1,9 +1,19 @@
 /*
- * msisdnIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "msisdnIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +33,12 @@ bool MsisdnIe::encodeMsisdnIe(MsgBuffer &buffer, MsisdnIeData const &data)
 {
     if (!(data.msisdnValue.length>=9 && data.msisdnValue.length <=15))
     {
-        errorStream.add("Data validation failure: msisdnValue\n");
+        errorStream.add((char *)"Data validation failure: msisdnValue\n");
         return false; 
     }
     if (!(DataTypeCodecUtils::encodeDigitRegister(buffer, data.msisdnValue)))
     {
-    errorStream.add("Encoding of msisdnValue failed\n");
+    errorStream.add((char *)"Encoding of msisdnValue failed\n");
     return false;
     }
 
@@ -43,12 +53,12 @@ bool MsisdnIe::decodeMsisdnIe(MsgBuffer &buffer, MsisdnIeData &data, Uint16 leng
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeDigitRegister(buffer, data.msisdnValue, lengthLeft)))
     {
-        errorStream.add("Failed to decode: msisdnValue\n");
+        errorStream.add((char *)"Failed to decode: msisdnValue\n");
         return false;
     }
     if (!(data.msisdnValue.length>=9 && data.msisdnValue.length <=15))
     {
-        errorStream.add("Data validation failure : msisdnValue\n");
+        errorStream.add((char *)"Data validation failure : msisdnValue\n");
         return false; //TODO need to add validations
     }
 
@@ -61,18 +71,18 @@ bool MsisdnIe::decodeMsisdnIe(MsgBuffer &buffer, MsisdnIeData &data, Uint16 leng
     }
     else
     {
-        errorStream.add("Unable to decode IE MsisdnIe\n");
+        errorStream.add((char *)"Unable to decode IE MsisdnIe\n");
         return false;
     }
 }
 void MsisdnIe::displayMsisdnIe_v(MsisdnIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("MsisdnIeData:");
+    stream.add((char *)"MsisdnIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("msisdnValue:");
+    stream.add((char *)"msisdnValue:");
     stream.endOfLine();
     DataTypeCodecUtils::displayDigitRegister_v(data.msisdnValue, stream);
     stream.decrIndent();

@@ -1,9 +1,19 @@
 /*
- * cnOperatorSelectionEntityIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "cnOperatorSelectionEntityIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,12 +35,12 @@ bool CnOperatorSelectionEntityIe::encodeCnOperatorSelectionEntityIe(MsgBuffer &b
 
     if (!(data.cnOpselectionEntity<= 3))
     {
-        errorStream.add("Data validation failure: cnOpselectionEntity\n");
+        errorStream.add((char *)"Data validation failure: cnOpselectionEntity\n");
         return false; 
     }
     if(!(buffer.writeBits(data.cnOpselectionEntity, 2)))
     {
-        errorStream.add("Encoding of cnOpselectionEntity failed\n");
+        errorStream.add((char *)"Encoding of cnOpselectionEntity failed\n");
         return false;
     }
 
@@ -45,7 +55,7 @@ bool CnOperatorSelectionEntityIe::decodeCnOperatorSelectionEntityIe(MsgBuffer &b
     buffer.skipBits(6);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -53,12 +63,12 @@ bool CnOperatorSelectionEntityIe::decodeCnOperatorSelectionEntityIe(MsgBuffer &b
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: cnOpselectionEntity\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: cnOpselectionEntity\n");
         return false;
     }
     if (!(data.cnOpselectionEntity<= 3))
     {
-        errorStream.add("Data validation failure : cnOpselectionEntity\n");
+        errorStream.add((char *)"Data validation failure : cnOpselectionEntity\n");
         return false; //TODO need to add validations
     }
 
@@ -71,18 +81,18 @@ bool CnOperatorSelectionEntityIe::decodeCnOperatorSelectionEntityIe(MsgBuffer &b
     }
     else
     {
-        errorStream.add("Unable to decode IE CnOperatorSelectionEntityIe\n");
+        errorStream.add((char *)"Unable to decode IE CnOperatorSelectionEntityIe\n");
         return false;
     }
 }
 void CnOperatorSelectionEntityIe::displayCnOperatorSelectionEntityIe_v(CnOperatorSelectionEntityIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("CnOperatorSelectionEntityIeData:");
+    stream.add((char *)"CnOperatorSelectionEntityIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "cnOpselectionEntity: "); 
+    stream.add( (char *)"cnOpselectionEntity: "); 
     stream.add((Uint8)data.cnOpselectionEntity);
     stream.endOfLine();
     stream.decrIndent();

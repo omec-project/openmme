@@ -1,9 +1,19 @@
 /*
- * downlinkDataNotificationMsg.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 #include "downlinkDataNotificationMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
 #include "../ieClasses/gtpV2IeFactory.h"
@@ -63,7 +73,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: cause\n");
+            errorStream.add((char *)"Failed to encode IE: cause\n");
             return false;
         }
     }
@@ -91,7 +101,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: epsBearerId\n");
+            errorStream.add((char *)"Failed to encode IE: epsBearerId\n");
             return false;
         }
     }
@@ -119,7 +129,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: allocationRetentionPriority\n");
+            errorStream.add((char *)"Failed to encode IE: allocationRetentionPriority\n");
             return false;
         }
     }
@@ -147,7 +157,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: imsi\n");
+            errorStream.add((char *)"Failed to encode IE: imsi\n");
             return false;
         }
     }
@@ -175,7 +185,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: senderFTeidForControlPlane\n");
+            errorStream.add((char *)"Failed to encode IE: senderFTeidForControlPlane\n");
             return false;
         }
     }
@@ -203,7 +213,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: indicationFlags\n");
+            errorStream.add((char *)"Failed to encode IE: indicationFlags\n");
             return false;
         }
     }
@@ -234,7 +244,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwsNodeLevelLoadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: sgwsNodeLevelLoadControlInformation\n");
             return false;
         }
     }
@@ -265,7 +275,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwsOverloadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: sgwsOverloadControlInformation\n");
             return false;
         }
     }
@@ -293,7 +303,7 @@ bool DownlinkDataNotificationMsg::encodeDownlinkDataNotificationMsg(MsgBuffer &b
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pagingAndServiceInformation\n");
+            errorStream.add((char *)"Failed to encode IE: pagingAndServiceInformation\n");
             return false;
         }
     }
@@ -316,12 +326,12 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -342,7 +352,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.causeIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: cause\n");
+                        errorStream.add((char *)"Failed to decode IE: cause\n");
                         return false;
                     }
                 }
@@ -350,7 +360,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -371,7 +381,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.epsBearerIdIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: epsBearerId\n");
+                        errorStream.add((char *)"Failed to decode IE: epsBearerId\n");
                         return false;
                     }
                 }
@@ -379,7 +389,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -400,7 +410,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.allocationRetentionPriorityIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: allocationRetentionPriority\n");
+                        errorStream.add((char *)"Failed to decode IE: allocationRetentionPriority\n");
                         return false;
                     }
                 }
@@ -408,7 +418,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -429,7 +439,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.imsiIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: imsi\n");
+                        errorStream.add((char *)"Failed to decode IE: imsi\n");
                         return false;
                     }
                 }
@@ -437,7 +447,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -458,7 +468,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.senderFTeidForControlPlaneIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: senderFTeidForControlPlane\n");
+                        errorStream.add((char *)"Failed to decode IE: senderFTeidForControlPlane\n");
                         return false;
                     }
                 }
@@ -466,7 +476,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -487,7 +497,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.indicationFlagsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: indicationFlags\n");
+                        errorStream.add((char *)"Failed to decode IE: indicationFlags\n");
                         return false;
                     }
                 }
@@ -495,7 +505,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -519,7 +529,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.sgwsNodeLevelLoadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwsNodeLevelLoadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwsNodeLevelLoadControlInformation\n");
                         return false;
                     }
                 }
@@ -527,7 +537,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -551,7 +561,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.sgwsOverloadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwsOverloadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwsOverloadControlInformation\n");
                         return false;
                     }
                 }
@@ -559,7 +569,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -580,7 +590,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                     data.pagingAndServiceInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pagingAndServiceInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: pagingAndServiceInformation\n");
                         return false;
                     }
                 }
@@ -588,7 +598,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -599,7 +609,7 @@ bool DownlinkDataNotificationMsg::decodeDownlinkDataNotificationMsg(MsgBuffer &b
             default:
             {
                 // Unknown IE print error
-                errorStream.add("Unknown IE Type: ");
+                errorStream.add((char *)"Unknown IE Type: ");
                 errorStream.add(ieHeader.ieType);
                 errorStream.endOfLine();
                 buffer.skipBytes(ieHeader.length);
@@ -613,13 +623,13 @@ void DownlinkDataNotificationMsg::
 displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("DownlinkDataNotificationMsg:");
+    stream.add((char *)"DownlinkDataNotificationMsg:");
     stream.endOfLine();
     Uint8 displayCount;
     stream.incrIndent();
     if (data.causeIePresent)
     {
-        stream.add("IE - cause:");
+        stream.add((char *)"IE - cause:");
         stream.endOfLine();
         CauseIe cause=
         dynamic_cast<
@@ -629,7 +639,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.epsBearerIdIePresent)
     {
-        stream.add("IE - epsBearerId:");
+        stream.add((char *)"IE - epsBearerId:");
         stream.endOfLine();
         EbiIe ebi=
         dynamic_cast<
@@ -639,7 +649,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.allocationRetentionPriorityIePresent)
     {
-        stream.add("IE - allocationRetentionPriority:");
+        stream.add((char *)"IE - allocationRetentionPriority:");
         stream.endOfLine();
         ArpIe arp=
         dynamic_cast<
@@ -649,7 +659,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.imsiIePresent)
     {
-        stream.add("IE - imsi:");
+        stream.add((char *)"IE - imsi:");
         stream.endOfLine();
         ImsiIe imsi=
         dynamic_cast<
@@ -659,7 +669,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.senderFTeidForControlPlaneIePresent)
     {
-        stream.add("IE - senderFTeidForControlPlane:");
+        stream.add((char *)"IE - senderFTeidForControlPlane:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -669,7 +679,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.indicationFlagsIePresent)
     {
-        stream.add("IE - indicationFlags:");
+        stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
         dynamic_cast<
@@ -679,7 +689,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.sgwsNodeLevelLoadControlInformationIePresent)
     {
-        stream.add("IE - sgwsNodeLevelLoadControlInformation:");
+        stream.add((char *)"IE - sgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
         dynamic_cast<
@@ -692,7 +702,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
-        stream.add("IE - sgwsOverloadControlInformation:");
+        stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
         dynamic_cast<
@@ -705,7 +715,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.pagingAndServiceInformationIePresent)
     {
-        stream.add("IE - pagingAndServiceInformation:");
+        stream.add((char *)"IE - pagingAndServiceInformation:");
         stream.endOfLine();
         PagingAndServiceInformationIe pagingAndServiceInformation=
         dynamic_cast<

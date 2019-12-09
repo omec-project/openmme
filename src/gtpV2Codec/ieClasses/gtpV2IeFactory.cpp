@@ -1,9 +1,18 @@
 /*
- * gtpV2IeFactory.cpp
- *
- *  Created on: Jul 10, 2014
- *      Author: hariharanb
- */
+* Copyright (c) 2019 Infosys Limited
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include <map>
 #include "gtpV2IeFactory.h"
@@ -78,6 +87,9 @@
 #include "throttlingIe.h"
 #include "pagingAndServiceInformationIe.h"
 #include "bearerContextIe.h"
+#include "overloadControlInformationIe.h"
+#include "loadControlInformationIe.h"
+#include "remoteUeContextIe.h"
 
 GtpV2IeFactory::GtpV2IeFactory() 
 {
@@ -288,6 +300,15 @@ GtpV2IeFactory::GtpV2IeFactory()
 
     BearerContextIe* bearerContextIe_p = new (BearerContextIe);
     ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(BearerContextIeType, bearerContextIe_p));
+
+    OverloadControlInformationIe* overloadControlInformationIe_p = new (OverloadControlInformationIe);
+    ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(OverloadControlInformationIeType, overloadControlInformationIe_p));
+
+    LoadControlInformationIe* loadControlInformationIe_p = new (LoadControlInformationIe);
+    ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(LoadControlInformationIeType, loadControlInformationIe_p));
+
+    RemoteUeContextIe* remoteUeContextIe_p = new (RemoteUeContextIe);
+    ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(RemoteUeContextIeType, remoteUeContextIe_p));
 
 
 }

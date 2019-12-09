@@ -1,9 +1,19 @@
 /*
- * pgwsApnLevelLoadControlInformationInDeleteBearerRequest.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+* Copyright (c) 2019 Infosys Limited
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/  
+
 #include "pgwsApnLevelLoadControlInformationInDeleteBearerRequest.h"
 #include "manual/gtpV2Ie.h"
 #include "gtpV2IeFactory.h"
@@ -61,7 +71,7 @@ encodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: loadControlSequenceNumber\n");
+        errorStream.add((char *)"Failed to encode IE: loadControlSequenceNumber\n");
         return false;
     }
 
@@ -86,7 +96,7 @@ encodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: loadMetric\n");
+        errorStream.add((char *)"Failed to encode IE: loadMetric\n");
         return false;
     }
 
@@ -113,7 +123,7 @@ encodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: listOfApnAndRelativeCapacity\n");
+          errorStream.add((char *)"Failed to encode IE: listOfApnAndRelativeCapacity\n");
           return false;
         }
     }
@@ -135,12 +145,12 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -162,7 +172,7 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: loadControlSequenceNumber\n");
+                        errorStream.add((char *)"Failed to decode IE: loadControlSequenceNumber\n");
                         return false;
                     }
                     Uint16 mandIe = SequenceNumberIeType;
@@ -172,7 +182,7 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -194,7 +204,7 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: loadMetric\n");
+                        errorStream.add((char *)"Failed to decode IE: loadMetric\n");
                         return false;
                     }
                     Uint16 mandIe = MetricIeType;
@@ -204,7 +214,7 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -227,14 +237,14 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
                     data.listOfApnAndRelativeCapacityIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: listOfApnAndRelativeCapacity\n");
+                        errorStream.add((char *)"Failed to decode IE: listOfApnAndRelativeCapacity\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -244,7 +254,7 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
             default:
             {
             // Unknown IE print error
-            errorStream.add("Unknown IE Type: ");
+            errorStream.add((char *)"Unknown IE Type: ");
             errorStream.add(ieHeader.ieType);
             errorStream.endOfLine();
             buffer.skipBytes(ieHeader.length);
@@ -254,7 +264,7 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
     if (!mandatoryIeLocalList.empty())
     {
         // some mandatory IEs are missing
-        errorStream.add("Missing Mandatory IEs:");
+        errorStream.add((char *)"Missing Mandatory IEs:");
         errorStream.endOfLine();
         while (!mandatoryIeLocalList.empty())
         {
@@ -262,9 +272,9 @@ decodePgwsApnLevelLoadControlInformationInDeleteBearerRequest(MsgBuffer &buffer,
             mandatoryIeLocalList.erase (mandatoryIeLocalList.begin ());
             Uint16 missingInstance = missingMandIe & 0x00FF;
             Uint16 missingIeType = (missingMandIe >> 8);
-            errorStream.add ("Missing Ie type: ");
+            errorStream.add ((char *)"Missing Ie type: ");
             errorStream.add (missingIeType);
-            errorStream.add ("  Instance: ");
+            errorStream.add ((char *)"  Instance: ");
             errorStream.add (missingInstance);
             errorStream.endOfLine();
         }
@@ -279,7 +289,7 @@ displayPgwsApnLevelLoadControlInformationInDeleteBearerRequestData_v
 (PgwsApnLevelLoadControlInformationInDeleteBearerRequestData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("PgwsApnLevelLoadControlInformationInDeleteBearerRequest:");
+    stream.add((char *)"PgwsApnLevelLoadControlInformationInDeleteBearerRequest:");
     stream.endOfLine();
     stream.incrIndent();
 
@@ -288,7 +298,7 @@ displayPgwsApnLevelLoadControlInformationInDeleteBearerRequestData_v
     if (data.listOfApnAndRelativeCapacityIePresent)
     {
 
-        stream.add("listOfApnAndRelativeCapacity:");
+        stream.add((char *)"listOfApnAndRelativeCapacity:");
         stream.endOfLine();
         ApnAndRelativeCapacityIe apnAndRelativeCapacity=
         dynamic_cast<

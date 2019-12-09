@@ -1,9 +1,19 @@
 /*
- * twanIdentifierIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "twanIdentifierIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,39 +35,39 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
 
     if(!(buffer.writeBits(data.laiipresent, 1)))
     {
-        errorStream.add("Encoding of laiipresent failed\n");
+        errorStream.add((char *)"Encoding of laiipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.opnaipresent, 1)))
     {
-        errorStream.add("Encoding of opnaipresent failed\n");
+        errorStream.add((char *)"Encoding of opnaipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.plmnipresent, 1)))
     {
-        errorStream.add("Encoding of plmnipresent failed\n");
+        errorStream.add((char *)"Encoding of plmnipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.civaipresent, 1)))
     {
-        errorStream.add("Encoding of civaipresent failed\n");
+        errorStream.add((char *)"Encoding of civaipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.bssidipresent, 2)))
     {
-        errorStream.add("Encoding of bssidipresent failed\n");
+        errorStream.add((char *)"Encoding of bssidipresent failed\n");
         return false;
     }
     if (!(buffer.writeUint64(data.ssidLength)))
     {
-        errorStream.add("Encoding of ssidLength failed\n");
+        errorStream.add((char *)"Encoding of ssidLength failed\n");
         return false;
     }
     if ( data.ssidLength <=32)
     {
         if (!(buffer.writeUint8(data.ssid)))
         {
-    errorStream.add("Encoding of ssid failed\n");
+    errorStream.add((char *)"Encoding of ssid failed\n");
     return false;
         }
     }
@@ -65,7 +75,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.bssid)))
         {
-    errorStream.add("Encoding of bssid failed\n");
+    errorStream.add((char *)"Encoding of bssid failed\n");
     return false;
         }
     }
@@ -73,7 +83,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.civicAddressLength)))
         {
-    errorStream.add("Encoding of civicAddressLength failed\n");
+    errorStream.add((char *)"Encoding of civicAddressLength failed\n");
     return false;
         }
     }
@@ -81,7 +91,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.civicAddressInformation)))
         {
-    errorStream.add("Encoding of civicAddressInformation failed\n");
+    errorStream.add((char *)"Encoding of civicAddressInformation failed\n");
     return false;
         }
     }
@@ -89,7 +99,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.twanplmnid)))
         {
-    errorStream.add("Encoding of twanplmnid failed\n");
+    errorStream.add((char *)"Encoding of twanplmnid failed\n");
     return false;
         }
     }
@@ -97,7 +107,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.twanOperatorNameLength)))
         {
-    errorStream.add("Encoding of twanOperatorNameLength failed\n");
+    errorStream.add((char *)"Encoding of twanOperatorNameLength failed\n");
     return false;
         }
     }
@@ -105,7 +115,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.twanOperatorName)))
         {
-    errorStream.add("Encoding of twanOperatorName failed\n");
+    errorStream.add((char *)"Encoding of twanOperatorName failed\n");
     return false;
         }
     }
@@ -113,7 +123,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.relayIdentityType)))
         {
-    errorStream.add("Encoding of relayIdentityType failed\n");
+    errorStream.add((char *)"Encoding of relayIdentityType failed\n");
     return false;
         }
     }
@@ -121,7 +131,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.relayIdentityLength)))
         {
-    errorStream.add("Encoding of relayIdentityLength failed\n");
+    errorStream.add((char *)"Encoding of relayIdentityLength failed\n");
     return false;
         }
     }
@@ -129,7 +139,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.relayIdentity)))
         {
-    errorStream.add("Encoding of relayIdentity failed\n");
+    errorStream.add((char *)"Encoding of relayIdentity failed\n");
     return false;
         }
     }
@@ -137,7 +147,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.circuitIDLength)))
         {
-    errorStream.add("Encoding of circuitIDLength failed\n");
+    errorStream.add((char *)"Encoding of circuitIDLength failed\n");
     return false;
         }
     }
@@ -145,7 +155,7 @@ bool TwanIdentifierIe::encodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     {
         if (!(buffer.writeUint8(data.circuitID)))
         {
-    errorStream.add("Encoding of circuitID failed\n");
+    errorStream.add((char *)"Encoding of circuitID failed\n");
     return false;
         }
     }
@@ -161,7 +171,7 @@ bool TwanIdentifierIe::decodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     buffer.skipBits(2);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -169,127 +179,175 @@ bool TwanIdentifierIe::decodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: laiipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: laiipresent\n");
         return false;
     }
     data.opnaipresent = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: opnaipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: opnaipresent\n");
         return false;
     }
     data.plmnipresent = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: plmnipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: plmnipresent\n");
         return false;
     }
     data.civaipresent = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: civaipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: civaipresent\n");
         return false;
     }
     data.bssidipresent = buffer.readBits(2);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: bssidipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: bssidipresent\n");
         return false;
     }
 
     buffer.readUint64(data.ssidLength);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: ssidLength\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: ssidLength\n");
         return false;
     }
 
-    buffer.readUint8(data.ssid);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if ( data.ssidLength <=32)
     {
-        errorStream.add("Attempt to read beyond IE boundary: ssid\n");
-        return false;
+
+        buffer.readUint8(data.ssid);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: ssid\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.bssid);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.bssidipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: bssid\n");
-        return false;
+
+        buffer.readUint8(data.bssid);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: bssid\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.civicAddressLength);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.civaipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: civicAddressLength\n");
-        return false;
+
+        buffer.readUint8(data.civicAddressLength);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: civicAddressLength\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.civicAddressInformation);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.civaipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: civicAddressInformation\n");
-        return false;
+
+        buffer.readUint8(data.civicAddressInformation);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: civicAddressInformation\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.twanplmnid);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.plmnipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: twanplmnid\n");
-        return false;
+
+        buffer.readUint8(data.twanplmnid);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: twanplmnid\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.twanOperatorNameLength);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.opnaipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: twanOperatorNameLength\n");
-        return false;
+
+        buffer.readUint8(data.twanOperatorNameLength);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: twanOperatorNameLength\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.twanOperatorName);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.opnaipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: twanOperatorName\n");
-        return false;
+
+        buffer.readUint8(data.twanOperatorName);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: twanOperatorName\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.relayIdentityType);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.laiipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: relayIdentityType\n");
-        return false;
+
+        buffer.readUint8(data.relayIdentityType);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: relayIdentityType\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.relayIdentityLength);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.laiipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: relayIdentityLength\n");
-        return false;
+
+        buffer.readUint8(data.relayIdentityLength);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: relayIdentityLength\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.relayIdentity);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.laiipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: relayIdentity\n");
-        return false;
+
+        buffer.readUint8(data.relayIdentity);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: relayIdentity\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.circuitIDLength);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.laiipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: circuitIDLength\n");
-        return false;
+
+        buffer.readUint8(data.circuitIDLength);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: circuitIDLength\n");
+            return false;
+        }
     }
 
-    buffer.readUint8(data.circuitID);
-    if (buffer.getCurrentIndex() > ieBoundary)
+    if (data.laiipresent)
     {
-        errorStream.add("Attempt to read beyond IE boundary: circuitID\n");
-        return false;
+
+        buffer.readUint8(data.circuitID);
+        if (buffer.getCurrentIndex() > ieBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond IE boundary: circuitID\n");
+            return false;
+        }
     }
 
     // The IE is decoded now. The buffer index should be pointing to the 
@@ -301,121 +359,121 @@ bool TwanIdentifierIe::decodeTwanIdentifierIe(MsgBuffer &buffer, TwanIdentifierI
     }
     else
     {
-        errorStream.add("Unable to decode IE TwanIdentifierIe\n");
+        errorStream.add((char *)"Unable to decode IE TwanIdentifierIe\n");
         return false;
     }
 }
 void TwanIdentifierIe::displayTwanIdentifierIe_v(TwanIdentifierIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("TwanIdentifierIeData:");
+    stream.add((char *)"TwanIdentifierIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "laiipresent: "); 
+    stream.add( (char *)"laiipresent: "); 
     stream.add((Uint8)data.laiipresent);
     stream.endOfLine();
   
-    stream.add( "opnaipresent: "); 
+    stream.add( (char *)"opnaipresent: "); 
     stream.add((Uint8)data.opnaipresent);
     stream.endOfLine();
   
-    stream.add( "plmnipresent: "); 
+    stream.add( (char *)"plmnipresent: "); 
     stream.add((Uint8)data.plmnipresent);
     stream.endOfLine();
   
-    stream.add( "civaipresent: "); 
+    stream.add( (char *)"civaipresent: "); 
     stream.add((Uint8)data.civaipresent);
     stream.endOfLine();
   
-    stream.add( "bssidipresent: "); 
+    stream.add( (char *)"bssidipresent: "); 
     stream.add((Uint8)data.bssidipresent);
     stream.endOfLine();
   
-    stream.add("ssidLength: ");
+    stream.add((char *)"ssidLength: ");
     stream.add(data.ssidLength);
     stream.endOfLine();
   
     if ( data.ssidLength <=32)
     {
-        stream.add("ssid: ");
+        stream.add((char *)"ssid: ");
         stream.add(data.ssid);
         stream.endOfLine();
     }
   
     if (data.bssidipresent)
     {
-        stream.add("bssid: ");
+        stream.add((char *)"bssid: ");
         stream.add(data.bssid);
         stream.endOfLine();
     }
   
     if (data.civaipresent)
     {
-        stream.add("civicAddressLength: ");
+        stream.add((char *)"civicAddressLength: ");
         stream.add(data.civicAddressLength);
         stream.endOfLine();
     }
   
     if (data.civaipresent)
     {
-        stream.add("civicAddressInformation: ");
+        stream.add((char *)"civicAddressInformation: ");
         stream.add(data.civicAddressInformation);
         stream.endOfLine();
     }
   
     if (data.plmnipresent)
     {
-        stream.add("twanplmnid: ");
+        stream.add((char *)"twanplmnid: ");
         stream.add(data.twanplmnid);
         stream.endOfLine();
     }
   
     if (data.opnaipresent)
     {
-        stream.add("twanOperatorNameLength: ");
+        stream.add((char *)"twanOperatorNameLength: ");
         stream.add(data.twanOperatorNameLength);
         stream.endOfLine();
     }
   
     if (data.opnaipresent)
     {
-        stream.add("twanOperatorName: ");
+        stream.add((char *)"twanOperatorName: ");
         stream.add(data.twanOperatorName);
         stream.endOfLine();
     }
   
     if (data.laiipresent)
     {
-        stream.add("relayIdentityType: ");
+        stream.add((char *)"relayIdentityType: ");
         stream.add(data.relayIdentityType);
         stream.endOfLine();
     }
   
     if (data.laiipresent)
     {
-        stream.add("relayIdentityLength: ");
+        stream.add((char *)"relayIdentityLength: ");
         stream.add(data.relayIdentityLength);
         stream.endOfLine();
     }
   
     if (data.laiipresent)
     {
-        stream.add("relayIdentity: ");
+        stream.add((char *)"relayIdentity: ");
         stream.add(data.relayIdentity);
         stream.endOfLine();
     }
   
     if (data.laiipresent)
     {
-        stream.add("circuitIDLength: ");
+        stream.add((char *)"circuitIDLength: ");
         stream.add(data.circuitIDLength);
         stream.endOfLine();
     }
   
     if (data.laiipresent)
     {
-        stream.add("circuitID: ");
+        stream.add((char *)"circuitID: ");
         stream.add(data.circuitID);
         stream.endOfLine();
     }

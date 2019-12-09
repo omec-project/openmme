@@ -1,9 +1,19 @@
 /*
- * integerNumberIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "integerNumberIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +33,7 @@ bool IntegerNumberIe::encodeIntegerNumberIe(MsgBuffer &buffer, IntegerNumberIeDa
 {
     if (!(buffer.writeUint64(data.integerNumberValue)))
     {
-        errorStream.add("Encoding of integerNumberValue failed\n");
+        errorStream.add((char *)"Encoding of integerNumberValue failed\n");
         return false;
     }
 
@@ -39,7 +49,7 @@ bool IntegerNumberIe::decodeIntegerNumberIe(MsgBuffer &buffer, IntegerNumberIeDa
     buffer.readUint64(data.integerNumberValue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: integerNumberValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: integerNumberValue\n");
         return false;
     }
 
@@ -52,18 +62,18 @@ bool IntegerNumberIe::decodeIntegerNumberIe(MsgBuffer &buffer, IntegerNumberIeDa
     }
     else
     {
-        errorStream.add("Unable to decode IE IntegerNumberIe\n");
+        errorStream.add((char *)"Unable to decode IE IntegerNumberIe\n");
         return false;
     }
 }
 void IntegerNumberIe::displayIntegerNumberIe_v(IntegerNumberIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("IntegerNumberIeData:");
+    stream.add((char *)"IntegerNumberIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("integerNumberValue: ");
+    stream.add((char *)"integerNumberValue: ");
     stream.add(data.integerNumberValue);
     stream.endOfLine();
     stream.decrIndent();

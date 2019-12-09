@@ -1,9 +1,19 @@
 /*
- * throttlingIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "throttlingIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,22 +33,22 @@ bool ThrottlingIe::encodeThrottlingIe(MsgBuffer &buffer, ThrottlingIeData const 
 {
     if(!(buffer.writeBits(data.throttlingDelayUnit, 3)))
     {
-        errorStream.add("Encoding of throttlingDelayUnit failed\n");
+        errorStream.add((char *)"Encoding of throttlingDelayUnit failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.throttlingDelayValue, 5)))
     {
-        errorStream.add("Encoding of throttlingDelayValue failed\n");
+        errorStream.add((char *)"Encoding of throttlingDelayValue failed\n");
         return false;
     }
     if (!(data.throttlingFactor>= 0 && data.throttlingFactor<= 100))
     {
-        errorStream.add("Data validation failure: throttlingFactor\n");
+        errorStream.add((char *)"Data validation failure: throttlingFactor\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.throttlingFactor)))
     {
-        errorStream.add("Encoding of throttlingFactor failed\n");
+        errorStream.add((char *)"Encoding of throttlingFactor failed\n");
         return false;
     }
 
@@ -54,26 +64,26 @@ bool ThrottlingIe::decodeThrottlingIe(MsgBuffer &buffer, ThrottlingIeData &data,
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: throttlingDelayUnit\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: throttlingDelayUnit\n");
         return false;
     }
     data.throttlingDelayValue = buffer.readBits(5);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: throttlingDelayValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: throttlingDelayValue\n");
         return false;
     }
 
     buffer.readUint8(data.throttlingFactor);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: throttlingFactor\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: throttlingFactor\n");
         return false;
     }
     if (!(data.throttlingFactor>= 0 && data.throttlingFactor<= 100))
     {
-        errorStream.add("Data validation failure : throttlingFactor\n");
+        errorStream.add((char *)"Data validation failure : throttlingFactor\n");
         return false; //TODO need to add validations
     }
 
@@ -86,26 +96,26 @@ bool ThrottlingIe::decodeThrottlingIe(MsgBuffer &buffer, ThrottlingIeData &data,
     }
     else
     {
-        errorStream.add("Unable to decode IE ThrottlingIe\n");
+        errorStream.add((char *)"Unable to decode IE ThrottlingIe\n");
         return false;
     }
 }
 void ThrottlingIe::displayThrottlingIe_v(ThrottlingIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ThrottlingIeData:");
+    stream.add((char *)"ThrottlingIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "throttlingDelayUnit: "); 
+    stream.add( (char *)"throttlingDelayUnit: "); 
     stream.add((Uint8)data.throttlingDelayUnit);
     stream.endOfLine();
   
-    stream.add( "throttlingDelayValue: "); 
+    stream.add( (char *)"throttlingDelayValue: "); 
     stream.add((Uint8)data.throttlingDelayValue);
     stream.endOfLine();
   
-    stream.add("throttlingFactor: ");
+    stream.add((char *)"throttlingFactor: ");
     stream.add(data.throttlingFactor);
     stream.endOfLine();
     stream.decrIndent();

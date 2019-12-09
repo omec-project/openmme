@@ -1,9 +1,19 @@
 /*
- * sgwsOverloadControlInformationInCreateBearerRequest.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+* Copyright (c) 2019 Infosys Limited
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/  
+
 #include "sgwsOverloadControlInformationInCreateBearerRequest.h"
 #include "manual/gtpV2Ie.h"
 #include "gtpV2IeFactory.h"
@@ -38,7 +48,6 @@ encodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
                          SgwsOverloadControlInformationInCreateBearerRequestData
                           const &data)
 {
-	/*
     bool rc = false;
     GtpV2IeHeader header;
     Uint16 startIndex = 0;
@@ -66,7 +75,7 @@ encodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: overloadControlSequenceNumber\n");
+        errorStream.add((char *)"Failed to encode IE: overloadControlSequenceNumber\n");
         return false;
     }
 
@@ -91,7 +100,7 @@ encodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: overloadReductionMetric\n");
+        errorStream.add((char *)"Failed to encode IE: overloadReductionMetric\n");
         return false;
     }
 
@@ -116,7 +125,7 @@ encodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: periodOfValidity\n");
+        errorStream.add((char *)"Failed to encode IE: periodOfValidity\n");
         return false;
     }
 
@@ -143,12 +152,11 @@ encodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: listOfAccessPointName\n");
+          errorStream.add((char *)"Failed to encode IE: listOfAccessPointName\n");
           return false;
         }
     }
-    return rc;*/
-	    return true;
+    return rc;
 }
 
 bool SgwsOverloadControlInformationInCreateBearerRequest::
@@ -156,7 +164,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
                          SgwsOverloadControlInformationInCreateBearerRequestData 
                          &data, Uint16 length)
 {
-/*
+
     bool rc = false;
     GtpV2IeHeader ieHeader;
     set<Uint16> mandatoryIeLocalList = mandatoryIeSet;
@@ -166,12 +174,12 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -193,7 +201,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: overloadControlSequenceNumber\n");
+                        errorStream.add((char *)"Failed to decode IE: overloadControlSequenceNumber\n");
                         return false;
                     }
                     Uint16 mandIe = SequenceNumberIeType;
@@ -203,7 +211,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -225,7 +233,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: overloadReductionMetric\n");
+                        errorStream.add((char *)"Failed to decode IE: overloadReductionMetric\n");
                         return false;
                     }
                     Uint16 mandIe = MetricIeType;
@@ -235,7 +243,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -257,7 +265,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: periodOfValidity\n");
+                        errorStream.add((char *)"Failed to decode IE: periodOfValidity\n");
                         return false;
                     }
                     Uint16 mandIe = EpcTimerIeType;
@@ -267,7 +275,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -290,14 +298,14 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
                     data.listOfAccessPointNameIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: listOfAccessPointName\n");
+                        errorStream.add((char *)"Failed to decode IE: listOfAccessPointName\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -307,7 +315,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
             default:
             {
             // Unknown IE print error
-            errorStream.add("Unknown IE Type: ");
+            errorStream.add((char *)"Unknown IE Type: ");
             errorStream.add(ieHeader.ieType);
             errorStream.endOfLine();
             buffer.skipBytes(ieHeader.length);
@@ -317,7 +325,7 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
     if (!mandatoryIeLocalList.empty())
     {
         // some mandatory IEs are missing
-        errorStream.add("Missing Mandatory IEs:");
+        errorStream.add((char *)"Missing Mandatory IEs:");
         errorStream.endOfLine();
         while (!mandatoryIeLocalList.empty())
         {
@@ -325,26 +333,24 @@ decodeSgwsOverloadControlInformationInCreateBearerRequest(MsgBuffer &buffer,
             mandatoryIeLocalList.erase (mandatoryIeLocalList.begin ());
             Uint16 missingInstance = missingMandIe & 0x00FF;
             Uint16 missingIeType = (missingMandIe >> 8);
-            errorStream.add ("Missing Ie type: ");
+            errorStream.add ((char *)"Missing Ie type: ");
             errorStream.add (missingIeType);
-            errorStream.add ("  Instance: ");
+            errorStream.add ((char *)"  Instance: ");
             errorStream.add (missingInstance);
             errorStream.endOfLine();
         }
         rc = false;
     
     }
-    return rc; */
-	    return true;
+    return rc; 
 }
 
 void SgwsOverloadControlInformationInCreateBearerRequest::
 displaySgwsOverloadControlInformationInCreateBearerRequestData_v
 (SgwsOverloadControlInformationInCreateBearerRequestData const &data, Debug &stream)
 {
-	/*
     stream.incrIndent();
-    stream.add("SgwsOverloadControlInformationInCreateBearerRequest:");
+    stream.add((char *)"SgwsOverloadControlInformationInCreateBearerRequest:");
     stream.endOfLine();
     stream.incrIndent();
 
@@ -354,7 +360,7 @@ displaySgwsOverloadControlInformationInCreateBearerRequestData_v
     if (data.listOfAccessPointNameIePresent)
     {
 
-        stream.add("listOfAccessPointName:");
+        stream.add((char *)"listOfAccessPointName:");
         stream.endOfLine();
         ApnIe apn=
         dynamic_cast<
@@ -364,7 +370,7 @@ displaySgwsOverloadControlInformationInCreateBearerRequestData_v
     }
 
     stream.decrIndent();
-    stream.decrIndent();*/
+    stream.decrIndent();
 }
 
 

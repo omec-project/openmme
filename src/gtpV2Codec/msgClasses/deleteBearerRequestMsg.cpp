@@ -1,9 +1,19 @@
 /*
- * deleteBearerRequestMsg.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 #include "deleteBearerRequestMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
 #include "../ieClasses/gtpV2IeFactory.h"
@@ -74,7 +84,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: linkedEpsBearerId\n");
+            errorStream.add((char *)"Failed to encode IE: linkedEpsBearerId\n");
             return false;
         }
     }
@@ -102,7 +112,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: epsBearerIds\n");
+            errorStream.add((char *)"Failed to encode IE: epsBearerIds\n");
             return false;
         }
     }
@@ -110,9 +120,9 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
         // First validate if the applicatoin provided more than the expected cardinality
     if (data.failedBearerContextsCount > 11)
     {
-        errorStream.add("Number of entries of failedBearerContexts exceeded\n");
-        errorStream.add("Expected count: 11 Received count: ");
-        errorStream.add("data.failedBearerContextsCount");
+        errorStream.add((char *)"Number of entries of failedBearerContexts exceeded\n");
+        errorStream.add((char *)"Expected count: 11 Received count: ");
+        errorStream.add((char *)"data.failedBearerContextsCount");
         errorStream.endOfLine();
         return false;
     }
@@ -141,7 +151,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
     if (!(rc))
     { 
-        errorStream.add("Failed to encode IE: failedBearerContexts\n");
+        errorStream.add((char *)"Failed to encode IE: failedBearerContexts\n");
         return false;
     }
 
@@ -168,7 +178,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: procedureTransactionId\n");
+            errorStream.add((char *)"Failed to encode IE: procedureTransactionId\n");
             return false;
         }
     }
@@ -196,7 +206,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: protocolConfigurationOptions\n");
+            errorStream.add((char *)"Failed to encode IE: protocolConfigurationOptions\n");
             return false;
         }
     }
@@ -224,7 +234,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwFqCsid\n");
+            errorStream.add((char *)"Failed to encode IE: pgwFqCsid\n");
             return false;
         }
     }
@@ -252,7 +262,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwFqCsid\n");
+            errorStream.add((char *)"Failed to encode IE: sgwFqCsid\n");
             return false;
         }
     }
@@ -280,7 +290,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: cause\n");
+            errorStream.add((char *)"Failed to encode IE: cause\n");
             return false;
         }
     }
@@ -308,7 +318,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: indicationFlags\n");
+            errorStream.add((char *)"Failed to encode IE: indicationFlags\n");
             return false;
         }
     }
@@ -339,7 +349,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwsNodeLevelLoadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: pgwsNodeLevelLoadControlInformation\n");
             return false;
         }
     }
@@ -370,7 +380,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwsApnLevelLoadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: pgwsApnLevelLoadControlInformation\n");
             return false;
         }
     }
@@ -401,7 +411,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwsNodeLevelLoadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: sgwsNodeLevelLoadControlInformation\n");
             return false;
         }
     }
@@ -432,7 +442,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwsOverloadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: pgwsOverloadControlInformation\n");
             return false;
         }
     }
@@ -463,7 +473,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwsOverloadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: sgwsOverloadControlInformation\n");
             return false;
         }
     }
@@ -491,7 +501,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: nbifomContainer\n");
+            errorStream.add((char *)"Failed to encode IE: nbifomContainer\n");
             return false;
         }
     }
@@ -519,7 +529,7 @@ bool DeleteBearerRequestMsg::encodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: extendedProtocolConfigurationOptions\n");
+            errorStream.add((char *)"Failed to encode IE: extendedProtocolConfigurationOptions\n");
             return false;
         }
     }
@@ -542,12 +552,12 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -568,7 +578,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.linkedEpsBearerIdIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: linkedEpsBearerId\n");
+                        errorStream.add((char *)"Failed to decode IE: linkedEpsBearerId\n");
                         return false;
                     }
                 }
@@ -579,7 +589,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.epsBearerIdsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: epsBearerIds\n");
+                        errorStream.add((char *)"Failed to decode IE: epsBearerIds\n");
                         return false;
                     }
                 }
@@ -587,7 +597,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -606,7 +616,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 					// First check if we have enough space left to decode and store this instance
                     if (data.failedBearerContextsCount == 11)
                     {
-                        errorStream.add("More than 11 instances of failedBearerContexts received\n");
+                        errorStream.add((char *)"More than 11 instances of failedBearerContexts received\n");
                         return false;
                     }
                     FailedBearerContextsInDeleteBearerRequest groupedIeInstance =
@@ -618,7 +628,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: failedBearerContexts\n");
+                        errorStream.add((char *)"Failed to decode IE: failedBearerContexts\n");
                         return false;
                     }
                 }
@@ -626,7 +636,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -647,7 +657,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.procedureTransactionIdIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: procedureTransactionId\n");
+                        errorStream.add((char *)"Failed to decode IE: procedureTransactionId\n");
                         return false;
                     }
                 }
@@ -655,7 +665,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -676,7 +686,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.protocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: protocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: protocolConfigurationOptions\n");
                         return false;
                     }
                 }
@@ -684,7 +694,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -705,7 +715,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.pgwFqCsidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwFqCsid\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwFqCsid\n");
                         return false;
                     }
                 }
@@ -716,7 +726,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.sgwFqCsidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwFqCsid\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwFqCsid\n");
                         return false;
                     }
                 }
@@ -724,7 +734,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -745,7 +755,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.causeIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: cause\n");
+                        errorStream.add((char *)"Failed to decode IE: cause\n");
                         return false;
                     }
                 }
@@ -753,7 +763,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -774,7 +784,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.indicationFlagsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: indicationFlags\n");
+                        errorStream.add((char *)"Failed to decode IE: indicationFlags\n");
                         return false;
                     }
                 }
@@ -782,7 +792,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -806,7 +816,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.pgwsNodeLevelLoadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwsNodeLevelLoadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwsNodeLevelLoadControlInformation\n");
                         return false;
                     }
                 }
@@ -820,7 +830,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.pgwsApnLevelLoadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwsApnLevelLoadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwsApnLevelLoadControlInformation\n");
                         return false;
                     }
                 }
@@ -834,7 +844,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.sgwsNodeLevelLoadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwsNodeLevelLoadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwsNodeLevelLoadControlInformation\n");
                         return false;
                     }
                 }
@@ -842,7 +852,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -866,7 +876,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.pgwsOverloadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwsOverloadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwsOverloadControlInformation\n");
                         return false;
                     }
                 }
@@ -880,7 +890,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.sgwsOverloadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwsOverloadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwsOverloadControlInformation\n");
                         return false;
                     }
                 }
@@ -888,7 +898,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -909,7 +919,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.nbifomContainerIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: nbifomContainer\n");
+                        errorStream.add((char *)"Failed to decode IE: nbifomContainer\n");
                         return false;
                     }
                 }
@@ -917,7 +927,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -938,7 +948,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                     data.extendedProtocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: extendedProtocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: extendedProtocolConfigurationOptions\n");
                         return false;
                     }
                 }
@@ -946,7 +956,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -957,7 +967,7 @@ bool DeleteBearerRequestMsg::decodeDeleteBearerRequestMsg(MsgBuffer &buffer,
             default:
             {
                 // Unknown IE print error
-                errorStream.add("Unknown IE Type: ");
+                errorStream.add((char *)"Unknown IE Type: ");
                 errorStream.add(ieHeader.ieType);
                 errorStream.endOfLine();
                 buffer.skipBytes(ieHeader.length);
@@ -971,13 +981,13 @@ void DeleteBearerRequestMsg::
 displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("DeleteBearerRequestMsg:");
+    stream.add((char *)"DeleteBearerRequestMsg:");
     stream.endOfLine();
     Uint8 displayCount;
     stream.incrIndent();
     if (data.linkedEpsBearerIdIePresent)
     {
-        stream.add("IE - linkedEpsBearerId:");
+        stream.add((char *)"IE - linkedEpsBearerId:");
         stream.endOfLine();
         EbiIe ebi=
         dynamic_cast<
@@ -987,7 +997,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.epsBearerIdsIePresent)
     {
-        stream.add("IE - epsBearerIds:");
+        stream.add((char *)"IE - epsBearerIds:");
         stream.endOfLine();
         EbiIe ebi=
         dynamic_cast<
@@ -998,15 +1008,15 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     displayCount = data.failedBearerContextsCount;
     if (displayCount > 11)
     {
-        stream.add("Invalid data more than 11 instances");
+        stream.add((char *)"Invalid data more than 11 instances");
         stream.endOfLine();
-        stream.add("Displaying only 11");
+        stream.add((char *)"Displaying only 11");
         stream.endOfLine();
         displayCount = 11;
     }
     for (Uint8 i = 0; i < displayCount; i++)
     {
-        stream.add("IE -  failedBearerContexts:");
+        stream.add((char *)"IE -  failedBearerContexts:");
         stream.endOfLine();
         BearerContextIe bearerContext=
         dynamic_cast<
@@ -1019,7 +1029,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.procedureTransactionIdIePresent)
     {
-        stream.add("IE - procedureTransactionId:");
+        stream.add((char *)"IE - procedureTransactionId:");
         stream.endOfLine();
         PtiIe pti=
         dynamic_cast<
@@ -1029,7 +1039,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.protocolConfigurationOptionsIePresent)
     {
-        stream.add("IE - protocolConfigurationOptions:");
+        stream.add((char *)"IE - protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
         dynamic_cast<
@@ -1039,7 +1049,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.pgwFqCsidIePresent)
     {
-        stream.add("IE - pgwFqCsid:");
+        stream.add((char *)"IE - pgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
         dynamic_cast<
@@ -1049,7 +1059,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.sgwFqCsidIePresent)
     {
-        stream.add("IE - sgwFqCsid:");
+        stream.add((char *)"IE - sgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
         dynamic_cast<
@@ -1059,7 +1069,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.causeIePresent)
     {
-        stream.add("IE - cause:");
+        stream.add((char *)"IE - cause:");
         stream.endOfLine();
         CauseIe cause=
         dynamic_cast<
@@ -1069,7 +1079,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.indicationFlagsIePresent)
     {
-        stream.add("IE - indicationFlags:");
+        stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
         dynamic_cast<
@@ -1079,7 +1089,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsNodeLevelLoadControlInformationIePresent)
     {
-        stream.add("IE - pgwsNodeLevelLoadControlInformation:");
+        stream.add((char *)"IE - pgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
         dynamic_cast<
@@ -1092,7 +1102,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsApnLevelLoadControlInformationIePresent)
     {
-        stream.add("IE - pgwsApnLevelLoadControlInformation:");
+        stream.add((char *)"IE - pgwsApnLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
         dynamic_cast<
@@ -1105,7 +1115,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.sgwsNodeLevelLoadControlInformationIePresent)
     {
-        stream.add("IE - sgwsNodeLevelLoadControlInformation:");
+        stream.add((char *)"IE - sgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
         dynamic_cast<
@@ -1118,7 +1128,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsOverloadControlInformationIePresent)
     {
-        stream.add("IE - pgwsOverloadControlInformation:");
+        stream.add((char *)"IE - pgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
         dynamic_cast<
@@ -1131,7 +1141,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
-        stream.add("IE - sgwsOverloadControlInformation:");
+        stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
         dynamic_cast<
@@ -1144,7 +1154,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.nbifomContainerIePresent)
     {
-        stream.add("IE - nbifomContainer:");
+        stream.add((char *)"IE - nbifomContainer:");
         stream.endOfLine();
         FContainerIe fContainer=
         dynamic_cast<
@@ -1154,7 +1164,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.extendedProtocolConfigurationOptionsIePresent)
     {
-        stream.add("IE - extendedProtocolConfigurationOptions:");
+        stream.add((char *)"IE - extendedProtocolConfigurationOptions:");
         stream.endOfLine();
         EpcoIe epco=
         dynamic_cast<

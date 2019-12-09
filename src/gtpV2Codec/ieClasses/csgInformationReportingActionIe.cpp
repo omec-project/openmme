@@ -1,9 +1,19 @@
 /*
- * csgInformationReportingActionIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "csgInformationReportingActionIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,17 +35,17 @@ bool CsgInformationReportingActionIe::encodeCsgInformationReportingActionIe(MsgB
 
     if(!(buffer.writeBits(data.uciuhc, 1)))
     {
-        errorStream.add("Encoding of uciuhc failed\n");
+        errorStream.add((char *)"Encoding of uciuhc failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.ucishc, 1)))
     {
-        errorStream.add("Encoding of ucishc failed\n");
+        errorStream.add((char *)"Encoding of ucishc failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.ucicsg, 1)))
     {
-        errorStream.add("Encoding of ucicsg failed\n");
+        errorStream.add((char *)"Encoding of ucicsg failed\n");
         return false;
     }
 
@@ -50,7 +60,7 @@ bool CsgInformationReportingActionIe::decodeCsgInformationReportingActionIe(MsgB
     buffer.skipBits(5);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -58,21 +68,21 @@ bool CsgInformationReportingActionIe::decodeCsgInformationReportingActionIe(MsgB
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: uciuhc\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: uciuhc\n");
         return false;
     }
     data.ucishc = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: ucishc\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: ucishc\n");
         return false;
     }
     data.ucicsg = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: ucicsg\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: ucicsg\n");
         return false;
     }
 
@@ -85,26 +95,26 @@ bool CsgInformationReportingActionIe::decodeCsgInformationReportingActionIe(MsgB
     }
     else
     {
-        errorStream.add("Unable to decode IE CsgInformationReportingActionIe\n");
+        errorStream.add((char *)"Unable to decode IE CsgInformationReportingActionIe\n");
         return false;
     }
 }
 void CsgInformationReportingActionIe::displayCsgInformationReportingActionIe_v(CsgInformationReportingActionIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("CsgInformationReportingActionIeData:");
+    stream.add((char *)"CsgInformationReportingActionIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "uciuhc: "); 
+    stream.add( (char *)"uciuhc: "); 
     stream.add((Uint8)data.uciuhc);
     stream.endOfLine();
   
-    stream.add( "ucishc: "); 
+    stream.add( (char *)"ucishc: "); 
     stream.add((Uint8)data.ucishc);
     stream.endOfLine();
   
-    stream.add( "ucicsg: "); 
+    stream.add( (char *)"ucicsg: "); 
     stream.add((Uint8)data.ucicsg);
     stream.endOfLine();
     stream.decrIndent();

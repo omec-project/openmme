@@ -1,9 +1,18 @@
 /*
- * loadControlInformationIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+* Copyright (c) 2019 Infosys Limited
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include "loadControlInformationIe.h"
 #include "gtpV2GrpIeDataTypes.h"
@@ -24,7 +33,6 @@
 #include "sgwsNodeLevelLoadControlInformationInCreateBearerRequest.h"
 #include "pgwsNodeLevelLoadControlInformationInDeleteBearerRequest.h"
 #include "pgwsApnLevelLoadControlInformationInDeleteBearerRequest.h"
-#include "sgwsApnLevelLoadControlInformationInDeleteBearerRequest.h"
 #include "sgwsNodeLevelLoadControlInformationInDeleteBearerRequest.h"
 #include "sgwsNodeLevelLoadControlInformationInDownlinkDataNotification.h"
 
@@ -62,10 +70,8 @@ LoadControlInformationIe::LoadControlInformationIe()
     insertGroupedIeObject(DeleteBearerRequestMsgType, 0, pgwsNodeLevelLoadControlInformationInDeleteBearerRequest_p);
     PgwsApnLevelLoadControlInformationInDeleteBearerRequest* pgwsApnLevelLoadControlInformationInDeleteBearerRequest_p = new (PgwsApnLevelLoadControlInformationInDeleteBearerRequest);
     insertGroupedIeObject(DeleteBearerRequestMsgType, 1, pgwsApnLevelLoadControlInformationInDeleteBearerRequest_p);
-    SgwsApnLevelLoadControlInformationInDeleteBearerRequest* sgwsApnLevelLoadControlInformationInDeleteBearerRequest_p = new (SgwsApnLevelLoadControlInformationInDeleteBearerRequest);
-    insertGroupedIeObject(DeleteBearerRequestMsgType, 2, sgwsApnLevelLoadControlInformationInDeleteBearerRequest_p);
     SgwsNodeLevelLoadControlInformationInDeleteBearerRequest* sgwsNodeLevelLoadControlInformationInDeleteBearerRequest_p = new (SgwsNodeLevelLoadControlInformationInDeleteBearerRequest);
-    insertGroupedIeObject(DeleteBearerRequestMsgType, 3, sgwsNodeLevelLoadControlInformationInDeleteBearerRequest_p);
+    insertGroupedIeObject(DeleteBearerRequestMsgType, 2, sgwsNodeLevelLoadControlInformationInDeleteBearerRequest_p);
     SgwsNodeLevelLoadControlInformationInDownlinkDataNotification* sgwsNodeLevelLoadControlInformationInDownlinkDataNotification_p = new (SgwsNodeLevelLoadControlInformationInDownlinkDataNotification);
     insertGroupedIeObject(DownlinkDataNotificationMsgType, 0, sgwsNodeLevelLoadControlInformationInDownlinkDataNotification_p);
 }

@@ -1,9 +1,19 @@
 /*
- * apnIe.cpp
+ * Copyright (c) 2019, Infosys Ltd.
  *
- * Revisit header later
- *      Author: hariharanb
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ 
+
 
 #include "apnIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +33,7 @@ bool ApnIe::encodeApnIe(MsgBuffer &buffer, ApnIeData const &data)
 {
     if (!(DataTypeCodecUtils::encodeUint8Array32(buffer, data.apnValue)))
     {
-    errorStream.add("Encoding of apnValue failed\n");
+    errorStream.add((char *)"Encoding of apnValue failed\n");
     return false;
     }
 
@@ -38,7 +48,7 @@ bool ApnIe::decodeApnIe(MsgBuffer &buffer, ApnIeData &data, Uint16 length)
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array32(buffer, data.apnValue, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: apnValue\n");
+        errorStream.add((char *)"Failed to decode: apnValue\n");
         return false;
     }
 
@@ -51,18 +61,18 @@ bool ApnIe::decodeApnIe(MsgBuffer &buffer, ApnIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE ApnIe\n");
+        errorStream.add((char *)"Unable to decode IE ApnIe\n");
         return false;
     }
 }
 void ApnIe::displayApnIe_v(ApnIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ApnIeData:");
+    stream.add((char *)"ApnIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("apnValue:");
+    stream.add((char *)"apnValue:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array32_v(data.apnValue, stream);
     stream.decrIndent();
