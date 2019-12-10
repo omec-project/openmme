@@ -14,6 +14,7 @@
 * limitations under the License.
 */
 #include <cstring>
+#include <stdint.h>
 #include "gtpV2Stack.h"
 #include "msgClasses/gtpV2MsgFactory.h"
 #include "msgClasses/manual/gtpV2Message.h"
