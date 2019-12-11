@@ -32,7 +32,6 @@
 #include "s1ap_msg_codes.h"
 #include "detach_stage1_info.h"
 
-extern int g_enb_fd;
 extern ipc_handle ipcHndl_detach;
 
 int

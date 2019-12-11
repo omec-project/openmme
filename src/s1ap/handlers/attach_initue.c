@@ -98,6 +98,12 @@ s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
                            &(s1_init_ies->data[i].val.nas.elements[4].ms_network),
                            sizeof(struct MS_net_capab));
                     ue_info.pti = s1_init_ies->data[i].val.nas.elements[5].pti;
+                    ue_info.seq_no = s1_init_ies->data[i].val.nas.header.seq_no;
+                    for(int pco=0; pco < 10; pco++)
+                    {
+                        ue_info.pco_options[pco] = s1_init_ies->data[i].val.nas.elements[6].pco_options[pco];
+                    }
+
                 }break;
             default:
                 log_msg(LOG_WARNING,"Unhandled IE");

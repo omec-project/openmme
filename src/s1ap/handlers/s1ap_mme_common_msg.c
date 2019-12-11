@@ -39,6 +39,7 @@ static char s1ap_common_req[S1AP_COMMON_REQ_BUF_SIZE];
 struct s1ap_common_req_Q_msg *g_mmeS1apInfo;
 
 static Buffer g_ctxrel_buffer;
+static Buffer g_icsreq_buffer;
 
 extern int g_enb_fd;
 
@@ -131,6 +132,41 @@ shutdown_mme_to_s1ap_msg_stage()
 }
 
 /**
+* message processing for ue context release
+*/
+static int
+process_ics_req()
+{
+    log_msg(LOG_DEBUG,"Process Initial ctx setup req.");
+	uint32_t length = 0;
+    uint8_t *buffer = NULL;
+
+    int ret = s1ap_mme_encode_initiating(g_mmeS1apInfo, &buffer, &length);
+    if(ret == -1)
+    {
+        log_msg(LOG_ERROR, "Encoding ICS req failed.\n");
+        return E_FAIL;
+    }
+
+	buffer_copy(&g_icsreq_buffer, buffer, length);
+
+	return SUCCESS;
+}
+
+/**
+* Post message to next handler of the stage
+*/
+static int
+post_ics_req()
+{
+	send_sctp_msg(g_mmeS1apInfo->enb_fd, g_icsreq_buffer.buf, g_icsreq_buffer.pos, 1);
+	log_msg(LOG_INFO, "buffer size is %d\n", g_icsreq_buffer.pos);
+	log_msg(LOG_INFO, "\n-----Message handlingcompleted.---\n");
+	return SUCCESS;
+}
+
+
+/**
 * Thread function for stage.
 */
 void*
@@ -147,10 +183,17 @@ mme_to_s1ap_msg_handler(void *data)
         switch(g_mmeS1apInfo->IE_type)
         {
             case S1AP_CTX_REL_CMD:
-                log_msg(LOG_DEBUG, "S1AP Ctx Release Cmd Start");
-                process_ctx_rel_cmd();
-                post_ctx_rel_command();
-                break;
+                {
+                    log_msg(LOG_DEBUG, "S1AP Ctx Release Cmd Start");
+                    process_ctx_rel_cmd();
+                    post_ctx_rel_command();
+                }break;
+            case S1AP_INIT_CTXT_SETUP_REQ:
+                {
+                    log_msg(LOG_DEBUG, "S1AP Init Context Setup Request\n");
+                    process_ics_req();
+                    post_ics_req();
+                }break;
             default:
                     log_msg(LOG_DEBUG, "Unknown msg %d\n", g_mmeS1apInfo->IE_type);
         }

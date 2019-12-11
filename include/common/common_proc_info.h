@@ -40,6 +40,12 @@ struct s1ap_common_req_Q_msg {
     unsigned char imsi[BINARY_IMSI_LEN];
 	struct TAI      tai;//TODO: will be list of 16 TAI's for UE.
 	s1apCause_t cause;
+
+	unsigned long ueag_max_ul_bitrate;
+	unsigned long ueag_max_dl_bitrate;
+	struct fteid gtp_teid;
+	unsigned char sec_key[32];
+	unsigned char bearer_id;
 };
 
 struct s11_req_Q_msg {
@@ -56,6 +62,7 @@ enum s1ap_common_req_type
 {
     S1AP_CTX_REL_REQ,
     S1AP_CTX_REL_CMD,
+    S1AP_INIT_CTXT_SETUP_REQ,
     S1AP_PAGING_REQ,
     S1AP_REQ_UNKNOWN
 };

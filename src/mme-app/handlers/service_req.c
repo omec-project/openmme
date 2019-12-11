@@ -27,7 +27,7 @@
 #include "ipc_api.h"
 #include "stage6_info.h"
 #include "servicereq_info.h"
-
+#include "common_proc_info.h"
 
 /************************************************************************
 Current file : Service Request handler.
@@ -41,12 +41,10 @@ extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
 
 static int g_Q_servicereq_fd;
-static int g_Q_icsreq_fd;
-
+extern int g_Q_mme_to_s1ap_fd;
 /*Making global just to avoid stack passing*/
 static char buf[S1AP_SERVICEREQ_BUF_SIZE];
 
-extern uint32_t attach_stage6_counter;
 /****Global and externs end***/
 
 /**
@@ -66,15 +64,6 @@ init_stage()
 		pthread_exit(NULL);
 	}
 	log_msg(LOG_INFO, "Service Request reader - s1ap service request complete: Connected\n");
-
-	/*Writing the init ctxt setup signal to S1AP queue*/
-	log_msg(LOG_INFO, "writer  - s1ap Init ctxt setup: waiting\n");
-	g_Q_icsreq_fd = open_ipc_channel(S1AP_ICSREQ_STAGE6_QUEUE, IPC_WRITE);
-	if (g_Q_icsreq_fd == -1) {
-		log_msg(LOG_ERROR, "Error in opening Writer IPC channel:s1ap ICS Request\n");
-		pthread_exit(NULL);
-	}
-	log_msg(LOG_INFO, "Writer -  s1ap ICS request: Connected\n");
 
 	return;
 }
@@ -132,47 +121,41 @@ service_request_processing()
 static int
 post_to_next()
 {
+	struct s1ap_common_req_Q_msg icr_msg;
 
-	struct init_ctx_req_Q_msg icr_msg;
 	struct service_req_Q_msg *service_req =
 				(struct service_req_Q_msg *) buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(service_req->ue_idx);
+
+	if (ue_entry == NULL)
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      service_req->ue_idx);
+		return -1;
+	}
 
 	log_msg(LOG_INFO, "Post for s1ap processing - service_req_wf_initctxt_resp.\n");
 
 	/* create KeNB key */
 	/* TODO: Generate nas_count from ul_seq_no */
 	uint32_t nas_count = 0;
-	create_kenb_key(ue_entry->aia_sec_info->kasme.val,
-	ue_entry->ue_sec_info.kenb_key, nas_count);
+	create_kenb_key(ue_entry->aia_sec_info->kasme.val, ue_entry->ue_sec_info.kenb_key, nas_count);
+	icr_msg.IE_type = S1AP_INIT_CTXT_SETUP_REQ;
+	icr_msg.ue_idx = service_req->ue_idx;
+	icr_msg.enb_fd = ue_entry->enb_fd;
+	icr_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+	icr_msg.mme_s1ap_ue_id = service_req->ue_idx;
+	icr_msg.ueag_max_dl_bitrate = ue_entry->ambr.max_requested_bw_dl;
+	icr_msg.ueag_max_ul_bitrate = ue_entry->ambr.max_requested_bw_ul;
+	icr_msg.bearer_id = ue_entry->bearer_id;
+	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
+	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key), KENB_SIZE);
 
-		icr_msg.ue_idx = service_req->ue_idx;
-		icr_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
-		icr_msg.exg_max_dl_bitrate = ue_entry->ambr.max_requested_bw_dl;
-		icr_msg.exg_max_ul_bitrate = ue_entry->ambr.max_requested_bw_ul;
-		icr_msg.bearer_id = ue_entry->bearer_id;
-		icr_msg.dl_seq_no = ue_entry->dl_seq_no++;
-		icr_msg.enb_fd = ue_entry->enb_fd;
+	//opened for write by s1 rel thread
+	write_ipc_channel(g_Q_mme_to_s1ap_fd, (char *)&(icr_msg), S1AP_COMMON_REQ_BUF_SIZE);
 
-		memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
-
-		memcpy(&(icr_msg.tai), &(ue_entry->tai), sizeof(struct TAI));
-
-		/*s1ap handler to use apn name and tai to generate mcc, mcn appended name*/
-		memcpy(&(icr_msg.apn), &(ue_entry->apn), sizeof(struct apn_name));
-		memcpy(&(icr_msg.pdn_addr), &(ue_entry->pdn_addr), sizeof(struct PAA));
-		memcpy(&(icr_msg.int_key), &(ue_entry->ue_sec_info.int_key),
-				NAS_INT_KEY_SIZE);
-		memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key),
-				KENB_SIZE);
-		memcpy(&(icr_msg.pti), &(ue_entry->pti), 1);
-
-		write_ipc_channel(g_Q_icsreq_fd, (char *)&(icr_msg), S1AP_ICSREQ_STAGE6_BUF_SIZE);
-
-		/*Call DUMMY MB funcion*/
-		//test: send_dummy_mbr();
-		log_msg(LOG_INFO, "Post for service_req_wf_initctxt_resp processing. SUCCESS\n");
-		return SUCCESS;
+	log_msg(LOG_INFO, "Post for service_req_wf_initctxt_resp processing. SUCCESS\n");
+	return SUCCESS;
 }
 
 /**
@@ -182,7 +165,6 @@ void
 shutdown_servicereq_stage()
 {
 	close_ipc_channel(g_Q_servicereq_fd);
-	close_ipc_channel(g_Q_icsreq_fd);
 	log_msg(LOG_INFO, "Shutdown Service Request handler \n");
 	pthread_exit(NULL);
 	return;

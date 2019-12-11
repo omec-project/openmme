@@ -41,6 +41,7 @@ static int g_Q_identityresp_fd;
 static char buf[S1AP_IDRESP_BUF_SIZE];
 
 /* Add counter */
+extern uint32_t attach_identity_rsp_counter;
 /****Global and externs end***/
 
 /**
@@ -93,6 +94,7 @@ identity_response_processing()
 	struct identityResp_Q_msg *id_resp = (struct identityResp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(id_resp->ue_idx);
 
+    attach_identity_rsp_counter++;
 	/*Check the state*/
 	if(SUCCESS != id_resp->status) 
     {

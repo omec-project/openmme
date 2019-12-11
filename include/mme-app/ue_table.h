@@ -151,6 +151,7 @@ struct UE_info{
   unsigned int  magic;
   unsigned short int ue_index;
   uint8_t arp;
+  unsigned short int pco_options[10];
 };
 
 int allocate_ue_index();

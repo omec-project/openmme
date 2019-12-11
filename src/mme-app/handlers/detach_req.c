@@ -146,14 +146,12 @@ detach_stage1_processing()
 	log_msg(LOG_INFO, "Detach request received for ue %d\n",
 			detach_req->ue_idx);
 
-	/* TODO: Revisit */
-#if 0
-	if (ue_entry->ue_state != ATTACH_DONE) {
-		log_msg(LOG_INFO, "Repeated Detach request received for ue %d\n",
-			detach_req->ue_idx);
-		return -1; /* TODO: define error code */
-	}
-#endif
+	if((UNASSIGNED_ENTRY == ue_entry->ue_state)
+       || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "UE Entry invalid. Drop the packet.");
+        return SUCCESS;
+    }
 
 	ue_entry->ul_seq_no++;
 	ue_entry->s1ap_enb_ue_id = detach_req->s1ap_enb_ue_id;

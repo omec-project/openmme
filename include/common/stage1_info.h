@@ -41,6 +41,10 @@ struct ue_attach_info {
 	unsigned char pti;
 	unsigned int  flags; /* imsi - 0x00000001, GUTI - 0x00000002 */
 	guti mi_guti;
+    unsigned char seq_no;
+    unsigned char dns_present;
+    unsigned short int pco_options[10];
+    
 };
 
 #define INITUE_STAGE1_BUF_SIZE sizeof(struct ue_attach_info)

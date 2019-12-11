@@ -82,6 +82,7 @@ s11_CS_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr)
 	csr_info.pdn_addr.pdn_type = 1;
 	csr_info.pdn_addr.ip_type.ipv4.s_addr = msgData.pdnAddressAllocation.ipV4Address.ipValue;
 	
+
 	/*Send CS response msg*/
 	write_ipc_channel(g_Q_CSresp_fd, (char *)&csr_info, S11_CSRESP_STAGE6_BUF_SIZE);
 	log_msg(LOG_INFO, "Send CS resp to mme-app stage6.\n");

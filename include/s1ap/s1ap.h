@@ -62,6 +62,10 @@ int s1ap_mme_encode_initiating(
         struct s1ap_common_req_Q_msg *s1apPDU, 
         uint8_t **buffer, uint32_t *length);
 
+int s1ap_mme_encode_initial_context_setup_request(
+        struct s1ap_common_req_Q_msg *s1apPDU,
+        uint8_t **buffer, uint32_t *length);
+
 int
 s1ap_mme_decode_initiating (InitiatingMessage_t *initiating_p, int enb_fd);
 
@@ -94,6 +98,10 @@ detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit);
 
 int 
 s1_identity_resp_handler(struct proto_IE *s1);
+
+int 
+s1_tau_request_handler(struct proto_IE *s1);
+
 
 int
 s1_init_ue_service_req_handler(struct proto_IE *service_req_ies, int enb_fd);

@@ -73,6 +73,10 @@ void
 void 
 *s1ap_attach_id_req_handler(void *);
 
+void 
+*tau_response_handler (void *);
+
+
 void
 *paging_handler(void *);
 
