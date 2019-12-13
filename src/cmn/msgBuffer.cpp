@@ -1,18 +1,9 @@
 /*
-* Copyright (c) 2019 Infosys Limited
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -269,22 +260,22 @@ void MsgBuffer::display(Debug &stream)
         Uint16 bufLength = getLength();
 
 	// Displays current buffer contents
-	stream.add("Buffer Size: ");
+	stream.add((char *)"Buffer Size: ");
         stream.add(bufLength);
         stream.endOfLine();
-	stream.add("Current Index: ");
+	stream.add((char *)"Current Index: ");
         stream.add(byteIndex);
-        stream.add(".");
+        stream.add((char *)".");
         stream.add(bitIndex);
         stream.endOfLine();
-	stream.add("Data:");
+	stream.add((char *)"Data:");
         stream.endOfLine();
         stream.setHexOutput();
 
         for (Uint16 i = 0; i < bufLength; i++)
         {
     	  stream.add(data_mp[i]);
-	  stream.add(" ");
+	  stream.add((char *)" ");
           if (((i+1) % 16) == 0)
           {
             stream.endOfLine();

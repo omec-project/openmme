@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2019, Infosys Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "createSessionResponseMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -1955,10 +1946,20 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     stream.incrIndent();
     stream.add((char *)"CreateSessionResponseMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
+        stream.add((char *)"IE - cause:");
+        stream.endOfLine();
+        CauseIe cause=
+        dynamic_cast<
+        CauseIe&>(GtpV2IeFactory::getInstance().getIeObject(CauseIeType));
+        cause.displayCauseIe_v(data.cause, stream);
+
     if (data.changeReportingActionIePresent)
     {
+
+
         stream.add((char *)"IE - changeReportingAction:");
         stream.endOfLine();
         ChangeReportingActionIe changeReportingAction=
@@ -1969,6 +1970,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.csgInformationReportingActionIePresent)
     {
+
+
         stream.add((char *)"IE - csgInformationReportingAction:");
         stream.endOfLine();
         CsgInformationReportingActionIe csgInformationReportingAction=
@@ -1979,6 +1982,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.senderFTeidForControlPlaneIePresent)
     {
+
+
         stream.add((char *)"IE - senderFTeidForControlPlane:");
         stream.endOfLine();
         FTeidIe fTeid=
@@ -1989,6 +1994,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.apnRestrictionIePresent)
     {
+
+
         stream.add((char *)"IE - apnRestriction:");
         stream.endOfLine();
         ApnRestrictionIe apnRestriction=
@@ -1999,6 +2006,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.aggregateMaximumBitRateIePresent)
     {
+
+
         stream.add((char *)"IE - aggregateMaximumBitRate:");
         stream.endOfLine();
         AmbrIe ambr=
@@ -2009,12 +2018,39 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.linkedEpsBearerIdIePresent)
     {
+
+
         stream.add((char *)"IE - linkedEpsBearerId:");
         stream.endOfLine();
         EbiIe ebi=
         dynamic_cast<
         EbiIe&>(GtpV2IeFactory::getInstance().getIeObject(EbiIeType));
         ebi.displayEbiIe_v(data.linkedEpsBearerId, stream);
+
+    }
+
+    Uint8 displayCount;
+    
+    displayCount = data.bearerContextsCreatedCount;
+    if (displayCount > 11)
+    {
+        stream.add((char *)"Invalid data more than 11 instances");
+        stream.endOfLine();
+        stream.add((char *)"Displaying only 11");
+        stream.endOfLine();
+        displayCount = 11;
+    }
+    for (Uint8 i = 0; i < displayCount; i++)
+    {
+        stream.add((char *)"IE -  bearerContextsCreated:");
+        stream.endOfLine();
+        BearerContextIe bearerContext=
+        dynamic_cast<
+        BearerContextIe&>(GtpV2IeFactory::getInstance().getIeObject(BearerContextIeType));
+        BearerContextsCreatedInCreateSessionResponse groupedIeInstance =
+        dynamic_cast<
+        BearerContextsCreatedInCreateSessionResponse&>(bearerContext.getGroupedIe(msgType, 0));
+        groupedIeInstance.displayBearerContextsCreatedInCreateSessionResponseData_v(data.bearerContextsCreated[i], stream);
 
     }
     displayCount = data.bearerContextsMarkedForRemovalCount;
@@ -2033,14 +2069,19 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
         BearerContextIe bearerContext=
         dynamic_cast<
         BearerContextIe&>(GtpV2IeFactory::getInstance().getIeObject(BearerContextIeType));
-        BearerContextsMarkedForRemovalInCreateSessionResponse groupedIeInstance =
+                BearerContextsMarkedForRemovalInCreateSessionResponse groupedIeInstance =
         dynamic_cast<
         BearerContextsMarkedForRemovalInCreateSessionResponse&>(bearerContext.getGroupedIe(msgType, 1));
         groupedIeInstance.displayBearerContextsMarkedForRemovalInCreateSessionResponseData_v(data.bearerContextsMarkedForRemoval[i], stream);
-
     }
+
+    
+
+    
     if (data.recoveryIePresent)
     {
+
+
         stream.add((char *)"IE - recovery:");
         stream.endOfLine();
         RecoveryIe recovery=
@@ -2051,6 +2092,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.chargingGatewayNameIePresent)
     {
+
+
         stream.add((char *)"IE - chargingGatewayName:");
         stream.endOfLine();
         FqdnIe fqdn=
@@ -2061,6 +2104,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.chargingGatewayAddressIePresent)
     {
+
+
         stream.add((char *)"IE - chargingGatewayAddress:");
         stream.endOfLine();
         IpAddressIe ipAddress=
@@ -2071,6 +2116,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwFqCsidIePresent)
     {
+
+
         stream.add((char *)"IE - pgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
@@ -2081,6 +2128,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.sgwFqCsidIePresent)
     {
+
+
         stream.add((char *)"IE - sgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
@@ -2091,6 +2140,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.sgwLdnIePresent)
     {
+
+
         stream.add((char *)"IE - sgwLdn:");
         stream.endOfLine();
         LocalDistinguishedNameIe localDistinguishedName=
@@ -2101,6 +2152,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwLdnIePresent)
     {
+
+
         stream.add((char *)"IE - pgwLdn:");
         stream.endOfLine();
         LocalDistinguishedNameIe localDistinguishedName=
@@ -2111,6 +2164,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwBackOffTimeIePresent)
     {
+
+
         stream.add((char *)"IE - pgwBackOffTime:");
         stream.endOfLine();
         EpcTimerIe epcTimer=
@@ -2121,6 +2176,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.hNbInformationReportingIePresent)
     {
+
+
         stream.add((char *)"IE - hNbInformationReporting:");
         stream.endOfLine();
         HenbInformationReportingIe henbInformationReporting=
@@ -2131,6 +2188,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwS5S8S2bFTeidIePresent)
     {
+
+
         stream.add((char *)"IE - pgwS5S8S2bFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
@@ -2141,6 +2200,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pdnAddressAllocationIePresent)
     {
+
+
         stream.add((char *)"IE - pdnAddressAllocation:");
         stream.endOfLine();
         PaaIe paa=
@@ -2151,6 +2212,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.protocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
@@ -2161,6 +2224,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.additionalProtocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - additionalProtocolConfigurationOptions:");
         stream.endOfLine();
         AdditionalProtocolConfigurationOptionsIe additionalProtocolConfigurationOptions=
@@ -2171,6 +2236,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.trustedWlanIpv4ParametersIePresent)
     {
+
+
         stream.add((char *)"IE - trustedWlanIpv4Parameters:");
         stream.endOfLine();
         Ip4cpIe ip4cp=
@@ -2181,6 +2248,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.indicationFlagsIePresent)
     {
+
+
         stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
@@ -2191,6 +2260,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.presenceReportingAreaActionIePresent)
     {
+
+
         stream.add((char *)"IE - presenceReportingAreaAction:");
         stream.endOfLine();
         PresenceReportingAreaActionIe presenceReportingAreaAction=
@@ -2201,6 +2272,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -2214,6 +2287,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwsApnLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsApnLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -2227,6 +2302,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.sgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -2240,6 +2317,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -2253,6 +2332,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -2266,6 +2347,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.nbifomContainerIePresent)
     {
+
+
         stream.add((char *)"IE - nbifomContainer:");
         stream.endOfLine();
         FContainerIe fContainer=
@@ -2276,6 +2359,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pdnConnectionChargingIdIePresent)
     {
+
+
         stream.add((char *)"IE - pdnConnectionChargingId:");
         stream.endOfLine();
         ChargingIdIe chargingId=
@@ -2286,6 +2371,8 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.extendedProtocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - extendedProtocolConfigurationOptions:");
         stream.endOfLine();
         EpcoIe epco=
@@ -2294,6 +2381,7 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
         epco.displayEpcoIe_v(data.extendedProtocolConfigurationOptions, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

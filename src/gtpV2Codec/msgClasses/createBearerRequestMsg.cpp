@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2019, Infosys Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "createBearerRequestMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -1060,10 +1051,13 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     stream.incrIndent();
     stream.add((char *)"CreateBearerRequestMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
     if (data.procedureTransactionIdIePresent)
     {
+
+
         stream.add((char *)"IE - procedureTransactionId:");
         stream.endOfLine();
         PtiIe pti=
@@ -1072,8 +1066,17 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
         pti.displayPtiIe_v(data.procedureTransactionId, stream);
 
     }
+        stream.add((char *)"IE - linkedEpsBearerId:");
+        stream.endOfLine();
+        EbiIe ebi=
+        dynamic_cast<
+        EbiIe&>(GtpV2IeFactory::getInstance().getIeObject(EbiIeType));
+        ebi.displayEbiIe_v(data.linkedEpsBearerId, stream);
+
     if (data.protocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
@@ -1082,8 +1085,35 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
         pco.displayPcoIe_v(data.protocolConfigurationOptions, stream);
 
     }
+
+    Uint8 displayCount;
+    
+    displayCount = data.bearerContextsCount;
+    if (displayCount > 11)
+    {
+        stream.add((char *)"Invalid data more than 11 instances");
+        stream.endOfLine();
+        stream.add((char *)"Displaying only 11");
+        stream.endOfLine();
+        displayCount = 11;
+    }
+    for (Uint8 i = 0; i < displayCount; i++)
+    {
+        stream.add((char *)"IE -  bearerContexts:");
+        stream.endOfLine();
+        BearerContextIe bearerContext=
+        dynamic_cast<
+        BearerContextIe&>(GtpV2IeFactory::getInstance().getIeObject(BearerContextIeType));
+        BearerContextsInCreateBearerRequest groupedIeInstance =
+        dynamic_cast<
+        BearerContextsInCreateBearerRequest&>(bearerContext.getGroupedIe(msgType, 0));
+        groupedIeInstance.displayBearerContextsInCreateBearerRequestData_v(data.bearerContexts[i], stream);
+
+    }
     if (data.pgwFqCsidIePresent)
     {
+
+
         stream.add((char *)"IE - pgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
@@ -1094,6 +1124,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.sgwFqCsidIePresent)
     {
+
+
         stream.add((char *)"IE - sgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
@@ -1104,6 +1136,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.changeReportingActionIePresent)
     {
+
+
         stream.add((char *)"IE - changeReportingAction:");
         stream.endOfLine();
         ChangeReportingActionIe changeReportingAction=
@@ -1114,6 +1148,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.csgInformationReportingActionIePresent)
     {
+
+
         stream.add((char *)"IE - csgInformationReportingAction:");
         stream.endOfLine();
         CsgInformationReportingActionIe csgInformationReportingAction=
@@ -1124,6 +1160,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.hNbInformationReportingIePresent)
     {
+
+
         stream.add((char *)"IE - hNbInformationReporting:");
         stream.endOfLine();
         HenbInformationReportingIe henbInformationReporting=
@@ -1134,6 +1172,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.presenceReportingAreaActionIePresent)
     {
+
+
         stream.add((char *)"IE - presenceReportingAreaAction:");
         stream.endOfLine();
         PresenceReportingAreaActionIe presenceReportingAreaAction=
@@ -1144,6 +1184,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.indicationFlagsIePresent)
     {
+
+
         stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
@@ -1154,6 +1196,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -1167,6 +1211,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsApnLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsApnLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -1180,6 +1226,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.sgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -1193,6 +1241,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -1206,6 +1256,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -1219,6 +1271,8 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
     }
     if (data.nbifomContainerIePresent)
     {
+
+
         stream.add((char *)"IE - nbifomContainer:");
         stream.endOfLine();
         FContainerIe fContainer=
@@ -1227,6 +1281,7 @@ displayCreateBearerRequestMsgData_v(CreateBearerRequestMsgData const &data, Debu
         fContainer.displayFContainerIe_v(data.nbifomContainer, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2019, Infosys Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "releaseAccessBearersRequestMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -321,10 +312,13 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
     stream.incrIndent();
     stream.add((char *)"ReleaseAccessBearersRequestMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
     if (data.listOfRabsIePresent)
     {
+
+
         stream.add((char *)"IE - listOfRabs:");
         stream.endOfLine();
         EbiIe ebi=
@@ -335,6 +329,8 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
     }
     if (data.originatingNodeIePresent)
     {
+
+
         stream.add((char *)"IE - originatingNode:");
         stream.endOfLine();
         NodeTypeIe nodeType=
@@ -345,6 +341,8 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
     }
     if (data.indicationFlagsIePresent)
     {
+
+
         stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
@@ -355,6 +353,8 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
     }
     if (data.secondaryRatUsageDataReportIePresent)
     {
+
+
         stream.add((char *)"IE - secondaryRatUsageDataReport:");
         stream.endOfLine();
         SecondaryRatUsageDataReportIe secondaryRatUsageDataReport=
@@ -363,6 +363,7 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
         secondaryRatUsageDataReport.displaySecondaryRatUsageDataReportIe_v(data.secondaryRatUsageDataReport, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

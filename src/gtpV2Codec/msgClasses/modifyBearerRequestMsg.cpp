@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2019, Infosys Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "modifyBearerRequestMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -1904,10 +1895,13 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     stream.incrIndent();
     stream.add((char *)"ModifyBearerRequestMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
     if (data.meIdentityIePresent)
     {
+
+
         stream.add((char *)"IE - meIdentity:");
         stream.endOfLine();
         MeiIe mei=
@@ -1918,6 +1912,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.userLocationInformationIePresent)
     {
+
+
         stream.add((char *)"IE - userLocationInformation:");
         stream.endOfLine();
         UliIe uli=
@@ -1928,6 +1924,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.servingNetworkIePresent)
     {
+
+
         stream.add((char *)"IE - servingNetwork:");
         stream.endOfLine();
         ServingNetworkIe servingNetwork=
@@ -1938,6 +1936,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.ratTypeIePresent)
     {
+
+
         stream.add((char *)"IE - ratType:");
         stream.endOfLine();
         RatTypeIe ratType=
@@ -1948,6 +1948,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.indicationFlagsIePresent)
     {
+
+
         stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
@@ -1958,6 +1960,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.senderFTeidForControlPlaneIePresent)
     {
+
+
         stream.add((char *)"IE - senderFTeidForControlPlane:");
         stream.endOfLine();
         FTeidIe fTeid=
@@ -1968,6 +1972,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.aggregateMaximumBitRateIePresent)
     {
+
+
         stream.add((char *)"IE - aggregateMaximumBitRate:");
         stream.endOfLine();
         AmbrIe ambr=
@@ -1978,6 +1984,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.delayDownlinkPacketNotificationRequestIePresent)
     {
+
+
         stream.add((char *)"IE - delayDownlinkPacketNotificationRequest:");
         stream.endOfLine();
         DelayValueIe delayValue=
@@ -1986,6 +1994,9 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
         delayValue.displayDelayValueIe_v(data.delayDownlinkPacketNotificationRequest, stream);
 
     }
+
+    Uint8 displayCount;
+    
     displayCount = data.bearerContextsToBeModifiedCount;
     if (displayCount > 11)
     {
@@ -2002,12 +2013,15 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
         BearerContextIe bearerContext=
         dynamic_cast<
         BearerContextIe&>(GtpV2IeFactory::getInstance().getIeObject(BearerContextIeType));
-        BearerContextsToBeModifiedInModifyBearerRequest groupedIeInstance =
+                BearerContextsToBeModifiedInModifyBearerRequest groupedIeInstance =
         dynamic_cast<
         BearerContextsToBeModifiedInModifyBearerRequest&>(bearerContext.getGroupedIe(msgType, 0));
         groupedIeInstance.displayBearerContextsToBeModifiedInModifyBearerRequestData_v(data.bearerContextsToBeModified[i], stream);
-
     }
+
+    
+
+    
     displayCount = data.bearerContextsToBeRemovedCount;
     if (displayCount > 11)
     {
@@ -2024,14 +2038,19 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
         BearerContextIe bearerContext=
         dynamic_cast<
         BearerContextIe&>(GtpV2IeFactory::getInstance().getIeObject(BearerContextIeType));
-        BearerContextsToBeRemovedInModifyBearerRequest groupedIeInstance =
+                BearerContextsToBeRemovedInModifyBearerRequest groupedIeInstance =
         dynamic_cast<
         BearerContextsToBeRemovedInModifyBearerRequest&>(bearerContext.getGroupedIe(msgType, 1));
         groupedIeInstance.displayBearerContextsToBeRemovedInModifyBearerRequestData_v(data.bearerContextsToBeRemoved[i], stream);
-
     }
+
+    
+
+    
     if (data.recoveryIePresent)
     {
+
+
         stream.add((char *)"IE - recovery:");
         stream.endOfLine();
         RecoveryIe recovery=
@@ -2042,6 +2061,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.ueTimeZoneIePresent)
     {
+
+
         stream.add((char *)"IE - ueTimeZone:");
         stream.endOfLine();
         UeTimeZoneIe ueTimeZone=
@@ -2052,6 +2073,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.mmeFqCsidIePresent)
     {
+
+
         stream.add((char *)"IE - mmeFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
@@ -2062,6 +2085,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.sgwFqCsidIePresent)
     {
+
+
         stream.add((char *)"IE - sgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
@@ -2072,6 +2097,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.userCsgInformationIePresent)
     {
+
+
         stream.add((char *)"IE - userCsgInformation:");
         stream.endOfLine();
         UciIe uci=
@@ -2082,6 +2109,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.ueLocalIpAddressIePresent)
     {
+
+
         stream.add((char *)"IE - ueLocalIpAddress:");
         stream.endOfLine();
         IpAddressIe ipAddress=
@@ -2092,6 +2121,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.ueUdpPortIePresent)
     {
+
+
         stream.add((char *)"IE - ueUdpPort:");
         stream.endOfLine();
         PortNumberIe portNumber=
@@ -2102,6 +2133,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.mmeS4SgsnLdnIePresent)
     {
+
+
         stream.add((char *)"IE - mmeS4SgsnLdn:");
         stream.endOfLine();
         LocalDistinguishedNameIe localDistinguishedName=
@@ -2112,6 +2145,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.sgwLdnIePresent)
     {
+
+
         stream.add((char *)"IE - sgwLdn:");
         stream.endOfLine();
         LocalDistinguishedNameIe localDistinguishedName=
@@ -2122,6 +2157,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.hNbLocalIpAddressIePresent)
     {
+
+
         stream.add((char *)"IE - hNbLocalIpAddress:");
         stream.endOfLine();
         IpAddressIe ipAddress=
@@ -2132,6 +2169,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.hNbUdpPortIePresent)
     {
+
+
         stream.add((char *)"IE - hNbUdpPort:");
         stream.endOfLine();
         PortNumberIe portNumber=
@@ -2142,6 +2181,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.mmeS4SgsnIdentifierIePresent)
     {
+
+
         stream.add((char *)"IE - mmeS4SgsnIdentifier:");
         stream.endOfLine();
         IpAddressIe ipAddress=
@@ -2152,6 +2193,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.cnOperatorSelectionEntityIePresent)
     {
+
+
         stream.add((char *)"IE - cnOperatorSelectionEntity:");
         stream.endOfLine();
         CnOperatorSelectionEntityIe cnOperatorSelectionEntity=
@@ -2162,6 +2205,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.mmeS4SgsnsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - mmeS4SgsnsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -2175,6 +2220,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -2188,6 +2235,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.epdgsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - epdgsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -2201,6 +2250,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.servingPlmnRateControlIePresent)
     {
+
+
         stream.add((char *)"IE - servingPlmnRateControl:");
         stream.endOfLine();
         ServingPlmnRateControlIe servingPlmnRateControl=
@@ -2211,6 +2262,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.moExceptionDataCounterIePresent)
     {
+
+
         stream.add((char *)"IE - moExceptionDataCounter:");
         stream.endOfLine();
         CounterIe counter=
@@ -2221,6 +2274,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.imsiIePresent)
     {
+
+
         stream.add((char *)"IE - imsi:");
         stream.endOfLine();
         ImsiIe imsi=
@@ -2231,6 +2286,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.userLocationInformationForSgwIePresent)
     {
+
+
         stream.add((char *)"IE - userLocationInformationForSgw:");
         stream.endOfLine();
         UliIe uli=
@@ -2241,6 +2298,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.wlanLocationInformationIePresent)
     {
+
+
         stream.add((char *)"IE - wlanLocationInformation:");
         stream.endOfLine();
         TwanIdentifierIe twanIdentifier=
@@ -2251,6 +2310,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.wlanLocationTimestampIePresent)
     {
+
+
         stream.add((char *)"IE - wlanLocationTimestamp:");
         stream.endOfLine();
         TwanIdentifierTimestampIe twanIdentifierTimestamp=
@@ -2261,6 +2322,8 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
     }
     if (data.secondaryRatUsageDataReportIePresent)
     {
+
+
         stream.add((char *)"IE - secondaryRatUsageDataReport:");
         stream.endOfLine();
         SecondaryRatUsageDataReportIe secondaryRatUsageDataReport=
@@ -2269,6 +2332,7 @@ displayModifyBearerRequestMsgData_v(ModifyBearerRequestMsgData const &data, Debu
         secondaryRatUsageDataReport.displaySecondaryRatUsageDataReportIe_v(data.secondaryRatUsageDataReport, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

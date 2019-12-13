@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2019, Infosys Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "deleteBearerRequestMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -983,10 +974,13 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     stream.incrIndent();
     stream.add((char *)"DeleteBearerRequestMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
     if (data.linkedEpsBearerIdIePresent)
     {
+
+
         stream.add((char *)"IE - linkedEpsBearerId:");
         stream.endOfLine();
         EbiIe ebi=
@@ -997,6 +991,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.epsBearerIdsIePresent)
     {
+
+
         stream.add((char *)"IE - epsBearerIds:");
         stream.endOfLine();
         EbiIe ebi=
@@ -1005,6 +1001,9 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
         ebi.displayEbiIe_v(data.epsBearerIds, stream);
 
     }
+
+    Uint8 displayCount;
+    
     displayCount = data.failedBearerContextsCount;
     if (displayCount > 11)
     {
@@ -1021,14 +1020,19 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
         BearerContextIe bearerContext=
         dynamic_cast<
         BearerContextIe&>(GtpV2IeFactory::getInstance().getIeObject(BearerContextIeType));
-        FailedBearerContextsInDeleteBearerRequest groupedIeInstance =
+                FailedBearerContextsInDeleteBearerRequest groupedIeInstance =
         dynamic_cast<
         FailedBearerContextsInDeleteBearerRequest&>(bearerContext.getGroupedIe(msgType, 0));
         groupedIeInstance.displayFailedBearerContextsInDeleteBearerRequestData_v(data.failedBearerContexts[i], stream);
-
     }
+
+    
+
+    
     if (data.procedureTransactionIdIePresent)
     {
+
+
         stream.add((char *)"IE - procedureTransactionId:");
         stream.endOfLine();
         PtiIe pti=
@@ -1039,6 +1043,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.protocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
@@ -1049,6 +1055,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.pgwFqCsidIePresent)
     {
+
+
         stream.add((char *)"IE - pgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
@@ -1059,6 +1067,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.sgwFqCsidIePresent)
     {
+
+
         stream.add((char *)"IE - sgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
@@ -1069,6 +1079,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.causeIePresent)
     {
+
+
         stream.add((char *)"IE - cause:");
         stream.endOfLine();
         CauseIe cause=
@@ -1079,6 +1091,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.indicationFlagsIePresent)
     {
+
+
         stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
@@ -1089,6 +1103,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -1102,6 +1118,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsApnLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsApnLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -1115,6 +1133,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.sgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -1128,6 +1148,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.pgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -1141,6 +1163,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -1154,6 +1178,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.nbifomContainerIePresent)
     {
+
+
         stream.add((char *)"IE - nbifomContainer:");
         stream.endOfLine();
         FContainerIe fContainer=
@@ -1164,6 +1190,8 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
     }
     if (data.extendedProtocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - extendedProtocolConfigurationOptions:");
         stream.endOfLine();
         EpcoIe epco=
@@ -1172,6 +1200,7 @@ displayDeleteBearerRequestMsgData_v(DeleteBearerRequestMsgData const &data, Debu
         epco.displayEpcoIe_v(data.extendedProtocolConfigurationOptions, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

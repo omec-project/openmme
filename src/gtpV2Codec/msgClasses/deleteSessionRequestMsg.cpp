@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2019, Infosys Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "deleteSessionRequestMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -1296,10 +1287,13 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     stream.incrIndent();
     stream.add((char *)"DeleteSessionRequestMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
     if (data.linkedEpsBearerIdIePresent)
     {
+
+
         stream.add((char *)"IE - linkedEpsBearerId:");
         stream.endOfLine();
         EbiIe ebi=
@@ -1310,6 +1304,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.indicationFlagsIePresent)
     {
+
+
         stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
@@ -1320,6 +1316,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.causeIePresent)
     {
+
+
         stream.add((char *)"IE - cause:");
         stream.endOfLine();
         CauseIe cause=
@@ -1330,6 +1328,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.senderFTeidForControlPlaneIePresent)
     {
+
+
         stream.add((char *)"IE - senderFTeidForControlPlane:");
         stream.endOfLine();
         FTeidIe fTeid=
@@ -1340,6 +1340,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.userLocationInformationIePresent)
     {
+
+
         stream.add((char *)"IE - userLocationInformation:");
         stream.endOfLine();
         UliIe uli=
@@ -1350,6 +1352,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.protocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
@@ -1360,6 +1364,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.originatingNodeIePresent)
     {
+
+
         stream.add((char *)"IE - originatingNode:");
         stream.endOfLine();
         NodeTypeIe nodeType=
@@ -1370,6 +1376,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.ueTimeZoneIePresent)
     {
+
+
         stream.add((char *)"IE - ueTimeZone:");
         stream.endOfLine();
         UeTimeZoneIe ueTimeZone=
@@ -1380,6 +1388,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.uliTimestampIePresent)
     {
+
+
         stream.add((char *)"IE - uliTimestamp:");
         stream.endOfLine();
         UliTimestampIe uliTimestamp=
@@ -1390,6 +1400,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.ranNasReleaseCauseIePresent)
     {
+
+
         stream.add((char *)"IE - ranNasReleaseCause:");
         stream.endOfLine();
         RanNasCauseIe ranNasCause=
@@ -1400,6 +1412,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.twanIdentifierIePresent)
     {
+
+
         stream.add((char *)"IE - twanIdentifier:");
         stream.endOfLine();
         TwanIdentifierIe twanIdentifier=
@@ -1410,6 +1424,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.twanIdentifierTimestampIePresent)
     {
+
+
         stream.add((char *)"IE - twanIdentifierTimestamp:");
         stream.endOfLine();
         TwanIdentifierTimestampIe twanIdentifierTimestamp=
@@ -1420,6 +1436,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.mmeS4SgsnsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - mmeS4SgsnsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -1433,6 +1451,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -1446,6 +1466,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.twanEpdgsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - twanEpdgsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -1459,6 +1481,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.wlanLocationInformationIePresent)
     {
+
+
         stream.add((char *)"IE - wlanLocationInformation:");
         stream.endOfLine();
         TwanIdentifierIe twanIdentifier=
@@ -1469,6 +1493,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.wlanLocationTimestampIePresent)
     {
+
+
         stream.add((char *)"IE - wlanLocationTimestamp:");
         stream.endOfLine();
         TwanIdentifierTimestampIe twanIdentifierTimestamp=
@@ -1479,6 +1505,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.ueLocalIpAddressIePresent)
     {
+
+
         stream.add((char *)"IE - ueLocalIpAddress:");
         stream.endOfLine();
         IpAddressIe ipAddress=
@@ -1489,6 +1517,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.ueUdpPortIePresent)
     {
+
+
         stream.add((char *)"IE - ueUdpPort:");
         stream.endOfLine();
         PortNumberIe portNumber=
@@ -1499,6 +1529,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.extendedProtocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - extendedProtocolConfigurationOptions:");
         stream.endOfLine();
         EpcoIe epco=
@@ -1509,6 +1541,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.ueTcpPortIePresent)
     {
+
+
         stream.add((char *)"IE - ueTcpPort:");
         stream.endOfLine();
         PortNumberIe portNumber=
@@ -1519,6 +1553,8 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
     }
     if (data.secondaryRatUsageDataReportIePresent)
     {
+
+
         stream.add((char *)"IE - secondaryRatUsageDataReport:");
         stream.endOfLine();
         SecondaryRatUsageDataReportIe secondaryRatUsageDataReport=
@@ -1527,6 +1563,7 @@ displayDeleteSessionRequestMsgData_v(DeleteSessionRequestMsgData const &data, De
         secondaryRatUsageDataReport.displaySecondaryRatUsageDataReportIe_v(data.secondaryRatUsageDataReport, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

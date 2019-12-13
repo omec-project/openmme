@@ -1,18 +1,9 @@
 /*
-* Copyright (c) 2019 Infosys Limited
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "dataTypeCodecUtils.h"
 
@@ -44,7 +35,7 @@ bool DataTypeCodecUtils::encodeCgiField(MsgBuffer &buffer, CgiField const &data)
 bool DataTypeCodecUtils::decodeCgiField(MsgBuffer &buffer,CgiField &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
     data.mccDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -52,42 +43,36 @@ bool DataTypeCodecUtils::decodeCgiField(MsgBuffer &buffer,CgiField &data,
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit2\n");
          return false;
     }
-
     data.mccDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit1\n");
          return false;
     }
-
     data.mncDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit3\n");
          return false;
     }
-
     data.mccDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit3\n");
          return false;
     }
-
     data.mncDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit2\n");
          return false;
     }
-
     data.mncDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit1\n");
          return false;
     }
-
 
     buffer.readUint16(data.locationAreaCode);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -96,14 +81,12 @@ bool DataTypeCodecUtils::decodeCgiField(MsgBuffer &buffer,CgiField &data,
          return false;
     }
 
-
     buffer.readUint16(data.cellIdentity);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: cellIdentity\n");
          return false;
     }
-
 
   return true;
 }
@@ -155,7 +138,7 @@ bool DataTypeCodecUtils::encodeOffendingIeData(MsgBuffer &buffer, OffendingIeDat
 bool DataTypeCodecUtils::decodeOffendingIeData(MsgBuffer &buffer,OffendingIeData &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.typeOfOffendingIe);
@@ -164,7 +147,6 @@ bool DataTypeCodecUtils::decodeOffendingIeData(MsgBuffer &buffer,OffendingIeData
          errorStream.add((char *)"Attempt to read beyond type boundary: typeOfOffendingIe\n");
          return false;
     }
-
     buffer.skipBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
@@ -178,14 +160,12 @@ bool DataTypeCodecUtils::decodeOffendingIeData(MsgBuffer &buffer,OffendingIeData
          errorStream.add((char *)"Attempt to read beyond type boundary: lengthOfOffendingIe\n");
          return false;
     }
-
     data.instanceOfOffendingIe = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: instanceOfOffendingIe\n");
          return false;
     }
-
 
   return true;
 }
@@ -225,7 +205,7 @@ bool DataTypeCodecUtils::encodeSaiField(MsgBuffer &buffer, SaiField const &data)
 bool DataTypeCodecUtils::decodeSaiField(MsgBuffer &buffer,SaiField &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
     data.mccDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -233,42 +213,36 @@ bool DataTypeCodecUtils::decodeSaiField(MsgBuffer &buffer,SaiField &data,
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit2\n");
          return false;
     }
-
     data.mccDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit1\n");
          return false;
     }
-
     data.mncDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit3\n");
          return false;
     }
-
     data.mccDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit3\n");
          return false;
     }
-
     data.mncDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit2\n");
          return false;
     }
-
     data.mncDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit1\n");
          return false;
     }
-
 
     buffer.readUint16(data.locationAreaCode);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -277,14 +251,12 @@ bool DataTypeCodecUtils::decodeSaiField(MsgBuffer &buffer,SaiField &data,
          return false;
     }
 
-
     buffer.readUint16(data.serviceAreaCode);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: serviceAreaCode\n");
          return false;
     }
-
 
   return true;
 }
@@ -339,7 +311,7 @@ bool DataTypeCodecUtils::encodeRaiField(MsgBuffer &buffer, RaiField const &data)
 bool DataTypeCodecUtils::decodeRaiField(MsgBuffer &buffer,RaiField &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
     data.mccDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -347,42 +319,36 @@ bool DataTypeCodecUtils::decodeRaiField(MsgBuffer &buffer,RaiField &data,
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit2\n");
          return false;
     }
-
     data.mccDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit1\n");
          return false;
     }
-
     data.mncDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit3\n");
          return false;
     }
-
     data.mccDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit3\n");
          return false;
     }
-
     data.mncDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit2\n");
          return false;
     }
-
     data.mncDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit1\n");
          return false;
     }
-
 
     buffer.readUint16(data.locationAreaCode);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -391,14 +357,12 @@ bool DataTypeCodecUtils::decodeRaiField(MsgBuffer &buffer,RaiField &data,
          return false;
     }
 
-
     buffer.readUint16(data.routintAreaCode);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: routintAreaCode\n");
          return false;
     }
-
 
   return true;
 }
@@ -452,7 +416,7 @@ bool DataTypeCodecUtils::encodeTaiField(MsgBuffer &buffer, TaiField const &data)
 bool DataTypeCodecUtils::decodeTaiField(MsgBuffer &buffer,TaiField &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
     data.mccDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -460,35 +424,30 @@ bool DataTypeCodecUtils::decodeTaiField(MsgBuffer &buffer,TaiField &data,
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit2\n");
          return false;
     }
-
     data.mccDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit1\n");
          return false;
     }
-
     data.mncDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit3\n");
          return false;
     }
-
     data.mccDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit3\n");
          return false;
     }
-
     data.mncDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit2\n");
          return false;
     }
-
     data.mncDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
@@ -496,14 +455,12 @@ bool DataTypeCodecUtils::decodeTaiField(MsgBuffer &buffer,TaiField &data,
          return false;
     }
 
-
     buffer.readUint16(data.trackingAreaCode);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: trackingAreaCode\n");
          return false;
     }
-
 
   return true;
 }
@@ -559,7 +516,7 @@ bool DataTypeCodecUtils::encodeEcgiField(MsgBuffer &buffer, EcgiField const &dat
 bool DataTypeCodecUtils::decodeEcgiField(MsgBuffer &buffer,EcgiField &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
     data.mccDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -567,35 +524,30 @@ bool DataTypeCodecUtils::decodeEcgiField(MsgBuffer &buffer,EcgiField &data,
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit2\n");
          return false;
     }
-
     data.mccDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit1\n");
          return false;
     }
-
     data.mncDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit3\n");
          return false;
     }
-
     data.mccDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit3\n");
          return false;
     }
-
     data.mncDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit2\n");
          return false;
     }
-
     data.mncDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
@@ -603,14 +555,12 @@ bool DataTypeCodecUtils::decodeEcgiField(MsgBuffer &buffer,EcgiField &data,
          return false;
     }
 
-
     buffer.readUint32(data.eUtranCellId);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: eUtranCellId\n");
          return false;
     }
-
     if (!(data.eUtranCellId<0x0FFFFFFF))
     {
          errorStream.add((char *)"Data validation failure: eUtranCellId\n");
@@ -666,7 +616,7 @@ bool DataTypeCodecUtils::encodeLaiField(MsgBuffer &buffer, LaiField const &data)
 bool DataTypeCodecUtils::decodeLaiField(MsgBuffer &buffer,LaiField &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
     data.mccDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
@@ -674,35 +624,30 @@ bool DataTypeCodecUtils::decodeLaiField(MsgBuffer &buffer,LaiField &data,
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit2\n");
          return false;
     }
-
     data.mccDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit1\n");
          return false;
     }
-
     data.mncDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit3\n");
          return false;
     }
-
     data.mccDigit3 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mccDigit3\n");
          return false;
     }
-
     data.mncDigit2 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: mncDigit2\n");
          return false;
     }
-
     data.mncDigit1 = buffer.readBits(4);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
@@ -710,14 +655,12 @@ bool DataTypeCodecUtils::decodeLaiField(MsgBuffer &buffer,LaiField &data,
          return false;
     }
 
-
     buffer.readUint16(data.locationAreaCode);
     if (buffer.getCurrentIndex() > typeBoundary)
     {
          errorStream.add((char *)"Attempt to read beyond type boundary: locationAreaCode\n");
          return false;
     }
-
 
   return true;
 }
@@ -762,7 +705,7 @@ bool DataTypeCodecUtils::encodeIpAddressV4(MsgBuffer &buffer, IpAddressV4 const 
 bool DataTypeCodecUtils::decodeIpAddressV4(MsgBuffer &buffer,IpAddressV4 &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint32(data.ipValue);
@@ -771,7 +714,6 @@ bool DataTypeCodecUtils::decodeIpAddressV4(MsgBuffer &buffer,IpAddressV4 &data,
          errorStream.add((char *)"Attempt to read beyond type boundary: ipValue\n");
          return false;
     }
-
 
   return true;
 }
@@ -791,14 +733,26 @@ void DataTypeCodecUtils::displayIpAddressV4_v(IpAddressV4 const &data, Debug &st
 
 bool DataTypeCodecUtils::encodeIpAddressV6(MsgBuffer &buffer, IpAddressV6 const &data)
 {
+    if (!(DataTypeCodecUtils::encodeUint8Array16(buffer, data.ipValue)))
+    {
+        errorStream.add((char *)"Failed to encode ipValue\n");
+        return false;
+    }
+
     return true;
 }
 
 bool DataTypeCodecUtils::decodeIpAddressV6(MsgBuffer &buffer,IpAddressV6 &data,
                          Uint16 length)
 {
-    Uint16 lengthLeft = length;
+    
     Uint16 typeBoundary = buffer.getCurrentIndex() + length;
+ Uint16   lengthLeft = typeBoundary - buffer.getCurrentIndex();
+    if (!(DataTypeCodecUtils::decodeUint8Array16(buffer, data.ipValue, lengthLeft, 0)))
+    {
+        errorStream.add((char *)"Failed to decode: ipValue\n");
+        return false;
+    }
 
   return true;
 }
@@ -856,7 +810,6 @@ void DataTypeCodecUtils::displayUint16Array16_v(Uint16Array16 const &data, Debug
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
     Uint16 i;
     for (i = 0; i < data.count; i++)
     {
@@ -908,7 +861,6 @@ void DataTypeCodecUtils::displayUint8Array16_v(Uint8Array16 const &data, Debug &
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
     Uint16 i;
     for (i = 0; i < data.count; i++)
     {
@@ -960,7 +912,6 @@ void DataTypeCodecUtils::displayUint8Array32_v(Uint8Array32 const &data, Debug &
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
     Uint16 i;
     for (i = 0; i < data.count; i++)
     {
@@ -1012,7 +963,6 @@ void DataTypeCodecUtils::displayUint8Array5_v(Uint8Array5 const &data, Debug &st
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
     Uint16 i;
     for (i = 0; i < data.count; i++)
     {
@@ -1064,7 +1014,6 @@ void DataTypeCodecUtils::displayUint8Array4_v(Uint8Array4 const &data, Debug &st
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
     Uint16 i;
     for (i = 0; i < data.count; i++)
     {
@@ -1116,7 +1065,6 @@ void DataTypeCodecUtils::displayUint8Array512_v(Uint8Array512 const &data, Debug
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
     Uint16 i;
     for (i = 0; i < data.count; i++)
     {
@@ -1154,7 +1102,8 @@ bool DataTypeCodecUtils::decodeCgiFieldArray64(MsgBuffer &buffer,
     while ((i < count)||(readTillEnd && (buffer.getCurrentIndex() < typeBoundary)))
     {
         Uint16 lengthLeft = typeBoundary - buffer.getCurrentIndex();
-        if (!(DataTypeCodecUtils::decodeCgiField(buffer, data.values[i], lengthLeft)))
+                 if (!(DataTypeCodecUtils::decodeCgiField(buffer, data.values[i], lengthLeft)))
+                 
         {
             errorStream.add((char *)"Failed to encode CgiFieldArray64\n");
             return false;
@@ -1177,11 +1126,6 @@ void DataTypeCodecUtils::displayCgiFieldArray64_v(CgiFieldArray64 const &data, D
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
-    Uint16 i;
-    for (i = 0; i < data.count; i++)
-    {
-    }
     stream.decrIndent();
     stream.decrIndent();
 }
@@ -1213,7 +1157,8 @@ bool DataTypeCodecUtils::decodeSaiFieldArray64(MsgBuffer &buffer,
     while ((i < count)||(readTillEnd && (buffer.getCurrentIndex() < typeBoundary)))
     {
         Uint16 lengthLeft = typeBoundary - buffer.getCurrentIndex();
-        if (!(DataTypeCodecUtils::decodeSaiField(buffer, data.values[i], lengthLeft)))
+                 if (!(DataTypeCodecUtils::decodeSaiField(buffer, data.values[i], lengthLeft)))
+                 
         {
             errorStream.add((char *)"Failed to encode SaiFieldArray64\n");
             return false;
@@ -1236,11 +1181,6 @@ void DataTypeCodecUtils::displaySaiFieldArray64_v(SaiFieldArray64 const &data, D
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
-    Uint16 i;
-    for (i = 0; i < data.count; i++)
-    {
-    }
     stream.decrIndent();
     stream.decrIndent();
 }
@@ -1272,7 +1212,8 @@ bool DataTypeCodecUtils::decodeEcgiFieldArray64(MsgBuffer &buffer,
     while ((i < count)||(readTillEnd && (buffer.getCurrentIndex() < typeBoundary)))
     {
         Uint16 lengthLeft = typeBoundary - buffer.getCurrentIndex();
-        if (!(DataTypeCodecUtils::decodeEcgiField(buffer, data.values[i], lengthLeft)))
+                 if (!(DataTypeCodecUtils::decodeEcgiField(buffer, data.values[i], lengthLeft)))
+                 
         {
             errorStream.add((char *)"Failed to encode EcgiFieldArray64\n");
             return false;
@@ -1295,11 +1236,6 @@ void DataTypeCodecUtils::displayEcgiFieldArray64_v(EcgiFieldArray64 const &data,
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
-    Uint16 i;
-    for (i = 0; i < data.count; i++)
-    {
-    }
     stream.decrIndent();
     stream.decrIndent();
 }
@@ -1331,7 +1267,8 @@ bool DataTypeCodecUtils::decodeTaiFieldArray15(MsgBuffer &buffer,
     while ((i < count)||(readTillEnd && (buffer.getCurrentIndex() < typeBoundary)))
     {
         Uint16 lengthLeft = typeBoundary - buffer.getCurrentIndex();
-        if (!(DataTypeCodecUtils::decodeTaiField(buffer, data.values[i], lengthLeft)))
+                 if (!(DataTypeCodecUtils::decodeTaiField(buffer, data.values[i], lengthLeft)))
+                 
         {
             errorStream.add((char *)"Failed to encode TaiFieldArray15\n");
             return false;
@@ -1354,11 +1291,6 @@ void DataTypeCodecUtils::displayTaiFieldArray15_v(TaiFieldArray15 const &data, D
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
-    Uint16 i;
-    for (i = 0; i < data.count; i++)
-    {
-    }
     stream.decrIndent();
     stream.decrIndent();
 }
@@ -1390,7 +1322,8 @@ bool DataTypeCodecUtils::decodeRaiFieldArray15(MsgBuffer &buffer,
     while ((i < count)||(readTillEnd && (buffer.getCurrentIndex() < typeBoundary)))
     {
         Uint16 lengthLeft = typeBoundary - buffer.getCurrentIndex();
-        if (!(DataTypeCodecUtils::decodeRaiField(buffer, data.values[i], lengthLeft)))
+                 if (!(DataTypeCodecUtils::decodeRaiField(buffer, data.values[i], lengthLeft)))
+                 
         {
             errorStream.add((char *)"Failed to encode RaiFieldArray15\n");
             return false;
@@ -1413,11 +1346,6 @@ void DataTypeCodecUtils::displayRaiFieldArray15_v(RaiFieldArray15 const &data, D
     stream.add(data.count);
     stream.incrIndent();
     stream.endOfLine();
-    
-    Uint16 i;
-    for (i = 0; i < data.count; i++)
-    {
-    }
     stream.decrIndent();
     stream.decrIndent();
 }

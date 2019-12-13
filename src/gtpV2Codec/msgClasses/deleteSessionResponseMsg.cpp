@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2019, Infosys Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "deleteSessionResponseMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -649,10 +640,20 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     stream.incrIndent();
     stream.add((char *)"DeleteSessionResponseMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
+        stream.add((char *)"IE - cause:");
+        stream.endOfLine();
+        CauseIe cause=
+        dynamic_cast<
+        CauseIe&>(GtpV2IeFactory::getInstance().getIeObject(CauseIeType));
+        cause.displayCauseIe_v(data.cause, stream);
+
     if (data.recoveryIePresent)
     {
+
+
         stream.add((char *)"IE - recovery:");
         stream.endOfLine();
         RecoveryIe recovery=
@@ -663,6 +664,8 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     }
     if (data.protocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
@@ -673,6 +676,8 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     }
     if (data.indicationFlagsIePresent)
     {
+
+
         stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
@@ -683,6 +688,8 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     }
     if (data.pgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -696,6 +703,8 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     }
     if (data.pgwsApnLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsApnLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -709,6 +718,8 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     }
     if (data.sgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -722,6 +733,8 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     }
     if (data.pgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -735,6 +748,8 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -748,6 +763,8 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
     }
     if (data.extendedProtocolConfigurationOptionsIePresent)
     {
+
+
         stream.add((char *)"IE - extendedProtocolConfigurationOptions:");
         stream.endOfLine();
         EpcoIe epco=
@@ -756,6 +773,7 @@ displayDeleteSessionResponseMsgData_v(DeleteSessionResponseMsgData const &data, 
         epco.displayEpcoIe_v(data.extendedProtocolConfigurationOptions, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

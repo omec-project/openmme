@@ -1,18 +1,9 @@
 /*
- * Copyright (c) 2019, Infosys Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */ 
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "downlinkDataNotificationMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -625,10 +616,13 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     stream.incrIndent();
     stream.add((char *)"DownlinkDataNotificationMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
     if (data.causeIePresent)
     {
+
+
         stream.add((char *)"IE - cause:");
         stream.endOfLine();
         CauseIe cause=
@@ -639,6 +633,8 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.epsBearerIdIePresent)
     {
+
+
         stream.add((char *)"IE - epsBearerId:");
         stream.endOfLine();
         EbiIe ebi=
@@ -649,6 +645,8 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.allocationRetentionPriorityIePresent)
     {
+
+
         stream.add((char *)"IE - allocationRetentionPriority:");
         stream.endOfLine();
         ArpIe arp=
@@ -659,6 +657,8 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.imsiIePresent)
     {
+
+
         stream.add((char *)"IE - imsi:");
         stream.endOfLine();
         ImsiIe imsi=
@@ -669,6 +669,8 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.senderFTeidForControlPlaneIePresent)
     {
+
+
         stream.add((char *)"IE - senderFTeidForControlPlane:");
         stream.endOfLine();
         FTeidIe fTeid=
@@ -679,6 +681,8 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.indicationFlagsIePresent)
     {
+
+
         stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
@@ -689,6 +693,8 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.sgwsNodeLevelLoadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
@@ -702,6 +708,8 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
+
+
         stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
@@ -715,6 +723,8 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
     }
     if (data.pagingAndServiceInformationIePresent)
     {
+
+
         stream.add((char *)"IE - pagingAndServiceInformation:");
         stream.endOfLine();
         PagingAndServiceInformationIe pagingAndServiceInformation=
@@ -723,6 +733,7 @@ displayDownlinkDataNotificationMsgData_v(DownlinkDataNotificationMsgData const &
         pagingAndServiceInformation.displayPagingAndServiceInformationIe_v(data.pagingAndServiceInformation, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }
