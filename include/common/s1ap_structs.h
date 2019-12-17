@@ -38,10 +38,12 @@
 #define UE_CTX_RELEASE_NO_OF_IES 3
 #define ATTACH_REJECT_NO_OF_IES 3 
 #define ATTACH_ID_REQUEST_NO_OF_IES 3
+#define TAU_RSP_NO_OF_IES 3  /*mme s1ap id, enb s1ap id, nas pdu */
 
 #define AUTH_REQ_NO_OF_NAS_IES 2
 #define SEC_MODE_NO_OF_NAS_IES 1
 #define ICS_REQ_NO_OF_NAS_IES 5
+#define TAU_RSP_NO_OF_NAS_IES 2
 
 #define AUTHREQ_NAS_SECURITY_PARAM 0x01
 #define SERVICE_REQ_SECURITY_HEADER 12
@@ -429,6 +431,9 @@ typedef union nas_pdu_elements {
 	guti mi_guti;
 	bool esm_info_tx_required;
 	unsigned char pti;
+    unsigned char eps_res;
+    unsigned char spare;
+    unsigned short int pco_options[10];
 }nas_pdu_elements;
 
 #define NAS_MSG_UE_IE_GUTI  0x00000001
@@ -639,6 +644,7 @@ enum eps_nas_mesage_type {
 	AttachAccept = 0x42,
 	AttachReject = 0x44,
 	DetachAccept = 0x46,
+    TauAccept    = 0x49,
 	AuthenticationRequest = 0x52,
     IdentityRequest       = 0x55,
 	SecurityModeCommand = 0x5d,

@@ -172,6 +172,7 @@ post_to_next()
 	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key),
 			KENB_SIZE);
 	memcpy(&(icr_msg.pti), &(ue_entry->pti), 1);
+    log_msg(LOG_DEBUG, "Passing PTI = %d  to s1ap. Ue_entry = %p ", icr_msg.pti, ue_entry);
 
 	/* Keep GUTI to IMSI mapping Or GUTI to ue-index mapping 
 	* send GUTI to UE

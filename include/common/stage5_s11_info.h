@@ -31,6 +31,7 @@ struct CS_Q_msg {
 	unsigned char MSISDN[MSISDN_STR_LEN];
 	unsigned int max_requested_bw_dl;
 	unsigned int max_requested_bw_ul;
+    unsigned short int pco_options[10];
 };
 
 #define S11_CSREQ_STAGE5_BUF_SIZE sizeof(struct CS_Q_msg)

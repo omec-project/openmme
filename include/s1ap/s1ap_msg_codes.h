@@ -18,6 +18,7 @@
 #ifndef __S1AP_MSG_CODES_H_
 #define __S1AP_MSG_CODES_H_
 
+/* Section 9.3.6. Spec 36.413 */
 /****S1AP Procedude codes****/
 #define S1AP_SETUP_REQUEST_CODE 17
 #define S1AP_INITIAL_UE_MSG_CODE 12
@@ -59,7 +60,7 @@
 #define NAS_AUTH_REJECT 0x54
 #define NAS_AUTH_FAILURE 0x5c
 #define NAS_IDENTITY_REQUEST 0x55
-#define NAS_IDENTIFY_RESPONSE 0x56
+#define NAS_IDENTITY_RESPONSE 0x56
 #define NAS_SEC_MODE_COMPLETE 0x5e
 #define NAS_SEC_MODE_REJECT  0x5f
 #define NAS_ESM_RESP 0xda

@@ -58,6 +58,8 @@ ipc_handle ipcHndl_ctx_release_complete;
 ipc_handle ipcHndl_s1ap_attach_reject;
 ipc_handle ipcHndl_identityresp;
 ipc_handle ipcHndl_s1ap_msgs;
+ipc_handle ipcHndl_taureq;
+ipc_handle ipcHndl_taursp;
 
 
 ipc_handle ipcHndl_auth;
@@ -82,6 +84,7 @@ pthread_t attachRej_t;
 pthread_t attachIdReq_t;
 pthread_t paging_t;
 pthread_t mme_to_s1ap_msg_t;
+pthread_t tau_rsp_msg_t;
 
 struct time_stat g_attach_stats[65535];
 /**End: global and externs**/
@@ -385,6 +388,17 @@ init_writer_ipc()
 	if ((ipcHndl_identityresp  = open_ipc_channel(
 			S1AP_ID_RSP_QUEUE, IPC_WRITE)) == -E_FAIL)
     return -E_FAIL;
+
+	if ((ipcHndl_taureq = open_ipc_channel(
+			S1AP_TAUREQ_QUEUE, IPC_WRITE)) == -E_FAIL)
+		return -E_FAIL;
+
+	if ((ipcHndl_taursp = open_ipc_channel(
+			S1AP_TAURSP_QUEUE, IPC_READ)) == -E_FAIL)
+		return -E_FAIL;
+
+
+
   
 	if ((ipcHndl_s1ap_msgs = open_ipc_channel(
 			S1AP_MME_QUEUE, IPC_WRITE)) == -E_FAIL)
@@ -421,6 +435,7 @@ start_mme_resp_handlers()
 	pthread_create(&attachIdReq_t, &attr, &s1ap_attach_id_req_handler, NULL);
 	pthread_create(&paging_t, &attr, &paging_handler, NULL);
 	pthread_create(&mme_to_s1ap_msg_t, &attr, &mme_to_s1ap_msg_handler, NULL);
+	pthread_create(&tau_rsp_msg_t, &attr, &tau_response_handler, NULL);
 
 	pthread_attr_destroy(&attr);
 	return SUCCESS;

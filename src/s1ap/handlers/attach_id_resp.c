@@ -62,7 +62,7 @@ s1_identity_resp_handler(struct proto_IE *s1_id_resp_ies)
                 }break;
             case S1AP_IE_NAS_PDU:
                 {
-                    if(s1_id_resp_ies->data[i].val.nas.header.message_type != NAS_IDENTIFY_RESPONSE)
+                    if(s1_id_resp_ies->data[i].val.nas.header.message_type != NAS_IDENTITY_RESPONSE)
                     {
                         id_resp.status = S1AP_IDENTITY_FAILED; 
                     }
@@ -76,7 +76,7 @@ s1_identity_resp_handler(struct proto_IE *s1_id_resp_ies)
                            BINARY_IMSI_LEN);
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE In identification Response %d",s1_id_resp_ies->data[i].IE_type);
         }
     }
 

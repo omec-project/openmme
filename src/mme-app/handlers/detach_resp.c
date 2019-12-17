@@ -223,6 +223,8 @@ post_to_next(int ue_index)
 				S1AP_DTCHACCEPT_STAGE2_BUF_SIZE);
 		log_msg(LOG_INFO, "Detach Stage 2. Posted message to s1ap - Detach accept\n");
 
+        ue_entry->ue_state = UNASSIGNED_ENTRY;
+        ue_entry->magic = 0;
 		int ret = insert_index_into_list(ue_index);
 		if (ret == -1) {
 			log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");

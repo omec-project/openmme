@@ -115,7 +115,14 @@ ctx_rel_req_processing()
 	log_msg(LOG_INFO, "Ctx Release request received for ue %d\n",
 			ctxRelreq->ue_idx);
 
-	ue_entry->ul_seq_no++;
+	if((UNASSIGNED_ENTRY == ue_entry->ue_state)
+       || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "UE Entry invalid. Drop the packet.");
+        return SUCCESS;
+    }
+
+    ue_entry->ul_seq_no++;
 
     g_rabr_msg.IE_type = S11_RABR_REQ;
 	memcpy(&(g_rabr_msg.s11_sgw_c_fteid),

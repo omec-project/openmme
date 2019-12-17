@@ -59,6 +59,7 @@ static char buf[INITUE_STAGE1_BUF_SIZE];
 
 static int g_Q_s1ap_attach_reject;
 extern uint32_t attach_reject_counter;
+extern uint32_t attach_identity_req_counter;
 
 static int g_Q_s1ap_id_request;
 extern uint32_t attach_id_req_counter;
@@ -188,8 +189,9 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
         }
         // cross validates with ue_index of the UE_entry
         // We have GUTI and its valid too...any further cross checks ??? 
-        log_msg(LOG_INFO, "Valid UE Record found from the GUTI \n");
+        log_msg(LOG_INFO, "Valid UE Record found from the GUTI. Pti - %d .  Ue_entry = %p\n", ue_info->pti, ue_entry);
         memcpy(&(ue_entry->pti), &(ue_info->pti), 1);
+        memcpy(&(ue_entry->dl_seq_no), &(ue_info->seq_no), 1);
         ue_entry->s1ap_enb_ue_id = ue_info->s1ap_enb_ue_id;
         ue_entry->enb_fd = ue_info->enb_fd;
         ue_entry->esm_info_tx_required = ue_info->esm_info_tx_required;
@@ -198,6 +200,7 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
 
         memcpy(&(ue_entry->utran_cgi), &(ue_info->utran_cgi),
                         sizeof(struct CGI));
+        memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
         guti_attach_post_to_next(ue_entry->ue_index);
         return SUCCESS_1;
       }while(0);
@@ -244,7 +247,9 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
 	memcpy(&(ue_entry->ms_net_capab), &(ue_info->ms_net_capab),
 		sizeof(struct MS_net_capab));
 	memcpy(&(ue_entry->pti), &(ue_info->pti), 1);
+    log_msg(LOG_INFO, "UE record created Pti - %d .  ", ue_info->pti);
 
+    memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
 	ue_entry->bearer_id = 5; /* Bearer Management */
 
     s1ap_id_req->ue_idx = index;
@@ -341,7 +346,7 @@ post_identity_req(struct attachIdReq_info *s1ap_id_req)
 {
 	log_msg(LOG_INFO, "Sending Identity Request \n");
 	write_ipc_channel(g_Q_s1ap_id_request, (char *)(s1ap_id_req), S1AP_ID_REQ_BUF_SIZE);
-	attach_reject_counter++;
+	attach_identity_req_counter++;
 	return SUCCESS;
 }
 

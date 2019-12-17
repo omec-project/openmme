@@ -42,7 +42,7 @@ extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
 
 static int g_Q_s11_rsp_fd;
-static int g_Q_mme_to_s1ap_fd;
+int g_Q_mme_to_s1ap_fd;
 
 /*Making global just to avoid stack passing*/
 

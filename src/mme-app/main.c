@@ -106,6 +106,9 @@ init_mme()
 	unlink(S1AP_ID_REQ_QUEUE);
 	create_ipc_channel(S1AP_ID_REQ_QUEUE);
 
+	unlink(S1AP_ID_RSP_QUEUE);
+	create_ipc_channel(S1AP_ID_RSP_QUEUE);
+
 	unlink(S6A_AIA_STAGE2_QUEUE);
 	create_ipc_channel(S6A_AIA_STAGE2_QUEUE);
 
@@ -205,6 +208,14 @@ init_mme()
 	unlink(S1AP_SERVICEREQ_QUEUE);
 	create_ipc_channel(S1AP_SERVICEREQ_QUEUE);
  
+	//TAU Request
+	unlink(S1AP_TAUREQ_QUEUE);
+	create_ipc_channel(S1AP_TAUREQ_QUEUE);
+
+	//TAU Response
+	unlink(S1AP_TAURSP_QUEUE);
+	create_ipc_channel(S1AP_TAURSP_QUEUE);
+
 	return SUCCESS;
 }
 
@@ -239,6 +250,7 @@ init_stage_handlers()
 	pthread_create(&stage_tid[13], &attr, &s11_rsp_common_mme_handler, NULL);
 	pthread_create(&stage_tid[14], &attr, &service_request_handler, NULL);
 	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
+	pthread_create(&stage_tid[16], &attr, &tau_request_handler, NULL);
   
 	pthread_attr_destroy(&attr);
 	return SUCCESS;

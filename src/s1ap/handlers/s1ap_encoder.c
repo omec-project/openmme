@@ -54,6 +54,10 @@ int s1ap_mme_encode_initiating(
             log_msg(LOG_INFO, "Paging req Encode.\n");
             return s1ap_mme_encode_paging_request(
                       message_p, buffer, length);
+	case S1AP_INIT_CTXT_SETUP_REQ:
+	    log_msg(LOG_INFO, "Init context setup req encode\n");
+	    return s1ap_mme_encode_initial_context_setup_request(
+		      message_p, buffer, length); 
         default:
             log_msg(
                   LOG_WARNING,
@@ -172,6 +176,135 @@ int s1ap_mme_encode_ue_context_release_command(
     return enc_ret; 
 }
 
+int s1ap_mme_encode_initial_context_setup_request(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+    S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+    InitiatingMessage_t *initiating_msg = NULL;
+    S1AP_PDU_t                             *pdu_p = &pdu;
+    int                                     enc_ret = -1;
+    memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+
+    pdu.present = S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = (InitiatingMessage_t*)malloc(sizeof(InitiatingMessage_t));
+    if(pdu.choice.initiatingMessage == NULL)
+    {
+        log_msg(LOG_ERROR,"malloc failed.\n");
+        return -1;
+    }
+    initiating_msg = pdu.choice.initiatingMessage;
+    initiating_msg->procedureCode = ProcedureCode_id_InitialContextSetup;
+    initiating_msg->criticality = 0;
+    initiating_msg->value.present = InitiatingMessage__value_PR_InitialContextSetupRequest;
+
+    InitialContextSetupRequestIEs_t val[6];
+
+    val[0].id = ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    val[0].criticality = 0;
+    val[0].value.present = InitialContextSetupRequestIEs__value_PR_MME_UE_S1AP_ID;
+    val[0].value.choice.MME_UE_S1AP_ID = s1apPDU->mme_s1ap_ue_id;
+
+    val[1].id = ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    val[1].criticality = 0;
+    val[1].value.present = InitialContextSetupRequestIEs__value_PR_ENB_UE_S1AP_ID;
+    val[1].value.choice.ENB_UE_S1AP_ID = s1apPDU->enb_s1ap_ue_id;
+
+    val[2].id = ProtocolIE_ID_id_uEaggregateMaximumBitrate;
+    val[2].criticality = 0;
+    val[2].value.present = InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitrate;
+
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.size = 5;
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf = calloc (5, sizeof(uint8_t));
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[0] = 0x18; // required?
+    uint32_t temp_bitrate = htonl(s1apPDU->ueag_max_dl_bitrate);
+    memcpy (&val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[1], &temp_bitrate, sizeof(uint32_t));
+
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.size =  5;
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf = calloc (5, sizeof(uint8_t));
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[0] = 0x60; // required?
+    temp_bitrate = htonl(s1apPDU->ueag_max_ul_bitrate);
+    memcpy (&val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[1], &temp_bitrate, sizeof(uint32_t));
+
+    val[3].id = ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq;
+    val[3].criticality = 0;
+    val[3].value.present = InitialContextSetupRequestIEs__value_PR_E_RABToBeSetupListCtxtSUReq;
+
+    E_RABToBeSetupItemCtxtSUReqIEs_t erab_to_be_setup_item;
+    E_RABToBeSetupItemCtxtSUReq_t* erab_to_be_setup = &(erab_to_be_setup_item.value.choice.E_RABToBeSetupItemCtxtSUReq);
+
+    erab_to_be_setup_item.id = ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
+    erab_to_be_setup_item.criticality = 0;
+    erab_to_be_setup_item.value.present = E_RABSetupItemCtxtSUResIEs__value_PR_E_RABSetupItemCtxtSURes;
+
+    erab_to_be_setup->e_RAB_ID = 5;
+
+    erab_to_be_setup->e_RABlevelQoSParameters.allocationRetentionPriority.priorityLevel = 15;
+    erab_to_be_setup->e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionCapability = 1;
+    erab_to_be_setup->e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionVulnerability = 1;
+    erab_to_be_setup->e_RABlevelQoSParameters.qCI = 9;
+
+    erab_to_be_setup->transportLayerAddress.size = 4;
+    erab_to_be_setup->transportLayerAddress.buf = calloc(4, sizeof(uint8_t));
+    memcpy(erab_to_be_setup->transportLayerAddress.buf, &s1apPDU->gtp_teid.ip.ipv4.s_addr, 4);
+
+    erab_to_be_setup->gTP_TEID.size = 4;
+    erab_to_be_setup->gTP_TEID.buf = calloc(4, sizeof(uint8_t));
+    erab_to_be_setup->gTP_TEID.buf[0] =  s1apPDU->gtp_teid.header.teid_gre >> 24;
+    erab_to_be_setup->gTP_TEID.buf[1] =  s1apPDU->gtp_teid.header.teid_gre >> 16;
+    erab_to_be_setup->gTP_TEID.buf[2] =  s1apPDU->gtp_teid.header.teid_gre >> 8;
+    erab_to_be_setup->gTP_TEID.buf[3] =  s1apPDU->gtp_teid.header.teid_gre;
+
+    ASN_SEQUENCE_ADD(&val[3].value.choice.E_RABToBeSetupListCtxtSUReq.list, &erab_to_be_setup_item);
+
+    val[4].id = ProtocolIE_ID_id_UESecurityCapabilities;
+    val[4].criticality = 0;
+    val[4].value.present = InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
+    //char ue_sec_capab[5] = {0x1c, 0x00, 0x0c, 0x00, 0x00};
+    val[4].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf = calloc(2, sizeof(uint8_t));
+    val[4].value.choice.UESecurityCapabilities.encryptionAlgorithms.size = 2;
+    val[4].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf[0] = 0xe0;
+    val[4].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf[1] = 0x00;
+    val[4].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf = calloc(2, sizeof(uint8_t));
+    val[4].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.size = 2;
+    val[4].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf[0] = 0xc0;
+    val[4].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf[1] = 0x00;
+
+    val[5].id = ProtocolIE_ID_id_SecurityKey;
+    val[5].criticality = 0;
+    val[5].value.present = InitialContextSetupRequestIEs__value_PR_SecurityKey;
+    val[5].value.choice.SecurityKey.size = SECURITY_KEY_SIZE;
+    val[5].value.choice.SecurityKey.buf = calloc(SECURITY_KEY_SIZE, sizeof(uint8_t));
+    memcpy(val[5].value.choice.SecurityKey.buf, s1apPDU->sec_key, SECURITY_KEY_SIZE);
+
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.InitialContextSetupRequest.protocolIEs.list, &val[0]);
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.InitialContextSetupRequest.protocolIEs.list, &val[1]);
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.InitialContextSetupRequest.protocolIEs.list, &val[2]);
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.InitialContextSetupRequest.protocolIEs.list, &val[3]);
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.InitialContextSetupRequest.protocolIEs.list, &val[4]);
+    ASN_SEQUENCE_ADD(&initiating_msg->value.choice.InitialContextSetupRequest.protocolIEs.list, &val[5]);
+
+    if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0)
+    {
+        log_msg(LOG_ERROR, "Encoding of Initial Context Setup Request failed\n");
+        return -1;
+    }
+
+    log_msg(LOG_INFO,"free allocated messages");
+
+    free(val[5].value.choice.SecurityKey.buf);
+    free(val[4].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf);
+    free(val[4].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf);
+    free(erab_to_be_setup->gTP_TEID.buf);
+    free(erab_to_be_setup->transportLayerAddress.buf);
+    free(val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf);
+    free(val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf);
+    free(pdu.choice.initiatingMessage);
+
+    *length = enc_ret;
+    return enc_ret;
+}
 
 int s1ap_mme_encode_paging_request(
   struct s1ap_common_req_Q_msg *s1apPDU,
@@ -270,7 +403,6 @@ int s1ap_mme_encode_paging_request(
     val[3].id = ProtocolIE_ID_id_TAIList;
     val[3].criticality = 0;
     val[3].value.present = PagingIEs__value_PR_TAIList;
-    TAIList_t tailist;
     TAIItemIEs_t tai_item;
     tai_item.id = ProtocolIE_ID_id_TAIItem;
     tai_item.criticality = 0;
@@ -282,7 +414,7 @@ int s1ap_mme_encode_paging_request(
             &s1apPDU->tai.tac, 2);
     tai_item.value.choice.TAIItem.tAI.tAC.size = 2;
 
-    ASN_SEQUENCE_ADD(&tailist.list, &tai_item);
+    ASN_SEQUENCE_ADD(&val[0].value.choice.TAIList.list, &tai_item);
     log_msg(LOG_INFO,"Add values to list.\n");
     ASN_SEQUENCE_ADD(&initiating_msg->value.choice.Paging.protocolIEs.list, &val[0]);
     ASN_SEQUENCE_ADD(&initiating_msg->value.choice.Paging.protocolIEs.list, &val[1]);
