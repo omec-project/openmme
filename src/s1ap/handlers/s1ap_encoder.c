@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
+ * Copyright (c) 2019-Present, Infosys Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -200,6 +201,7 @@ int s1ap_mme_encode_initial_context_setup_request(
     initiating_msg->value.present = InitiatingMessage__value_PR_InitialContextSetupRequest;
 
     InitialContextSetupRequestIEs_t val[6];
+    memset(val, 0, 6 * (sizeof(InitialContextSetupRequestIEs_t)));
 
     val[0].id = ProtocolIE_ID_id_MME_UE_S1AP_ID;
     val[0].criticality = 0;
@@ -217,26 +219,27 @@ int s1ap_mme_encode_initial_context_setup_request(
 
     val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.size = 5;
     val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf = calloc (5, sizeof(uint8_t));
-    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[0] = 0x18; // required?
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[0] = 0x0; 
     uint32_t temp_bitrate = htonl(s1apPDU->ueag_max_dl_bitrate);
-    memcpy (&val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[1], &temp_bitrate, sizeof(uint32_t));
+    memcpy (&(val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[1]), &temp_bitrate, sizeof(uint32_t));
 
     val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.size =  5;
     val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf = calloc (5, sizeof(uint8_t));
-    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[0] = 0x60; // required?
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[0] = 0x0;
     temp_bitrate = htonl(s1apPDU->ueag_max_ul_bitrate);
-    memcpy (&val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[1], &temp_bitrate, sizeof(uint32_t));
+    memcpy (&(val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[1]), &temp_bitrate, sizeof(uint32_t));    
 
     val[3].id = ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq;
     val[3].criticality = 0;
     val[3].value.present = InitialContextSetupRequestIEs__value_PR_E_RABToBeSetupListCtxtSUReq;
 
     E_RABToBeSetupItemCtxtSUReqIEs_t erab_to_be_setup_item;
+    memset(&erab_to_be_setup_item, 0, sizeof(E_RABToBeSetupItemCtxtSUReqIEs_t));
     E_RABToBeSetupItemCtxtSUReq_t* erab_to_be_setup = &(erab_to_be_setup_item.value.choice.E_RABToBeSetupItemCtxtSUReq);
 
     erab_to_be_setup_item.id = ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
     erab_to_be_setup_item.criticality = 0;
-    erab_to_be_setup_item.value.present = E_RABSetupItemCtxtSUResIEs__value_PR_E_RABSetupItemCtxtSURes;
+    erab_to_be_setup_item.value.present = E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
 
     erab_to_be_setup->e_RAB_ID = 5;
 
@@ -256,12 +259,11 @@ int s1ap_mme_encode_initial_context_setup_request(
     erab_to_be_setup->gTP_TEID.buf[2] =  s1apPDU->gtp_teid.header.teid_gre >> 8;
     erab_to_be_setup->gTP_TEID.buf[3] =  s1apPDU->gtp_teid.header.teid_gre;
 
-    ASN_SEQUENCE_ADD(&val[3].value.choice.E_RABToBeSetupListCtxtSUReq.list, &erab_to_be_setup_item);
+    ASN_SEQUENCE_ADD(&(val[3].value.choice.E_RABToBeSetupListCtxtSUReq.list), &erab_to_be_setup_item);
 
     val[4].id = ProtocolIE_ID_id_UESecurityCapabilities;
     val[4].criticality = 0;
     val[4].value.present = InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
-    //char ue_sec_capab[5] = {0x1c, 0x00, 0x0c, 0x00, 0x00};
     val[4].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf = calloc(2, sizeof(uint8_t));
     val[4].value.choice.UESecurityCapabilities.encryptionAlgorithms.size = 2;
     val[4].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf[0] = 0xe0;
@@ -291,7 +293,7 @@ int s1ap_mme_encode_initial_context_setup_request(
         return -1;
     }
 
-    log_msg(LOG_INFO,"free allocated messages");
+    log_msg(LOG_INFO,"free allocated messages\n");
 
     free(val[5].value.choice.SecurityKey.buf);
     free(val[4].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf);
