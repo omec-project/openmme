@@ -94,7 +94,10 @@ get_tau_rsp_protoie_value(struct proto_IE *value)
 	/* TODO: Add enum for security header type */
 	value->data[2].val.nas.header.security_header_type = IntegrityProtectedCiphered;
 	value->data[2].val.nas.header.proto_discriminator = EPSMobilityManagementMessages;
-	value->data[2].val.nas.header.message_type = TauAccept;
+    if(tau_resp->status == 0)
+	  value->data[2].val.nas.header.message_type = TauAccept;
+    else
+	  value->data[2].val.nas.header.message_type = TauReject;
 	value->data[2].val.nas.header.nas_security_param = 0;
 	/* placeholder for mac. mac value will be calculated later */
 	uint8_t mac[MAC_SIZE] = {0};
@@ -106,9 +109,9 @@ get_tau_rsp_protoie_value(struct proto_IE *value)
 	value->data[2].val.nas.elements = (nas_pdu_elements *) malloc(TAU_RSP_NO_OF_NAS_IES * sizeof(nas_pdu_elements));
 	nas_pdu_elements *nasIEs = value->data[2].val.nas.elements;
 	uint8_t nasIeCnt = 0;
-	nasIEs[nasIeCnt].eps_res = 0; /* TA updated */
+	nasIEs[nasIeCnt].pduElement.eps_res = 0; /* TA updated */
 	nasIeCnt++;
-	nasIEs[nasIeCnt].spare = 0; /* TA updated */
+	nasIEs[nasIeCnt].pduElement.spare = 0; /* TA updated */
 	nasIeCnt++;
 
 	return SUCCESS;
@@ -125,6 +128,64 @@ s1ap_tau_rsp_processing(void)
 	uint8_t datalen;
 	uint8_t u8value;
 
+    if(tau_resp->status != 0)
+    {
+	  /* Assigning values to s1apPDU */
+	  s1apPDU.procedurecode = id_errorIndication;
+	  s1apPDU.criticality = CRITICALITY_IGNORE;
+	  get_tau_rsp_protoie_value(&s1apPDU.value);
+      g_buffer.pos = 0;
+
+	  uint8_t initiating_message = 0; /* TODO: Add enum */
+	  buffer_copy(&g_buffer, &initiating_message,
+	  		sizeof(initiating_message));
+
+	  buffer_copy(&g_buffer, &s1apPDU.procedurecode,
+	  		sizeof(s1apPDU.procedurecode));
+
+	  buffer_copy(&g_buffer, &s1apPDU.criticality,
+	  		sizeof(s1apPDU.criticality));
+
+	  s1ap_len_pos = g_buffer.pos;
+
+	  /* length of S1ap message */
+	  u8value = 0;
+	  buffer_copy(&g_buffer, &u8value, sizeof(u8value));
+
+	  /* TODO remove hardcoded values */
+	  unsigned char chProtoIENo[3] = {0,0,2};
+
+	  buffer_copy(&g_buffer, chProtoIENo, 3);
+
+	  unsigned char tmpStr[4];
+
+      /* id-eNB-UE-S1AP-ID */
+
+	  uint16_t protocolIe_Id = id_eNB_UE_S1AP_ID;
+	  uint8_t protocolIe_criticality = CRITICALITY_REJECT;
+	  copyU16(tmpStr, protocolIe_Id);
+	  buffer_copy(&g_buffer, tmpStr,
+	  					sizeof(protocolIe_Id));
+
+	  buffer_copy(&g_buffer, &protocolIe_criticality,
+	  				sizeof(protocolIe_criticality));
+
+
+	  /* TODO needs proper handling*/
+	  unsigned char enb_ue_id[3];
+	  datalen = copyU16(enb_ue_id,
+	  		s1apPDU.value.data[1].val.enb_ue_s1ap_id);
+	  buffer_copy(&g_buffer, &datalen, sizeof(datalen));
+	  buffer_copy(&g_buffer, enb_ue_id, datalen);
+
+	  unsigned char cause[6] = {0,2,40,2,4, 0};
+	  buffer_copy(&g_buffer, cause, sizeof(cause));
+
+	  /* Copy length to s1ap length field */
+	  datalen = g_buffer.pos - s1ap_len_pos - 1;
+	  memcpy(g_buffer.buf + s1ap_len_pos, &datalen, sizeof(datalen));
+      return;
+    }
 	/* Assigning values to s1apPDU */
 	s1apPDU.procedurecode = id_downlinkNASTransport;
 	s1apPDU.criticality = CRITICALITY_IGNORE;
@@ -236,6 +297,7 @@ s1ap_tau_rsp_processing(void)
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
 	u8value = 0x5a; 
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
+#define DISABLE_TAU 0
 #if DISABLE_TAU
 	u8value = 0xe0; 
 #else
@@ -243,6 +305,7 @@ s1ap_tau_rsp_processing(void)
 #endif
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
 
+#if 1 
     /* adding GUTI */
 	u8value = 0x50; /* element id TODO: define macro or enum */
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
@@ -250,6 +313,17 @@ s1ap_tau_rsp_processing(void)
 	buffer_copy(&g_buffer, &datalen, sizeof(datalen));
 	u8value = 246; /* TODO: remove hard coding */
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
+
+    unsigned char x3 = tau_resp->tai.plmn_id.idx[2]; 
+    unsigned char x2 = tau_resp->tai.plmn_id.idx[1]; 
+    unsigned char x31 = x3 >> 4;
+    unsigned char x32 = x3 & 0xf;
+    unsigned char x21 = x2 >> 4;
+    unsigned char x22  = x2 & 0xf;
+    x3 = x21 | (x32 <<4);
+    x2 = (x31 << 4) | x22;
+    tau_resp->tai.plmn_id.idx[1] = x2;
+    tau_resp->tai.plmn_id.idx[2] = x3;
 
 	buffer_copy(&g_buffer, &tau_resp->tai.plmn_id, 3);
 
@@ -259,10 +333,12 @@ s1ap_tau_rsp_processing(void)
     u8value = g_s1ap_cfg.mme_code;
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
 
-    uint32_t mtmsi = htonl(tau_resp->ue_idx); 
+    uint32_t mtmsi = htonl(tau_resp->m_tmsi); 
 	buffer_copy(&g_buffer, &(mtmsi), sizeof(mtmsi));
+#endif
 
 
+#if 1
     /*TODO : Experiment */
 	u8value = 0x23; /* element id TODO: define macro or enum */
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
@@ -274,6 +350,7 @@ s1ap_tau_rsp_processing(void)
 
     mtmsi = htonl(tau_resp->ue_idx); 
 	buffer_copy(&g_buffer, &(mtmsi), sizeof(mtmsi));
+#endif
 	/* NAS PDU end */
 
 	/* Calculate mac */

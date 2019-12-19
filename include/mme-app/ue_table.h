@@ -96,7 +96,8 @@ struct AMBR {
 	unsigned int max_requested_bw_ul;
 };
 
-#define UE_INFO_VALID_MAGIC 0x12345678
+#define UE_INFO_INVALID_MAGIC 0xffffffff
+#define UE_INFO_VALID_MAGIC   0x12345678
 #define IS_VALID_UE_INFO(ue_info) (ue_info->magic == UE_INFO_VALID_MAGIC)
 struct UE_info{
 	int             enb_fd;
@@ -146,9 +147,11 @@ struct UE_info{
 
 	struct secinfo ue_sec_info;
 	uint8_t cause;
+	uint32_t flags;
 	bool esm_info_tx_required;
 	unsigned char pti;
   unsigned int  magic;
+    unsigned int m_tmsi;
   unsigned short int ue_index;
   uint8_t arp;
   unsigned short int pco_options[10];

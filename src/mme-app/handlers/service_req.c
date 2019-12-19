@@ -102,6 +102,12 @@ service_request_processing()
 			(struct service_req_Q_msg *) buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(service_req->ue_idx);
 
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+	    log_msg(LOG_INFO, "Service request received for invalid UE ");
+        return E_FAIL;
+    }
+
 	log_msg(LOG_INFO, "Service request received for ue %d\n",
 			service_req->ue_idx);
 
@@ -127,7 +133,7 @@ post_to_next()
 				(struct service_req_Q_msg *) buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(service_req->ue_idx);
 
-	if (ue_entry == NULL)
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
 	{
 		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
 					      service_req->ue_idx);

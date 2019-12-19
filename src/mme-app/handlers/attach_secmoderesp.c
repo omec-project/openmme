@@ -113,6 +113,12 @@ stage4_processing(char *buf)
 	struct secmode_resp_Q_msg *secmode_resp = (struct secmode_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(secmode_resp->ue_idx);
 
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "stage4_processing skipped for invalid UE index %d \n", secmode_resp->ue_idx);
+        return E_FAIL;
+    }
+
 	ue_entry->ul_seq_no = 0;
 
 	/*Check the state*/
@@ -139,7 +145,12 @@ post_to_next(char *buf)
 	struct esm_req_Q_msg esm_req;
 	struct secmode_resp_Q_msg *secmode_resp = (struct secmode_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(secmode_resp->ue_idx);
-        log_msg(LOG_INFO, "Stiching stage 1 to stage 4 - 1 \n");
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "post_to_next on invalid UE index %d ", secmode_resp->ue_idx);
+        return E_FAIL;
+    }
+    log_msg(LOG_INFO, "Stiching stage 1 to stage 4 - 1 \n");
 
 	if(ue_entry->esm_info_tx_required) {
 		esm_req.enb_fd = ue_entry->enb_fd;

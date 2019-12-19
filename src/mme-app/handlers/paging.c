@@ -118,8 +118,9 @@ DDN_processing()
 	struct ddn_Q_msg *ddn_info = (struct ddn_Q_msg *)DDN_buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ddn_info->ue_idx);
 
-	if (ue_entry == NULL) {
+	if (ue_entry == NULL || !IS_VALID_UE_INFO(ue_entry)) {
 		ddn_ack_msg.cause = GTPV2C_CAUSE_CONTEXT_NOT_FOUND;
+        log_msg(LOG_ERROR, "Invalid UE. Send Context not found in DDN Ack ");
 	} else {
 		ddn_ack_msg.cause = GTPV2C_CAUSE_REQUEST_ACCEPTED;
 		// populate page msg struct
@@ -138,13 +139,13 @@ DDN_processing()
 static int
 post_to_next(int ue_idx)
 {
-    log_msg(LOG_DEBUG, "ue index : %d.\n",ue_idx);
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_idx);
-    if(NULL == ue_entry)
+    if(NULL == ue_entry || !IS_VALID_UE_INFO(ue_entry))
     {
-        log_msg(LOG_ERROR,"UE entry not found.\n");
+        log_msg(LOG_ERROR,"UE entry not found %d.\n", ue_idx);
         return -1;
     }
+    log_msg(LOG_DEBUG, "Found valid UE with index : %d.\n",ue_idx);
 
     write_ipc_channel(g_Q_ddn_ack_fd, 
 			  (char *)(&ddn_ack_msg),

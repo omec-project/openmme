@@ -285,11 +285,14 @@ accept_sctp(void *data)
 			sd = enb_socket[i];
 
 			if (FD_ISSET(sd, &readfds)) {
-				if ((valread = recv_sctp_msg(sd, buffer, SCTP_BUF_SIZE)) == 0) {
+				if ((valread = recv_sctp_msg(sd, buffer, SCTP_BUF_SIZE)) <= 0) {
 
 					log_msg(LOG_INFO, "Host Disconnected\n");
 					close(sd);
 					enb_socket[i] = 0;
+                    /* MME-app should get notificaiton that peer is down ? 
+                     * what MME will do with existing subscribers with the
+                     * same eNB ? */
 
 				} else {
 

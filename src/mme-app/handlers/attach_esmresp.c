@@ -112,6 +112,11 @@ stage5_processing()
 	/*Parse and validate  the buffer*/
 	struct esm_resp_Q_msg *esm_resp = (struct esm_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(esm_resp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Ignore Stage5_processing for invalid UE . Index ", esm_resp->ue_idx);
+        return E_FAIL;
+    }
 
 	ue_entry->ul_seq_no++;
 
@@ -143,6 +148,11 @@ post_to_next()
 	/*Information to pass S11 application for create session*/
 	struct esm_resp_Q_msg *esm_resp = (struct esm_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(esm_resp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Ignore post_to_next for invalid UE . Index ", esm_resp->ue_idx);
+        return E_FAIL;
+    }
 	struct CS_Q_msg cs_msg;
 
 	cs_msg.ue_idx = esm_resp->ue_idx;

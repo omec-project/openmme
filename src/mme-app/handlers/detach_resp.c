@@ -28,6 +28,7 @@
 #include "stage1_s6a_msg.h"
 #include "stage2_info.h"
 #include "detach_stage2_info.h"
+extern int g_tmsi_allocation_array[];
 
 /************************************************************************
 Current file : detach stage 2 handler.
@@ -100,6 +101,13 @@ process_purge_resp()
 {
 	struct purge_resp_Q_msg *purge_msg = (struct purge_resp_Q_msg *)purge_resp;
 	struct UE_info *ue_entry = GET_UE_ENTRY(purge_msg->ue_idx);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_purge_resp for bad UE with index %d ", purge_msg->ue_idx);
+        return E_FAIL;
+    }
+
 	log_msg(LOG_INFO, "Purge resp for UE idx = %d\n", purge_msg->ue_idx);
 
 	/*If delete sessoin also done then set flag for deleted*/
@@ -118,6 +126,11 @@ process_ds_resp()
 {
 	struct DS_resp_Q_msg *resp = (struct DS_resp_Q_msg *)ds_resp;
 	struct UE_info *ue_entry = GET_UE_ENTRY(resp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_ds_resp for bad UE with index %d ", resp->ue_idx);
+        return E_FAIL;
+    }
 	log_msg(LOG_INFO, "DS resp for UE idx = %d\n", resp->ue_idx);
 
 
@@ -204,6 +217,13 @@ static int
 post_to_next(int ue_index)
 {
 	struct UE_info *ue_entry = GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "post_to_next in detach response processing on bad UE index %d ", ue_index);
+        return E_FAIL;
+    }
+
 	if(ue_entry->ue_state == DETACH_STAGE2) {
 		struct detach_accept_Q_msg req;
 
@@ -224,7 +244,8 @@ post_to_next(int ue_index)
 		log_msg(LOG_INFO, "Detach Stage 2. Posted message to s1ap - Detach accept\n");
 
         ue_entry->ue_state = UNASSIGNED_ENTRY;
-        ue_entry->magic = 0;
+        ue_entry->magic = UE_INFO_INVALID_MAGIC;
+        g_tmsi_allocation_array[ue_entry->m_tmsi] = -1;
 		int ret = insert_index_into_list(ue_index);
 		if (ret == -1) {
 			log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");

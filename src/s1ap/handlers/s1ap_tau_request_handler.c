@@ -26,10 +26,11 @@
 extern ipc_handle ipcHndl_taureq;
 
 int
-s1_tau_request_handler(struct proto_IE *s1_tau_req_ies)
+s1_tau_request_handler(struct proto_IE *s1_tau_req_ies, int enb_fd)
 {
 	log_msg(LOG_INFO, "S1ap received tau Request:--\n");
 	struct tauReq_Q_msg tau_req;
+    tau_req.enb_fd = enb_fd;
 
     for(int i = 0; i < s1_tau_req_ies->no_of_IEs; i++)
     {

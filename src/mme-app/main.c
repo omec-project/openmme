@@ -39,6 +39,7 @@ extern mme_config g_mme_cfg;
 
 /*List of UEs attached to MME*/
 struct UE_info* g_UE_list[UE_POOL_SIZE];
+int g_tmsi_allocation_array[10000];
 
 
 pthread_t stage_tid[TOTAL_STAGES];
@@ -263,6 +264,9 @@ init_stage_handlers()
  */
 int main()
 {
+    srand(time(0));
+    for(int i=0;i<10000;i++)
+        g_tmsi_allocation_array[i] = -1;
 	/*Read MME configurations*/
 	init_parser("conf/mme.json");
 	parse_mme_conf();

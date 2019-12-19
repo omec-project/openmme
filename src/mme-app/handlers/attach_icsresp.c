@@ -115,6 +115,12 @@ stage7_processing()
 		(struct initctx_resp_Q_msg *)ics_resp;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ics_res->ue_idx);
 
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Message received for invalid UE in stage7_processing");
+        return E_FAIL;
+    }
+
 	/**validations/checks*/
 	if(SVC_REQ_WF_INIT_CTXT_RESP == ue_entry->ue_state) {
 		
@@ -144,6 +150,12 @@ post_to_next()
 	struct initctx_resp_Q_msg *ics_resp_info =
 				(struct initctx_resp_Q_msg *)ics_resp;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ics_resp_info->ue_idx);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Message received for invalid UE in post_to_next");
+        return E_FAIL;
+    }
 	struct MB_Q_msg mb_msg;
 
 	mb_msg.ue_idx = ((struct initctx_resp_Q_msg *)ics_resp_info)->ue_idx;

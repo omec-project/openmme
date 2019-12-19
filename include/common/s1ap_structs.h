@@ -81,7 +81,36 @@ struct esm_sec_info {
 	struct proto_conf proto_config;
 };
 
+/*NAS MSG IE CODES */
+/* Message content : 
+   3gpp 24.301
+   Table 8.2.4.1: IEI Column.*/
+typedef enum
+{
+    NAS_IE_TYPE_EPS_MOBILE_ID_IMSI=0x1,
+    NAS_IE_TYPE_UE_NETWORK_CAPABILITY=0x2,
+    NAS_IE_TYPE_ESM_MSG=0x3,
+    NAS_IE_TYPE_TMSI_STATUS=0x09,
+    NAS_IE_TYPE_MS_NETWORK_FEATURE_SUPPORT=0x0C,
+    NAS_IE_TYPE_GUTI_TYPE=0x0E,
+    NAS_IE_TYPE_ADDITIONAL_UPDATE_TYPE=0xF,
+    NAS_IE_TYPE_MS_CLASSMARK_2=0x11,
+    NAS_IE_TYPE_LAI=0x13,
+    NAS_IE_TYPE_PTMSI_SIGNATURE=0x19,
+    NAS_IE_TYPE_MS_CLASSMARK_3=0x20,
+    NAS_IE_TYPE_APN=0x28,
+    NAS_IE_TYPE_AUTH_FAIL_PARAM=0x30,
+    NAS_IE_TYPE_MS_NETWORK_CAPABILITY=0x31,
+    NAS_IE_TYPE_DRX_PARAM=0x5C,
+    NAS_IE_TYPE_TAI=0x52,
+    NAS_IE_TYPE_VOICE_DOMAIN_PREF_UE_USAGE_SETTING=0x5D,
+    NAS_IE_TYPE_TX_FLAG=0xAA,
+    NAS_IE_TYPE_PCO=0xAB,
+    NAS_IE_TYPE_PTI=0xAC,
+}nas_ie_type;
+
 typedef struct MS_net_capab {
+        bool          pres;
 	unsigned char element_id;
 	unsigned char len;
 	unsigned char capab[6];
@@ -409,7 +438,7 @@ typedef struct eRAB_elements {
 /**eRAB structures end**/
 
 /**Information elements structs end**/
-typedef union nas_pdu_elements {
+typedef union nas_pdu_elements_union {
 	unsigned char rand[NAS_RAND_SIZE];
 	unsigned char autn[NAS_AUTN_SIZE];
 	unsigned char IMSI[BINARY_IMSI_LEN];
@@ -434,6 +463,11 @@ typedef union nas_pdu_elements {
     unsigned char eps_res;
     unsigned char spare;
     unsigned short int pco_options[10];
+}nas_pdu_elements_union;
+
+typedef struct nas_pdu_elements {
+   nas_ie_type msgType;
+   nas_pdu_elements_union pduElement;
 }nas_pdu_elements;
 
 #define NAS_MSG_UE_IE_GUTI  0x00000001
@@ -645,6 +679,7 @@ enum eps_nas_mesage_type {
 	AttachReject = 0x44,
 	DetachAccept = 0x46,
     TauAccept    = 0x49,
+    TauReject    = 0x4b,
 	AuthenticationRequest = 0x52,
     IdentityRequest       = 0x55,
 	SecurityModeCommand = 0x5d,
@@ -654,6 +689,7 @@ enum eps_nas_mesage_type {
 enum procedure_code {
 	id_InitialContextSetup = 9,
 	id_downlinkNASTransport = 11,
+	id_errorIndication = 15,
 	id_UEContexRelease = 23,
 };
 

@@ -162,6 +162,7 @@ send_FD_ULR(struct s6a_Q_msg *aia_msg, char imsi[])
 
 	/*AVP: Visited-PLMN-Id*/
 	val.os.data = (unsigned char*)aia_msg->tai.plmn_id.idx;
+    aia_msg->tai.plmn_id.idx[2] = 0x10;
 	val.os.len = 3;
 	add_fd_msg(&val, g_fd_dict_objs.visited_PLMN_id, &fd_msg);
 
@@ -242,6 +243,8 @@ send_FD_AIR(struct s6a_Q_msg *aia_msg, char imsi[])
 
 	/*AVP: Visited-PLMN-Id*/
 	val.os.data = (unsigned char*)aia_msg->tai.plmn_id.idx;
+    aia_msg->tai.plmn_id.idx[2] = 0x10;
+	val.os.len = 3;
 	val.os.len = 3;
 	add_fd_msg(&val, g_fd_dict_objs.visited_PLMN_id, &fd_msg);
 

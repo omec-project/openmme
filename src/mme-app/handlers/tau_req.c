@@ -108,6 +108,7 @@ tau_request_processing()
 {
 	struct tauReq_Q_msg *tau_req =
 			(struct tauReq_Q_msg *) tauReq;
+
 	log_msg(LOG_INFO, "TAU request received for ue %d\n",
 			tau_req->ue_idx);
     tau_req_counter++;
@@ -118,10 +119,13 @@ tau_request_processing()
 	struct UE_info *ue_entry = GET_UE_ENTRY(tau_req->ue_idx);
     if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
     {
+        log_msg(LOG_ERROR, "TAU request received for bad UE index %d", tau_req->ue_idx);
 	    tau_response_reject_counter++;
-        g_tau_rsp_msg.status = 1; /* TODO : Take the value from SPEC */ 
+        g_tau_rsp_msg.status = 0x14; /* TODO : Take the value from SPEC */ 
+        g_tau_rsp_msg.enb_fd = tau_req->enb_fd;
         return; 
     }
+	g_tau_rsp_msg.m_tmsi = ue_entry->m_tmsi;
 	tau_response_accept_counter++;
 	ue_entry->ul_seq_no++;
 	ue_entry->s1ap_enb_ue_id = tau_req->s1ap_enb_ue_id;
@@ -130,6 +134,7 @@ tau_request_processing()
     memcpy(&(g_tau_rsp_msg.int_key), &(ue_entry->ue_sec_info.int_key),
           NAS_INT_KEY_SIZE);
 	memcpy(&(g_tau_rsp_msg.tai), &(ue_entry->tai), sizeof(struct TAI));
+    g_tau_rsp_msg.status = 0; 
 	log_msg(LOG_INFO, "TAU response with NAS sequence number %d \n", tau_req->seq_num);
 
 	return ;

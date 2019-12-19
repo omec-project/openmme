@@ -73,6 +73,7 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 	log_msg(LOG_INFO, "NAS PDU proc code: %u\n", proc_code);
 
 	unsigned short msg_len = nas_msg_len;
+    char* msg_end = msg + nas_msg_len;
 
 	char *buffer = NULL;
 	log_msg(LOG_INFO, "NAS PDU msg: %s\n", msg_to_hex_str(msg, msg_len, &buffer));
@@ -142,21 +143,21 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
 	} else if (S1AP_INITIAL_UE_MSG_CODE == proc_code ) {
 #endif
 
-		nas_pdu_header_sec nas_header_sec;
-		nas_pdu_header_short nas_header_short;
-		nas_pdu_header_long nas_header_long;
+        nas_pdu_header_sec nas_header_sec;
+        nas_pdu_header_short nas_header_short;
+        nas_pdu_header_long nas_header_long;
 
-		unsigned char sec_header_type;
-		unsigned char protocol_discr;
+        unsigned char sec_header_type;
+        unsigned char protocol_discr;
 
-		sec_header_type = (msg[0] >> 4) & 0x0F;
-		protocol_discr = msg[0] & 0x0F;
-		unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
-		log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
-		log_msg(LOG_INFO, "Protocol discriminator=%d\n", protocol_discr);
-		log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
+        sec_header_type = (msg[0] >> 4) & 0x0F;
+        protocol_discr = msg[0] & 0x0F;
+        unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
+        log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
+        log_msg(LOG_INFO, "Protocol discriminator=%d\n", protocol_discr);
+        log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
 
-		if(0 != sec_header_type) { /*security header*/
+        if(0 != sec_header_type) { /*security header*/
             log_msg(LOG_INFO, "Security header\n");
             if(SERVICE_REQ_SECURITY_HEADER == sec_header_type)
             {
@@ -172,319 +173,401 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
                 return;
             }
 
-			memcpy(&nas_header_sec, msg, sizeof(nas_pdu_header_sec));
+            memcpy(&nas_header_sec, msg, sizeof(nas_pdu_header_sec));
 
-			char *buffer = NULL;
-			log_msg(LOG_INFO, "mac=%s\n", msg_to_hex_str((char *)nas_header_sec.mac, MAC_SIZE, &buffer));
-	        log_buffer_free(&buffer);
+            char *buffer = NULL;
+            log_msg(LOG_INFO, "mac=%s\n", msg_to_hex_str((char *)nas_header_sec.mac, MAC_SIZE, &buffer));
+            log_buffer_free(&buffer);
 
-			log_msg(LOG_INFO, "seq no=%x\n", nas_header_sec.seq_no);
+            log_msg(LOG_INFO, "seq no=%x\n", nas_header_sec.seq_no);
             nas->header.seq_no = nas_header_sec.seq_no; 
-			msg += 6;
+            msg += 6;
 
-			sec_header_type = msg[0] >> 4;
-			protocol_discr = msg[0] & 0x0F;
-			unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
-			log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
-			log_msg(LOG_INFO, "Protocol discriminator=%d\n", protocol_discr);
-			log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
-			if (is_ESM) {
-				log_msg(LOG_INFO, "NAS PDU is ESM\n");
-				memcpy(&nas_header_long, msg, sizeof(nas_header_long)); /*copy only till msg type*/
-				msg += 3;
+            sec_header_type = msg[0] >> 4;
+            protocol_discr = msg[0] & 0x0F;
+            unsigned char is_ESM = ((unsigned short)protocol_discr == 0x02);  // see TS 24.007
+            log_msg(LOG_INFO, "Security header=%d\n", sec_header_type);
+            log_msg(LOG_INFO, "Protocol discriminator=%d\n", protocol_discr);
+            log_msg(LOG_INFO, "is_ESM=%d\n", is_ESM);
+            if (is_ESM) {
+                log_msg(LOG_INFO, "NAS PDU is ESM\n");
+                memcpy(&nas_header_long, msg, sizeof(nas_header_long)); /*copy only till msg type*/
+                msg += 3;
 
-				nas->header.security_header_type = nas_header_long.security_header_type;
-				nas->header.proto_discriminator = nas_header_long.proto_discriminator;
-				nas->header.procedure_trans_identity = nas_header_long.procedure_trans_identity;
-				nas->header.message_type = nas_header_long.message_type;
-			} else {
-				log_msg(LOG_INFO, "NAS PDU is EMM\n");
-				memcpy(&nas_header_short, msg, sizeof(nas_header_short)); /*copy only till msg type*/
-				msg += 2;
+                nas->header.security_header_type = nas_header_long.security_header_type;
+                nas->header.proto_discriminator = nas_header_long.proto_discriminator;
+                nas->header.procedure_trans_identity = nas_header_long.procedure_trans_identity;
+                nas->header.message_type = nas_header_long.message_type;
+            } else {
+                log_msg(LOG_INFO, "NAS PDU is EMM\n");
+                memcpy(&nas_header_short, msg, sizeof(nas_header_short)); /*copy only till msg type*/
+                msg += 2;
 
-				nas->header.security_header_type = nas_header_short.security_header_type;
-				nas->header.proto_discriminator = nas_header_short.proto_discriminator;
-				nas->header.message_type = nas_header_short.message_type;
-			}
-		} else {
-			log_msg(LOG_INFO, "No security header\n");
-			memcpy(&nas_header_short, msg, sizeof(nas_header_short)); /*copy only till msg type*/
-			msg += 2;
+                nas->header.security_header_type = nas_header_short.security_header_type;
+                nas->header.proto_discriminator = nas_header_short.proto_discriminator;
+                nas->header.message_type = nas_header_short.message_type;
+            }
+        } else {
+            log_msg(LOG_INFO, "No security header\n");
+            memcpy(&nas_header_short, msg, sizeof(nas_header_short)); /*copy only till msg type*/
+            msg += 2;
 
-			nas->header.security_header_type = nas_header_short.security_header_type;
-			nas->header.proto_discriminator = nas_header_short.proto_discriminator;
-			nas->header.message_type = nas_header_short.message_type;
-		}
+            nas->header.security_header_type = nas_header_short.security_header_type;
+            nas->header.proto_discriminator = nas_header_short.proto_discriminator;
+            nas->header.message_type = nas_header_short.message_type;
+        }
 
 
 	log_msg(LOG_INFO, "Nas msg type: %X\n", nas->header.message_type);
 
-	switch(nas->header.message_type) {
-	case NAS_ESM_RESP:{
-		log_msg(LOG_INFO, "NAS_ESM_RESP recvd\n");
+	switch(nas->header.message_type) 
+    {
+        case NAS_ESM_RESP:{
+            log_msg(LOG_INFO, "NAS_ESM_RESP recvd\n");
 
-		unsigned char element_id;
-		memcpy(&element_id, msg, 1);
-		msg++;
-		nas->elements_len +=1;
+            unsigned char element_id;
+            memcpy(&element_id, msg, 1);
+            msg++;
+            nas->elements_len +=1;
 
-		nas->elements = calloc(sizeof(nas_pdu_elements), 2);
-		//if(NULL == nas.elements)...
+            nas->elements = calloc(sizeof(nas_pdu_elements), 2);
+            //if(NULL == nas.elements)...
 
-		memcpy(&(nas->elements[0].apn.len), msg, 1);
-		msg++;
-		memcpy(nas->elements[0].apn.val, msg, nas->elements[0].apn.len);
-		log_msg(LOG_INFO, "APN name - %s\n", nas->elements[0].apn.val);
-		break;
-		}
-
-	case NAS_SEC_MODE_COMPLETE:
-		log_msg(LOG_INFO, "NAS_SEC_MODE_COMPLETE recvd\n");
-		break;
-
-	case NAS_AUTH_RESP:
-		log_msg(LOG_INFO, "NAS_AUTH_RESP recvd\n");
-		nas->elements_len = 1;
-		nas->elements = calloc(sizeof(nas_pdu_elements), 5);
-		//if(NULL == nas.elements)...
-		unsigned short len = get_length(&msg);
-		memcpy(&(nas->elements[0].auth_resp), msg, sizeof(struct XRES));
-
-		break;
-
-
-
-      case NAS_AUTH_FAILURE:
-        nas->elements_len = 1;
-        nas->elements = calloc(sizeof(nas_pdu_elements), 1);
-        //if(NULL == nas.elements)...
-        char err = *(char*)(msg);
-        if(err == AUTH_SYNC_FAILURE)
-        {
-                log_msg(LOG_INFO, "AUTH Sync Failure. Start Re-Sync");
-                memcpy(&(nas->elements[0].auth_fail_resp), msg + 2, sizeof(struct AUTS));
-        }
-        else
-        {
-                log_msg(LOG_ERROR, "Authentication Failure. Mac Failure");
+            nas->elements[0].msgType = NAS_IE_TYPE_APN; 
+            memcpy(&(nas->elements[0].pduElement.apn.len), msg, 1);
+            msg++;
+            memcpy(nas->elements[0].pduElement.apn.val, msg, nas->elements[0].pduElement.apn.len);
+            log_msg(LOG_INFO, "APN name - %s\n", nas->elements[0].pduElement.apn.val);
+            break;
         }
 
+        case NAS_SEC_MODE_COMPLETE:
+            log_msg(LOG_INFO, "NAS_SEC_MODE_COMPLETE recvd\n");
         break;
 
-      case NAS_ATTACH_REQUEST:{
-        log_msg(LOG_INFO, "NAS_ATTACH_REQUEST recvd\n");
-        unsigned char tmp = msg[0];
-        /* 1 byte is NAS Key set Id + EPS attach Type.. i am confused with following 
-         * variable names 
-         */
-        nas->header.security_encryption_algo = (tmp & 0xF0) >> 4;
-        nas->header.security_integrity_algo = tmp & 0x0F;
-        msg++;
+        case NAS_AUTH_RESP:
+            log_msg(LOG_INFO, "NAS_AUTH_RESP recvd\n");
+            nas->elements_len = 1;
+            nas->elements = calloc(sizeof(nas_pdu_elements), 5);
+            //if(NULL == nas.elements)...
+            unsigned short len = get_length(&msg);
+            memcpy(&(nas->elements[0].pduElement.auth_resp), msg, sizeof(struct XRES));
 
-        nas->elements_len = 7;
-        nas->elements = calloc(sizeof(nas_pdu_elements), nas->elements_len);
-        // element[0] - IMSI/GUTI
-        // element[1] - UE network capability  
-        // element[2] - ESM information  
-        // elements[4] - MS network capability 
-        // element[5] - pti 
-        // elements[6] - PCO 
-        //if(NULL == nas.elements)...
+        break;
+        case NAS_IDENTITY_RESPONSE: {
+            log_msg(LOG_INFO, "NAS_IDENTITY_RESPONSE recvd\n");
+            nas->elements_len = 1;
+            nas->elements = calloc(sizeof(nas_pdu_elements), 1);
 
-        /*EPS mobility identity*/
-        unsigned short imsi_len = get_length(&msg);
-        // TODO : support even number of digits in IMSI 
-        bool odd = msg[0] & 0x08; // if this bit is set then odd number of digits in identity
-        unsigned char eps_identity = msg[0] & 0x07;
-        switch(eps_identity) {
-          case 0x01: {
-            // Mobile Identity contains imsi
-            nas->flags |= NAS_MSG_UE_IE_IMSI;
-            log_msg(LOG_INFO, "IMSI len=%u - %u\n", imsi_len, BINARY_IMSI_LEN);
-            memcpy(&(nas->elements[0].IMSI), msg, imsi_len);
+            unsigned short imsi_len = get_length(&msg);
+            /*EPS mobility identity. TODO : More error checking */
+            memcpy(&(nas->elements[0].pduElement.IMSI), msg, imsi_len);
             break;
-          } 
-          case 0x06: {
-            log_msg(LOG_INFO, "Mobile identity GUTI Rcvd \n");
-            // Mobile Identity contains GUTI
-            // MCC+MNC offset = 3
-            // MME Group Id   = 2
-            // MME Code       = 1
-            // MTMSI offset from start of this AVP = 3 + 2 + 1
-            memcpy(&nas->elements[0].mi_guti.plmn_id.idx, &msg[1], 3);
-            nas->elements[0].mi_guti.mme_grp_id = ntohs(*(short int *)(&msg[4]));
-            nas->elements[0].mi_guti.mme_code = msg[6];
-            nas->elements[0].mi_guti.m_TMSI = ntohl(*((unsigned int *)(&msg[7])));
-            log_msg(LOG_INFO, "NAS Attach Request Rcvd ID: GUTI. PLMN id %d %d %d \n", nas->elements[0].mi_guti.plmn_id.idx[0], nas->elements[0].mi_guti.plmn_id.idx[1], nas->elements[0].mi_guti.plmn_id.idx[2] );
-            log_msg(LOG_INFO, "NAS Attach Request Rcvd ID: GUTI. mme group id = %d, MME code %d  mtmsi = %d\n", nas->elements[0].mi_guti.mme_grp_id, nas->elements[0].mi_guti.mme_code, nas->elements[0].mi_guti.m_TMSI);
-            nas->flags |= NAS_MSG_UE_IE_GUTI;
-            break;
-          }
-          case 0x03: {
-            // Mobile Identity contains imei
-            break;
-          } 
         }
-
-        msg += imsi_len;
-
-        char *buffer = NULL;
-        log_msg(LOG_INFO, "IMSI=%s [to be read nibble-swapped]\n",
-                        msg_to_hex_str((char *)nas->elements[0].IMSI, imsi_len, &buffer));
-        log_buffer_free(&buffer);
-
-        /*UE network capability*/
-        nas->elements[1].ue_network.len = msg[0];
-	//	nas->elements[1].ue_network.len = 4;
-        msg++;
-        memcpy((nas->elements[1].ue_network.capab), msg, nas->elements[1].ue_network.len);
-		//memcpy((nas->elements[1].ue_network.capab), msg, 4);
-        msg += nas->elements[1].ue_network.len;
-
-        /*ESM msg container*/
-        len = msg[0] << 8 | msg[1];
-        msg += 2;
-        //now msg points to ESM message contents 
-        log_msg(LOG_INFO, "len=%x\n", len);
-        log_msg(LOG_INFO, "msg[0]=%x\n", msg[0]);
-        nas->elements[5].pti = msg[1];
-        log_msg(LOG_INFO, "pti=%x\n", nas->elements[5].pti);
-        unsigned short int msg_offset = 4;  
-        /*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
-         * +pdn_type(1)*/
-        /*element id 13(1101....) = "esm required" flag*/
-        nas->elements[2].esm_info_tx_required = false;
-        while(msg_offset < len)
+        case NAS_TAU_REQUEST: {
+            // I dont want to know anythng from TAU for now..
+            // Important thing from the TAU : 
+            //   Current bearers available in the UE. If any missing bearer means
+            //   we need to delete those bearers from the core network. 
+            break;
+        }
+        case NAS_AUTH_FAILURE:
         {
-            unsigned char val = msg[msg_offset];
-            log_msg(LOG_INFO, "ESM container AVP val=%x\n", val);
-            if(13 == (val>>4)) 
+            nas->elements_len = 1;
+            nas->elements = calloc(sizeof(nas_pdu_elements), 1);
+            //if(NULL == nas.elements)...
+            char err = *(char*)(msg);
+            if(err == AUTH_SYNC_FAILURE)
             {
-                   // byte 0 - EBI+PD, byte1 - pti, byte2 - message type, byte3 - pdntype+reqtype, byte4 - ESM info transfer flag == Total 5 bytes... msg[0] to msg[4]
+                log_msg(LOG_INFO, "AUTH Sync Failure. Start Re-Sync");
+                nas->elements[0].msgType = NAS_IE_TYPE_AUTH_FAIL_PARAM;
+                memcpy(&(nas->elements[0].pduElement.auth_fail_resp), msg + 2, sizeof(struct AUTS));
+            }
+            else
+            {
+                log_msg(LOG_ERROR, "Authentication Failure. Mac Failure");
+            }
+
+        }break;
+
+        case NAS_ATTACH_REQUEST:{
+            log_msg(LOG_INFO, "NAS_ATTACH_REQUEST recvd\n");
+            unsigned char tmp = msg[0];
+            /* 1 byte is NAS Key set Id + EPS attach Type.. i am confused with following
+             * variable names
+             */
+            nas->header.security_encryption_algo = (tmp & 0xF0) >> 4;
+            nas->header.security_integrity_algo = tmp & 0x0F;
+            msg++;
+
+            nas->elements_len = 7; // index should never cross  6.. 0 to 6 
+            nas->elements = calloc(sizeof(nas_pdu_elements), nas->elements_len);
+            int index = 0;
+
+            unsigned short imsi_len = get_length(&msg);
+            // TODO : support even number of digits in IMSI
+            bool odd = msg[0] & 0x08; // if this bit is set then odd number of digits in identity
+            unsigned char eps_identity = msg[0] & 0x07;
+            switch(eps_identity) {
+                case 0x01: {
+                    // Mobile Identity contains imsi
+                    nas->flags |= NAS_MSG_UE_IE_IMSI;
+                    log_msg(LOG_INFO, "IMSI len=%u - %u\n", imsi_len, BINARY_IMSI_LEN);
+                    nas->elements[index].msgType = NAS_IE_TYPE_EPS_MOBILE_ID_IMSI;
+                    memcpy(&(nas->elements[index].pduElement.IMSI), msg, imsi_len);
+                    break;
+                }
+                case 0x06: {
+                    log_msg(LOG_INFO, "Mobile identity GUTI Rcvd \n");
+                    // Mobile Identity contains GUTI
+                    // MCC+MNC offset = 3
+                    // MME Group Id   = 2
+                    // MME Code       = 1
+                    // MTMSI offset from start of this AVP = 3 + 2 + 1
+                    nas->elements[index].msgType = NAS_IE_TYPE_EPS_MOBILE_ID_IMSI;
+                    memcpy(&nas->elements[index].pduElement.mi_guti.plmn_id.idx, &msg[1], 3);
+                    nas->elements[index].pduElement.mi_guti.mme_grp_id = ntohs(*(short int *)(&msg[4]));
+                    nas->elements[index].pduElement.mi_guti.mme_code = msg[6];
+                    nas->elements[index].pduElement.mi_guti.m_TMSI = ntohl(*((unsigned int *)(&msg[7])));
+                    log_msg(LOG_INFO, "NAS Attach Request Rcvd ID: GUTI. PLMN id %d %d %d \n", nas->elements[index].pduElement.mi_guti.plmn_id.idx[0], 
+                            nas->elements[index].pduElement.mi_guti.plmn_id.idx[1], 
+                            nas->elements[index].pduElement.mi_guti.plmn_id.idx[2] );
+                    log_msg(LOG_INFO, "NAS Attach Request Rcvd ID: GUTI. mme group id = %d, MME code %d  mtmsi = %d\n", 
+                            nas->elements[index].pduElement.mi_guti.mme_grp_id, 
+                            nas->elements[index].pduElement.mi_guti.mme_code,
+                            nas->elements[index].pduElement.mi_guti.m_TMSI);
+                    nas->flags |= NAS_MSG_UE_IE_GUTI;
+                    break;
+                }
+                case 0x03: {
+                    // Mobile Identity contains imei
+                    break;
+                }
+            }
+
+            msg += imsi_len;
+            char *buffer = NULL;
+            log_msg(LOG_INFO, "IMSI=%s [to be read nibble-swapped]\n",
+                    msg_to_hex_str((char *)nas->elements[index].pduElement.IMSI, imsi_len, &buffer));
+            log_buffer_free(&buffer);
+
+            /*UE network capacity*/
+            index++;
+            nas->elements[index].msgType = 
+                NAS_IE_TYPE_UE_NETWORK_CAPABILITY;
+            nas->elements[index].pduElement.ue_network.len = msg[0];
+            msg++;
+            memcpy(
+                   (nas->elements[index].pduElement.ue_network.capab)
+                   ,msg,
+                   nas->elements[index].pduElement.ue_network.len);
+            msg += nas->elements[index].pduElement.ue_network.len;
+
+            index++;
+            /*ESM msg container*/
+            len = msg[0] << 8 | msg[1];
+            msg += 2;
+            //now msg points to ESM message contents
+            log_msg(LOG_INFO, "len=%x\n", len);
+            log_msg(LOG_INFO, "msg[0]=%x\n", msg[0]);
+            nas->elements[index].pduElement.pti = msg[1];
+            nas->elements[index].msgType = NAS_IE_TYPE_PTI;
+            log_msg(LOG_INFO, "pti=%x\n", nas->elements[index].pduElement.pti);
+            unsigned short int msg_offset = 4;
+            /*ESM message header len is 4: bearer_id_flags(1)+proc_tx_id(1)+msg_id(1)
+             * +pdn_type(1)*/
+            /*element id 13(1101....) = "esm required" flag*/
+            //if tx_flag is absent then it means flag is set to false 
+            //nas->elements[index].pduElement.esm_info_tx_required = false;
+            while(msg_offset < len)
+            {
+                unsigned char val = msg[msg_offset];
+                log_msg(LOG_INFO, "ESM container AVP val=%x\n", val);
+                if(13 == (val>>4))
+                {
+                    index++;
+                    nas->elements[index].msgType = NAS_IE_TYPE_TX_FLAG;
+                    // byte 0 - EBI+PD, byte1 - pti, byte2 - message type, byte3 - pdntype+reqtype, byte4 - ESM info transfer flag == Total 5 bytes... msg[0] to msg[4]
                     //nas->elements[2].esm_info_tx_required = true;
                     if(val & 1) {
-                            nas->elements[2].esm_info_tx_required = true;
-                            log_msg(LOG_INFO, "ESM information requested ");
+                        nas->elements[index].pduElement.esm_info_tx_required = true;
+                        log_msg(LOG_INFO, "ESM information requested ");
                     }
                     msg_offset++; /* just one byte AVP */
                     continue;
 
-            }
-            if(0x27 == val)
-            {
-                unsigned short int pco_offset =  msg_offset;
-                unsigned char pco_length = msg[msg_offset+1]; 
-                pco_offset += 2; // now points to first pco payload byte 
-                pco_offset += 1; // 1 byte header skipping Extension + Configuration Protocol  
-                unsigned short int pco_options=0;
-                log_msg(LOG_INFO, "PCO length %d Msg offset = %d , pco offset = %d ", pco_length, msg_offset, pco_offset);
-                while(pco_offset < (msg_offset + pco_length))
-                {
-                    log_msg(LOG_INFO, "Inside PCO length %d Msg offset = %d , pco offset = %d ", pco_length, msg_offset, pco_offset);
-                    unsigned short int type;
-                    unsigned char oct_len;
-                    memcpy(&type, &msg[pco_offset], sizeof(type));
-                    type = htons(type);
-                    pco_offset += 2;
-                    oct_len = msg[pco_offset];
-                    pco_offset += 1;
-                    log_msg(LOG_INFO, "pco element_id=%x len %d \n", type, oct_len);
-                    if(type == 0x8021)
-                    {
-                      nas->elements[6].pco_options[pco_options] = 0x8021;
-                      pco_options++;
-                    }
-                    else if(type == 0x000d)
-                    {
-                      nas->elements[6].pco_options[pco_options] = 0x000d;
-                      pco_options++;
-                    }
-                    else if(type == 0x000a)
-                    {
-                      nas->elements[6].pco_options[pco_options] = 0x000a;
-                      pco_options++;
-                    }
-                    else if(type == 0x0005)
-                    {
-                      nas->elements[6].pco_options[pco_options] = 0x0005;
-                      pco_options++;
-                    }
-                    else if(type == 0x0010)
-                    {
-                      nas->elements[6].pco_options[pco_options] = 0x0010;
-                      pco_options++;
-                    }
-                    else if(type == 0x0011)
-                    {
-                      nas->elements[6].pco_options[pco_options] = 0x0011;
-                      pco_options++;
-                    }
-                    pco_offset += oct_len;
                 }
 
-                //pco 
-                msg_offset = pco_length + 2; // msg offset was already at PCO AVP type. Now it should point to next AVP type  
-                continue;
+                if(0x27 == val)
+                {
+                    unsigned short int pco_offset =  msg_offset;
+                    unsigned char pco_length = msg[msg_offset+1];
+                    pco_offset += 2; // now points to first pco payload byte
+                    pco_offset += 1; // 1 byte header skipping Extension + Configuration Protocol
+                    unsigned short int pco_options=0;
+                    log_msg(LOG_INFO, "PCO length %d Msg offset = %d , pco offset = %d ", pco_length, msg_offset, pco_offset);
+                    index++;
+                    nas->elements[index].msgType = NAS_IE_TYPE_PCO;
+                    while(pco_offset < (msg_offset + pco_length))
+                    {
+                        log_msg(LOG_INFO, "Inside PCO length %d Msg offset = %d , pco offset = %d ", pco_length, msg_offset, pco_offset);
+                        unsigned short int type;
+                        unsigned char oct_len;
+                        memcpy(&type, &msg[pco_offset], sizeof(type));
+                        type = htons(type);
+                        pco_offset += 2;
+                        oct_len = msg[pco_offset];
+                        pco_offset += 1;
+                        log_msg(LOG_INFO, "pco element_id=%x len %d \n", type, oct_len);
+                        if(type == 0x8021)
+                        {
+                            nas->elements[index].pduElement.pco_options[pco_options] = 0x8021;
+                            pco_options++;
+                        }
+                        else if(type == 0x000d)
+                        {
+                            nas->elements[index].pduElement.pco_options[pco_options] = 0x000d;
+                            pco_options++;
+                        }
+                        else if(type == 0x000a)
+                        {
+                            nas->elements[index].pduElement.pco_options[pco_options] = 0x000a;
+                            pco_options++;
+                        }
+                        else if(type == 0x0005)
+                        {
+                            nas->elements[index].pduElement.pco_options[pco_options] = 0x0005;
+                            pco_options++;
+                        }
+                        else if(type == 0x0010)
+                        {
+                            nas->elements[index].pduElement.pco_options[pco_options] = 0x0010;
+                            pco_options++;
+                        }
+                        else if(type == 0x0011)
+                        {
+                            nas->elements[index].pduElement.pco_options[pco_options] = 0x0011;
+                            pco_options++;
+                        }
+                        pco_offset += oct_len;
+                    }
+
+                    //pco
+                    msg_offset = pco_length + 2; // msg offset was already at PCO AVP type. Now it should point to next AVP type
+                    continue;
+                }
+                break; // unhandled ESM AVP...Add support..for now just break out..else we would be in tight loop
             }
-            break; // unhandled ESM AVP...Add support..for now just break out..else we would be in tight loop 
+            msg += len;
+
+            unsigned char elem_id = msg[0];
+            while(msg != msg_end)
+            {
+                elem_id = msg[0];
+                elem_id >>= 4;
+                if((NAS_IE_TYPE_GUTI_TYPE == elem_id)
+                    || (NAS_IE_TYPE_TMSI_STATUS == elem_id)
+                    || (NAS_IE_TYPE_MS_NETWORK_FEATURE_SUPPORT == elem_id))
+                {
+                    switch(elem_id)
+                    {
+                        case NAS_IE_TYPE_GUTI_TYPE:
+                            {
+                                log_msg(LOG_DEBUG, "Old guti type : Skipping.\n");
+                                msg++;
+                            }break;
+                        case NAS_IE_TYPE_TMSI_STATUS:
+                            {
+                                log_msg(LOG_DEBUG, "TMSI Status : Skipping.\n");
+                                msg++;
+                            }break;
+                        case NAS_IE_TYPE_MS_NETWORK_FEATURE_SUPPORT:
+                            {
+                                log_msg(LOG_DEBUG, "MS Network feature support : Skipping.\n");
+                                msg++;
+                            }break;
+                        default:
+                            log_msg(LOG_WARNING, "Unknown AVP in attach msg. %d \n",elem_id);
+                            msg++;
+                    }
+
+                    continue;
+                }
+                else
+                {
+                    elem_id = msg[0];
+                    switch(elem_id)
+                    {
+                        case NAS_IE_TYPE_DRX_PARAM:
+                            {
+                                log_msg(LOG_DEBUG, "DRX Param : Skipping.\n");
+                                msg += 3;
+                            }break;
+                        case NAS_IE_TYPE_TAI:
+                            {
+                                log_msg(LOG_DEBUG, "TAI : Skipping.\n");
+                                msg += 6;
+                            }break;
+                        case NAS_IE_TYPE_MS_CLASSMARK_2:
+                            {
+                                log_msg(LOG_DEBUG, "MS classmark 2 : Skipping.\n");
+                                int len = msg[1];
+                                msg += len + 2; //msgid + len field + len;
+                            }break;
+                        case NAS_IE_TYPE_VOICE_DOMAIN_PREF_UE_USAGE_SETTING:
+                            {
+                                log_msg(LOG_DEBUG, "Voice domain UE Usage : Skipping.\n");
+                                int len = msg[1];
+                                msg += len + 2; //msgid + len field + len;
+                            }break;
+                        case NAS_IE_TYPE_MS_NETWORK_CAPABILITY:
+                            {
+                                log_msg(LOG_DEBUG, "MS Network capability : Handling.\n");
+                                index++;
+                                nas->elements[index].msgType = NAS_IE_TYPE_MS_NETWORK_CAPABILITY;
+                                nas->elements[index].pduElement.ms_network.pres = true;
+                                nas->elements[index].pduElement.ms_network.element_id 
+                                    = msg[0];
+                                msg++;
+                                nas->elements[index].pduElement.ms_network.len = msg[0];
+                                msg++;
+                                memcpy(
+                                       (nas->elements[index].pduElement.ms_network.capab), 
+                                       msg, 
+                                       nas->elements[index].pduElement.ms_network.len);
+                                msg += 
+                                    nas->elements[index].pduElement.ms_network.len;
+                            }break;
+                        default:
+                            log_msg(LOG_WARNING, "Unknown AVP in Attach Req  %d \n", elem_id);
+                            msg++;
+                    }
+                
+                    continue;
+                }
+            }
+            break;
         }
-        msg += len;
 
-        /*DRX parameter*/
-        msg += 3;
-
-        /*MS network capability*/
-        nas->elements[4].ms_network.element_id = msg[0];
-        msg++;
-        nas->elements[4].ms_network.len = msg[0];
-        msg++;
-        memcpy(nas->elements[4].ms_network.capab, msg,
-                        nas->elements[4].ms_network.len);
-        log_msg(LOG_INFO, "element_id=%x\n", nas->elements[4].ms_network.element_id);
-        log_msg(LOG_INFO, "len=%x\n", nas->elements[4].ms_network.len);
-        log_msg(LOG_INFO, "network.capab=%s\n", msg_to_hex_str((char *)nas->elements[4].ms_network.capab, nas->elements[4].ms_network.len, &buffer));
-        log_buffer_free(&buffer);
-
+        case NAS_ATTACH_COMPLETE:
+        /*Other than error check there seems no information to pass to mme. Marking TODO for protocol study*/
         break;
+
+        case NAS_DETACH_REQUEST: 
+        {
+            log_msg(LOG_INFO, "NAS_DETACH_REQUEST recvd\n");
+            nas->elements_len = 1;
+            nas->elements = calloc(sizeof(nas_pdu_elements), 1);
+
+            /*EPS mobility identity*/
+            memcpy(&(nas->elements[0].pduElement.mi_guti), msg + 1, sizeof(guti));
+            log_msg(LOG_INFO, "M-TMSI - %d\n", nas->elements[0].pduElement.mi_guti.m_TMSI);
+            break;
         }
 
-      case NAS_ATTACH_COMPLETE:
-                              log_msg(LOG_INFO, "NAS_ATTACH_COMPLETE recvd\n");
-                              /*Other than error check there seems no information to pass to mme. Marking TODO for protocol study*/
-                              break;
-
-      case NAS_IDENTITY_RESPONSE: {
-        log_msg(LOG_INFO, "NAS_IDENTITY_RESPONSE recvd\n");
-        nas->elements_len = 1;
-        nas->elements = calloc(sizeof(nas_pdu_elements), 1);
-
-        unsigned short imsi_len = get_length(&msg);
-		/*EPS mobility identity. TODO : More error checking */
-		memcpy(&(nas->elements[0].IMSI), msg, imsi_len);
-		break;
-      }
-      case NAS_TAU_REQUEST: {
-          // I dont want to know anythng from TAU for now..
-          // Important thing from the TAU : 
-          //   Current bearers available in the UE. If any missing bearer means
-          //   we need to delete those bearers from the core network. 
-          break;
-	  }
-    case NAS_DETACH_REQUEST: {
-                                       log_msg(LOG_INFO, "NAS_DETACH_REQUEST recvd\n");
-                                       nas->elements_len = 1;
-                                       nas->elements = calloc(sizeof(nas_pdu_elements), 1);
-
-
-		/*EPS mobility identity*/
-		memcpy(&(nas->elements[0].mi_guti), msg + 1, sizeof(guti));
-		log_msg(LOG_INFO, "M-TMSI - %d\n", nas->elements[0].mi_guti.m_TMSI);
-		break;
-	}
-
-    default:
-       log_msg(LOG_ERROR, "Unknown NAS Message type- 0x%x\n", nas->header.message_type);
-       break;
+        default:
+        log_msg(LOG_ERROR, "Unknown NAS Message type- 0x%x\n", nas->header.message_type);
+        break;
 
     }
 }
@@ -693,7 +776,7 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
                         log_msg(LOG_DEBUG, "TAI decode Success\n");
                         proto_ies->data[i].IE_type = S1AP_IE_TAI; 
 						memcpy(&proto_ies->data[i].val.tai.tac, s1apTAI_p->tAC.buf, s1apTAI_p->tAC.size);
-						memcpy(&proto_ies->data[i].val.tai.plmn_id, 
+						memcpy(proto_ies->data[i].val.tai.plmn_id.idx, 
                                 s1apTAI_p->pLMNidentity.buf, s1apTAI_p->pLMNidentity.size);
 						s1apTAI_p = NULL;
 					} break;
@@ -714,7 +797,7 @@ int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies)
                         proto_ies->data[i].IE_type = S1AP_IE_UTRAN_CGI; 
 						memcpy(&proto_ies->data[i].val.utran_cgi.cell_id, 
                                s1apCGI_p->cell_ID.buf, s1apCGI_p->cell_ID.size);
-						memcpy(&proto_ies->data[i].val.utran_cgi.plmn_id.idx, 
+						memcpy(proto_ies->data[i].val.utran_cgi.plmn_id.idx, 
                                 s1apCGI_p->pLMNidentity.buf, s1apCGI_p->pLMNidentity.size);
 						s1apCGI_p = NULL;
 					} break;
@@ -773,7 +856,7 @@ init_ue_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 {
 	//TODO: use static instead of dynamic for perf.
 	struct proto_IE proto_ies;
-
+	
 	log_msg(LOG_INFO, "S1AP_INITIAL_UE_MSG msg: \n");
 
     /* TODO : Error handling. Bad message will lead crash. 
@@ -803,7 +886,7 @@ init_ue_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 		detach_stage1_handler(&proto_ies, true);
 		break;
     case NAS_TAU_REQUEST:
-        s1_tau_request_handler(&proto_ies);
+        s1_tau_request_handler(&proto_ies, enb_fd);
         break;
 	}
 
@@ -859,7 +942,7 @@ UL_NAS_msg_handler(InitiatingMessage_t *msg, int enb_fd)
         s1_identity_resp_handler(&proto_ies);
         break;
     case NAS_TAU_REQUEST:
-        s1_tau_request_handler(&proto_ies);
+        s1_tau_request_handler(&proto_ies, enb_fd);
         break;
 	}
 
@@ -1062,7 +1145,7 @@ int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_i
 
                         proto_ies->data[i].IE_type = S1AP_IE_TAI; 
 						memcpy(&proto_ies->data[i].val.tai.tac, s1apTAI_p->tAC.buf, s1apTAI_p->tAC.size);
-						memcpy(&proto_ies->data[i].val.tai.plmn_id, 
+						memcpy(proto_ies->data[i].val.tai.plmn_id.idx, 
                                 s1apTAI_p->pLMNidentity.buf, s1apTAI_p->pLMNidentity.size);
 					} break;
 				case ProtocolIE_ID_id_EUTRAN_CGI:
@@ -1081,7 +1164,7 @@ int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_i
                         proto_ies->data[i].IE_type = S1AP_IE_UTRAN_CGI; 
 						memcpy(&proto_ies->data[i].val.utran_cgi.cell_id, 
                                s1apCGI_p->cell_ID.buf, s1apCGI_p->cell_ID.size);
-						memcpy(&proto_ies->data[i].val.utran_cgi.plmn_id.idx, 
+						memcpy(proto_ies->data[i].val.utran_cgi.plmn_id.idx, 
                                 s1apCGI_p->pLMNidentity.buf, s1apCGI_p->pLMNidentity.size);
 					} break;
                 default:

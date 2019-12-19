@@ -39,6 +39,7 @@ DETACH stages :
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
+extern int g_tmsi_allocation_array[];
 
 static int g_Q_detachread_fd;
 static int g_Q_S11_detach_fd;
@@ -141,18 +142,31 @@ detach_stage1_processing()
 {
 	struct detach_req_Q_msg *detach_req =
 			(struct detach_req_Q_msg *) detachreq;
-	struct UE_info *ue_entry = GET_UE_ENTRY(detach_req->ue_idx);
+	struct UE_info *ue_entry = NULL; 
 
-	log_msg(LOG_INFO, "Detach request received for ue %d\n",
-			detach_req->ue_idx);
-
-	if((UNASSIGNED_ENTRY == ue_entry->ue_state)
-       || (!IS_VALID_UE_INFO(ue_entry)))
+    if(detach_req->ue_idx != -1)
     {
-        log_msg(LOG_ERROR, "UE Entry invalid. Drop the packet.");
+	    ue_entry = GET_UE_ENTRY(detach_req->ue_idx);
+    }
+    else if (detach_req->ue_m_tmsi != -1)
+    {
+        unsigned int ue_index = g_tmsi_allocation_array[detach_req->ue_idx]; 
+	    ue_entry = GET_UE_ENTRY(ue_index);
+    }
+    else
+        return E_FAIL;
+
+
+	if((ue_entry == NULL) || 
+       (UNASSIGNED_ENTRY == ue_entry->ue_state) || 
+       (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "UE Entry invalid. Drop the packet. UE index %d", detach_req->ue_idx);
         return SUCCESS;
     }
 
+	log_msg(LOG_INFO, "Detach request received for ue %d\n",
+			detach_req->ue_idx);
 	ue_entry->ul_seq_no++;
 	ue_entry->s1ap_enb_ue_id = detach_req->s1ap_enb_ue_id;
 

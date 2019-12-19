@@ -52,6 +52,8 @@ detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit)
 	/* TODO : Revisit, in InitialContextSetup Request we are sending
 	 * MME UE S1AP Id as M-TMSI.
 	 */
+    req.ue_idx = -1;
+    req.ue_m_tmsi = -1;
     for(int i = 0; i < detach_ies->no_of_IEs; i++)
     {
         switch(detach_ies->data[i].IE_type)
@@ -71,7 +73,7 @@ detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit)
                 {
                     if(retransmit)
                     {
-                        req.ue_idx = detach_ies->data[i].val.nas.elements[0].mi_guti.m_TMSI;
+                        req.ue_m_tmsi = detach_ies->data[i].val.nas.elements[0].pduElement.mi_guti.m_TMSI;
                     }
                 }break;
             default:
