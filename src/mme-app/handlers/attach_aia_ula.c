@@ -110,7 +110,7 @@ process_aia_resp()
 		sizeof(struct E_UTRAN_sec_vector));
 
 	/*If ula also done then set flag for next stage*/
-	if(STAGE1_ULA_DONE == ue_entry->ue_state) {
+	if((STAGE1_ULA_DONE == ue_entry->ue_state) || (ATTACH_STAGE1_RESYNC ==  ue_entry->ue_state)) {
 		ue_entry->ue_state = ATTACH_STAGE2;
 		attach_stage2_counter++;
 	}

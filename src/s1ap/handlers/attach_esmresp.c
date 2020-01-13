@@ -50,14 +50,32 @@ s1_esm_resp_handler(struct proto_IE *s1_esm_resp_ies)
 
 	/*Create Q structure for stage 1 to MME.
 	  contains init UE information.*/
-	esm_resp.ue_idx = s1_esm_resp_ies->data[0].mme_ue_s1ap_id;
-	if(s1_esm_resp_ies->data[2].nas.header.message_type != NAS_SEC_MODE_COMPLETE)
-		esm_resp.status = S1AP_SECMODE_FAILED;//Error in authentication
-	else
-		esm_resp.status = SUCCESS;
+    for(int i = 0; i < s1_esm_resp_ies->no_of_IEs; i++)
+    {
+        switch(s1_esm_resp_ies->data[i].IE_type)
+        {
+            case S1AP_IE_MME_UE_ID:
+                {
+	                esm_resp.ue_idx = s1_esm_resp_ies->data[i].val.mme_ue_s1ap_id;
+                }break;
+            case S1AP_IE_NAS_PDU:
+                {
+                    if(s1_esm_resp_ies->data[i].val.nas.header.message_type != NAS_ESM_RESP)
+                    {
+                        esm_resp.status = S1AP_SECMODE_FAILED;//Error in authentication
+                    }
+                    else
+                    {
+                        esm_resp.status = SUCCESS;
+	                    memcpy(&(esm_resp.apn), &(s1_esm_resp_ies->data[i].val.nas.elements[0].apn),
+		                       sizeof(struct apn_name));
+                    }
 
-	memcpy(&(esm_resp.apn), &(s1_esm_resp_ies->data[2].nas.elements[0].apn),
-		sizeof(struct apn_name));
+                }break;
+            default:
+                log_msg(LOG_WARNING,"Unhandled IE");
+        }
+    }
 
 	int i = write_ipc_channel(ipcHndl_esmresp, (char *)&esm_resp, S1AP_ESMRESP_STAGE5_BUF_SIZE);
 

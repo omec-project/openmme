@@ -265,7 +265,14 @@ send_FD_AIR(struct s6a_Q_msg *aia_msg, char imsi[])
 	add_fd_msg(&val, g_fd_dict_objs.immediate_resp_pref,
 			(struct msg**)&avp_ptr);
 
-	dump_fd_msg(fd_msg);
+    if(aia_msg->auts.len)
+    {
+        val.os.data = (unsigned char*)aia_msg->auts.val;
+        val.os.len = aia_msg->auts.len;
+        add_fd_msg(&val, g_fd_dict_objs.resync_info, (struct msg**)&avp_ptr);
+    }
+	
+    dump_fd_msg(fd_msg);
 
 	/*post AIR to hss */
 	CHECK_FCT_DO(fd_msg_send(&fd_msg, NULL, NULL), return S6A_FD_ERROR);
@@ -356,8 +363,17 @@ AIR_processing()
 
 	if(HSS_FD == g_s6a_cfg.hss_type) {
 		/*post to next processing*/
-		send_FD_AIR(air_msg, imsi);
-		send_FD_ULR(air_msg, imsi);
+        if(!air_msg->auts.len)
+        {
+		    log_msg(LOG_INFO, "Normal AIR/ULR\n");
+		    send_FD_AIR(air_msg, imsi);
+		    send_FD_ULR(air_msg, imsi);
+        }
+        else
+        {
+		    log_msg(LOG_INFO, "Resync AIR\n");
+		    send_FD_AIR(air_msg, imsi);
+        }
 	} else {
 		log_msg(LOG_INFO, "Sending over IPC\n");
 		send_rpc_AIR(air_msg, imsi);

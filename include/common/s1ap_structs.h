@@ -22,6 +22,10 @@
 #include <stdbool.h>
 
 #include "sec.h"
+#include "ProcedureCode.h"
+#include "Criticality.h"
+#include "S1AP-PDU.h"
+#include "InitiatingMessage.h"
 
 #define NAS_RAND_SIZE 16
 #define NAS_AUTN_SIZE 16
@@ -46,7 +50,8 @@
 #define SECURITY_KEY_SIZE 32
 
 #define MAC_SIZE 4
-
+#define AUTH_SYNC_FAILURE 21
+#define AUTH_RESPONSE 53
 /* ESM messages */
  #define ESM_MSG_ACTV_DEF_BEAR__CTX_REQ 0xc1
 
@@ -397,6 +402,7 @@ typedef union nas_pdu_elements {
 	struct UE_net_capab ue_network;
 
 	struct XRES   auth_resp; /*Authentication response*/
+	struct AUTS   auth_fail_resp; /*Authentication response*/
 
 	struct apn_name apn;
 
@@ -445,24 +451,28 @@ typedef struct ERABSetup {
 
 #pragma pack()
 
-typedef union proto_IE_data {
+typedef struct proto_IE_data {
 	int 			IE_type;
-	struct ie_enb_name 	enb_name;
-	struct ie_global_enb_id global_enb_id;
-	int			enb_ue_s1ap_id;
-	int			mme_ue_s1ap_id;
-	struct 			nasPDU nas;
-	struct TAI 		tai;
-	struct CGI 		utran_cgi;
-	enum ie_RRC_est_cause 	rrc_est_cause;
-	struct eRAB_elements 	erab;
-	ue_aggregate_maximum_bitrate ue_aggrt_max_bit_rate;
-	ERABSetup E_RABToBeSetupItemCtxtSUReq;
-	ue_sec_capabilities ue_sec_capab;
-	uint8_t sec_key[SECURITY_KEY_SIZE];
+    union value{
+        struct ie_enb_name 	enb_name;
+        struct ie_global_enb_id global_enb_id;
+        long			enb_ue_s1ap_id;
+        long			mme_ue_s1ap_id;
+        struct 			nasPDU nas;
+        struct TAI 		tai;
+        struct CGI 		utran_cgi;
+        enum ie_RRC_est_cause 	rrc_est_cause;
+        struct eRAB_elements 	erab;
+        ue_aggregate_maximum_bitrate ue_aggrt_max_bit_rate;
+        ERABSetup E_RABToBeSetupItemCtxtSUReq;
+        ue_sec_capabilities ue_sec_capab;
+        uint8_t sec_key[SECURITY_KEY_SIZE];
+    }val;
 }proto_IEs;
 
 struct proto_IE {
+    ProcedureCode_t  procedureCode;
+    Criticality_t    criticality;
 	short 		no_of_IEs;
 	proto_IEs	*data;
 };
@@ -518,6 +528,26 @@ typedef enum security_header_type {
     IntegrityProtectedCiphered,
     IntegrityProtectedEPSSecCntxt,
 }security_header_type;
+
+typedef struct nas_pdu_header_sec {
+        unsigned char security_header_type:4;
+        unsigned char proto_discriminator:4;
+        unsigned char mac[MAC_SIZE];
+        unsigned char seq_no;
+}nas_pdu_header_sec;
+
+typedef struct nas_pdu_header_short {
+        unsigned char security_header_type:4;
+        unsigned char proto_discriminator:4;
+        unsigned char message_type;
+}nas_pdu_header_short;
+
+typedef struct nas_pdu_header_long {
+        unsigned char security_header_type:4;
+        unsigned char proto_discriminator:4;
+        unsigned char procedure_trans_identity;
+        unsigned char message_type;
+}nas_pdu_header_long;
 
 /* NAS Security Encryption Algorithm */
 typedef enum security_encryption_algo {

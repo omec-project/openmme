@@ -24,9 +24,49 @@
 
 #include "log.h"
 bool g_nolog = false;
-enum log_levels g_log_level = LOG_WARNING;
+enum log_levels g_log_level = LOG_DEBUG;
 
-static const char *log_level_name[] = { "INFO", "DEBUG", "WARN", "ERROR" };
+static const char *log_level_name[] = { "DEBUG", "INFO", "WARN", "ERROR" };
+
+inline void enable_logs()
+{
+    g_nolog = false;
+}
+
+inline void disable_logs()
+{
+    g_nolog = true;
+}
+
+void set_logging_level(char *log_level)
+{
+    if(strcmp(log_level, "debug") == 0)
+    {
+        g_log_level = LOG_DEBUG;
+        enable_logs();
+    }
+    else if(strcmp(log_level, "info") == 0)
+    {
+        g_log_level = LOG_INFO;
+        enable_logs();
+    }
+    else if(strcmp(log_level, "warn") == 0)
+    {
+        g_log_level = LOG_WARNING;
+        enable_logs();
+    }
+    else if(strcmp(log_level, "error") == 0)
+    {
+        g_log_level = LOG_ERROR;
+        enable_logs();
+    }
+    else
+    {
+	    log_msg(LOG_INFO, "logging disabled ");
+        disable_logs();
+        g_log_level = LOG_NEVER;
+    }
+}
 
 void log_message(int l, const char *file, int line, const char *fmt, ...)
 {
