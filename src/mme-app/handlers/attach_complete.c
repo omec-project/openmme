@@ -88,6 +88,11 @@ process_MB_resp()
 	struct MB_resp_Q_msg *mbr_msg =
 		(struct MB_resp_Q_msg *)MB_resp;
 	struct UE_info*ue_entry = GET_UE_ENTRY(mbr_msg->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "MBResponse received for bad UE %d \n", mbr_msg->ue_idx);
+        return E_FAIL;
+    }
 
 	log_msg(LOG_INFO, "Modify beader for UE idx = %d\n", mbr_msg->ue_idx);
 
@@ -116,6 +121,11 @@ process_att_complete_resp()
 	struct attach_complete_Q_msg *atch_msg =
 		(struct attach_complete_Q_msg *)attach_complete;
 	struct UE_info *ue_entry = GET_UE_ENTRY(atch_msg->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "Process attach complete received on bad UE %d \n", atch_msg->ue_idx);
+        return E_FAIL;
+    }
 
 	ue_entry->ul_seq_no++;
 

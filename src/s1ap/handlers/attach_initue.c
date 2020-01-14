@@ -38,7 +38,8 @@ extern struct time_stat g_attach_stats[];
 int
 s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
 {
-	struct ue_attach_info ue_info;
+	struct ue_attach_info ue_info = {0};
+	int nas_index = 0;
 
 	/*****Message structure***
 	*/
@@ -72,36 +73,80 @@ s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
                 }break;
             case S1AP_IE_NAS_PDU:
                 {
-                    ue_info.esm_info_tx_required =
-                        s1_init_ies->data[i].val.nas.elements[2].esm_info_tx_required;
-                    ue_info.flags = s1_init_ies->data[i].val.nas.flags;
-        	        if(UE_ID_IMSI(s1_init_ies->data[i].val.nas.flags))
-        	        { 
-		                memcpy(&(ue_info.IMSI), &(s1_init_ies->data[i].val.nas.elements[0].IMSI),
-   			                BINARY_IMSI_LEN);
-        	        }
-        	        else if(UE_ID_GUTI(s1_init_ies->data[i].val.nas.flags))
-		            {
-	                    memcpy(&(ue_info.mi_guti), &(s1_init_ies->data[i].val.nas.elements[0].mi_guti),
- 	   		            sizeof(struct guti));
-		            }
-                    // If not IMSI & not GUTI then its IMEI..
-                    // NEW REQUIREMENT : emergency call handling 
-
-	                memcpy(&(ue_info.tai), &(s1_init_ies->data[i].val.tai), sizeof(struct TAI));
-	                memcpy(&(ue_info.utran_cgi), &(s1_init_ies->data[i].val.utran_cgi),
- 			                sizeof(struct CGI));
-                    memcpy(&(ue_info.ue_net_capab),
-                           &(s1_init_ies->data[i].val.nas.elements[i].ue_network),
-                           sizeof(struct UE_net_capab));
-                    memcpy(&(ue_info.ms_net_capab),
-                           &(s1_init_ies->data[i].val.nas.elements[4].ms_network),
-                           sizeof(struct MS_net_capab));
-                    ue_info.pti = s1_init_ies->data[i].val.nas.elements[5].pti;
-                    ue_info.seq_no = s1_init_ies->data[i].val.nas.header.seq_no;
-                    for(int pco=0; pco < 10; pco++)
+                    while(nas_index < s1_init_ies->data[i].val.nas.elements_len)
                     {
-                        ue_info.pco_options[pco] = s1_init_ies->data[i].val.nas.elements[6].pco_options[pco];
+                        log_msg(LOG_INFO, "nasIndex %d, msgType %d\n",
+                                nas_index,
+                                s1_init_ies->data[i].val.nas.elements[nas_index].msgType);
+                        ue_info.seq_no = s1_init_ies->data[i].val.nas.header.seq_no;
+                        switch(s1_init_ies->data[i].val.nas.elements[nas_index].msgType)
+                        {
+                            case NAS_IE_TYPE_ESM_MSG:
+                                {
+                                    break;
+                                }
+                            case NAS_IE_TYPE_EPS_MOBILE_ID_IMSI:
+                                {
+                                    ue_info.flags = s1_init_ies->data[i].val.nas.flags;
+                                    if(UE_ID_IMSI(s1_init_ies->data[i].val.nas.flags))
+                                    { 
+                                        memcpy(&(ue_info.IMSI), 
+                                               &(s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.IMSI),
+                                               BINARY_IMSI_LEN);
+                                    }
+                                    else if(UE_ID_GUTI(s1_init_ies->data[i].val.nas.flags))
+                                    {
+                                        memcpy(&(ue_info.mi_guti), &(s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.mi_guti),
+                                               sizeof(struct guti));
+                                    }
+                                    break;
+                                }
+                            case NAS_IE_TYPE_UE_NETWORK_CAPABILITY:
+                                {
+                                    memcpy(&(ue_info.ue_net_capab),
+                                           &(s1_init_ies->data[i].val.nas.\
+                                             elements[nas_index].pduElement.ue_network),
+                                           sizeof(struct UE_net_capab));
+
+                                    break;
+                                }
+                            case NAS_IE_TYPE_MS_NETWORK_CAPABILITY:
+                                {
+                                    memcpy(&(ue_info.ms_net_capab),
+                                           &(s1_init_ies->data[i].val.nas.\
+                                             elements[nas_index].pduElement.ms_network),
+                                           sizeof(struct MS_net_capab));
+
+                                    break;
+                                }
+                            case NAS_IE_TYPE_TX_FLAG:
+                                {
+                                    ue_info.esm_info_tx_required =
+                                        s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.esm_info_tx_required;
+                                    break;
+                                }
+                            case NAS_IE_TYPE_PTI:
+                                {
+                                    ue_info.pti =
+                                        s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pti;
+                                    break;
+                                }
+                            case NAS_IE_TYPE_PCO:
+                                {
+                                    for(int pco=0; pco < 10; pco++)
+                                    {
+                                        ue_info.pco_options[pco] = 
+                                            s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_options[pco];
+                                    }
+                                    break;
+                                }
+                            default:
+                                {
+                                    log_msg(LOG_INFO, "nas element not handled\n");
+                                }
+                        }
+
+                        nas_index++;
                     }
 
                 }break;

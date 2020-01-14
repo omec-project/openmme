@@ -50,6 +50,7 @@ struct init_ctx_req_Q_msg {
 	uint16_t dl_seq_no;
 	int enb_fd;
 	unsigned char pti;
+    unsigned int m_tmsi;
 };
 
 

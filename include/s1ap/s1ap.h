@@ -100,7 +100,7 @@ int
 s1_identity_resp_handler(struct proto_IE *s1);
 
 int 
-s1_tau_request_handler(struct proto_IE *s1);
+s1_tau_request_handler(struct proto_IE *s1, int enb_fd);
 
 
 int

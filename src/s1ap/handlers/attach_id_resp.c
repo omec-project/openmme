@@ -72,7 +72,7 @@ s1_identity_resp_handler(struct proto_IE *s1_id_resp_ies)
                     }
 
                     memcpy(&(id_resp.IMSI), 
-                           &(s1_id_resp_ies->data[i].val.nas.elements[0].IMSI),
+                           &(s1_id_resp_ies->data[i].val.nas.elements[0].pduElement.IMSI),
                            BINARY_IMSI_LEN);
                 }break;
             default:

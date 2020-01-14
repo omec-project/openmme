@@ -110,6 +110,11 @@ stage6_processing()
 {
 	struct csr_Q_msg *csr_info = (struct csr_Q_msg *)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(csr_info->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "stage6_processing Bad UE with index %d ", csr_info->ue_idx);
+        return E_FAIL;
+    }
 
 	/*Parse and validate  the buffer*/
 	//if(csr_info->status) check for status
@@ -143,14 +148,33 @@ post_to_next()
 	struct init_ctx_req_Q_msg icr_msg;
 	struct csr_Q_msg *csr_info = (struct csr_Q_msg *)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(csr_info->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "post_to_next Bad UE with index %d ", csr_info->ue_idx);
+        return E_FAIL;
+    }
 
 	log_msg(LOG_INFO, "Post for s1ap processing - stage 6.\n");
 
-	/* create KeNB key */
-	/* TODO: Generate nas_count from ul_seq_no */
-	uint32_t nas_count = 0;
-	create_kenb_key(ue_entry->aia_sec_info->kasme.val,
-			ue_entry->ue_sec_info.kenb_key, nas_count);
+    uint32_t nas_count = 0;
+    if(ue_entry->ul_seq_no)
+    {
+        uint32_t nas_count = ue_entry->ul_seq_no--;
+    }
+    create_kenb_key(ue_entry->aia_sec_info->kasme.val,
+                        ue_entry->ue_sec_info.kenb_key, nas_count);
+#if 0
+    if(UE_ID_IMSI(ue_entry->flags))
+    {
+        log_msg(LOG_DEBUG, "creating enb key");
+        /* create KeNB key */
+        /* TODO: Generate nas_count from ul_seq_no */
+        uint32_t nas_count = 0;
+        //uint32_t nas_count = ue_entry->ul_seq_no;
+        create_kenb_key(ue_entry->aia_sec_info->kasme.val,
+                        ue_entry->ue_sec_info.kenb_key, nas_count);
+    }
+#endif
 
 	icr_msg.ue_idx = csr_info->ue_idx;
 	icr_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
@@ -159,6 +183,8 @@ post_to_next()
 	icr_msg.bearer_id = ue_entry->bearer_id;
 	icr_msg.dl_seq_no = ue_entry->dl_seq_no++;
 	icr_msg.enb_fd = ue_entry->enb_fd;
+    icr_msg.m_tmsi = ue_entry->m_tmsi;
+
 
 	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
 

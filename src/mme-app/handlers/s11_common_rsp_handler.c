@@ -113,7 +113,11 @@ post_ctx_rel_command(int ue_index)
 {
 	struct UE_info *ue_entry = GET_UE_ENTRY(ue_index);
 	struct s1ap_common_req_Q_msg req;
-
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "Post_Ctx_rel_command for invalid UE index %d \n", ue_index);
+        return E_FAIL;
+    }
     log_msg(LOG_INFO, "Send UE Ctx Release Command for UE %d\n", ue_index);
 
     /*Create message to send to S1ap*/

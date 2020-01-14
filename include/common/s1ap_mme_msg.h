@@ -14,6 +14,7 @@ struct tauReq_Q_msg {
 	int ue_idx;
 	int s1ap_enb_ue_id;
     int seq_num;
+    int enb_fd;
 };
 #define S1AP_TAUREQ_BUF_SIZE sizeof(struct tauReq_Q_msg)
 
@@ -26,6 +27,7 @@ struct tauResp_Q_msg {
     int dl_seq_no;
     uint8_t int_key[NAS_INT_KEY_SIZE];
 	struct TAI tai;
+    unsigned int m_tmsi;
 };
 #define S1AP_TAURESP_BUF_SIZE sizeof(struct tauResp_Q_msg)
 

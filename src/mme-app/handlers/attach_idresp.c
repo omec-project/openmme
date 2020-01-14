@@ -93,6 +93,11 @@ identity_response_processing()
 	/*Parse and validate  the buffer*/
 	struct identityResp_Q_msg *id_resp = (struct identityResp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(id_resp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Ignore identity response processing for invalid UE . Index ", id_resp->ue_idx);
+        return E_FAIL;
+    }
 
     attach_identity_rsp_counter++;
 	/*Check the state*/
@@ -119,6 +124,11 @@ post_to_next()
 {
 	struct identityResp_Q_msg *idresp = (struct identityResp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(idresp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Ignore identity response post_to_next invalid UE . Index ", idresp->ue_idx);
+        return E_FAIL;
+    }
 	log_msg(LOG_INFO, "Stich the fsm and pass this identity response to UE fsm. UE-%d.\n", idresp->ue_idx);
     post_to_hss_stage(ue_entry->ue_index); 
 	return SUCCESS;

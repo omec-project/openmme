@@ -119,9 +119,9 @@ get_authreq_protoie_value(struct proto_IE *value)
 	value->data[2].val.nas.elements = (nas_pdu_elements *)
 			malloc(AUTH_REQ_NO_OF_NAS_IES * sizeof(nas_pdu_elements));
 
-	memcpy(value->data[2].val.nas.elements[0].rand,
+	memcpy(value->data[2].val.nas.elements[0].pduElement.rand,
 			g_authreqInfo->rand, NAS_RAND_SIZE);
-	memcpy(value->data[2].val.nas.elements[1].autn,
+	memcpy(value->data[2].val.nas.elements[1].pduElement.autn,
 			g_authreqInfo->autn, NAS_AUTN_SIZE);
 
 
@@ -230,14 +230,16 @@ authreq_processing()
 	buffer_copy(&g_nas_buffer, &nas->header.nas_security_param,
 						sizeof(nas->header.nas_security_param));
 
-	buffer_copy(&g_nas_buffer, &nas->elements[0].rand,
-						sizeof(nas->elements[0].rand));
+	buffer_copy(&g_nas_buffer, 
+	     &nas->elements[0].pduElement.rand,
+	     sizeof(nas->elements[0].pduElement.rand));
 
 	datalen = 16;
 	buffer_copy(&g_nas_buffer, &datalen, sizeof(datalen));
 
-	buffer_copy(&g_nas_buffer, &nas->elements[1].autn,
-						sizeof(nas->elements[1].autn));
+	buffer_copy(&g_nas_buffer, 
+	   &nas->elements[1].pduElement.autn,
+	   sizeof(nas->elements[1].pduElement.autn));
 
 	datalen = g_nas_buffer.pos + 1;
 	buffer_copy(&g_value_buffer, &datalen,

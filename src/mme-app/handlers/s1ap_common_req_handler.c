@@ -112,11 +112,18 @@ ctx_rel_req_processing()
 			(struct s1ap_common_req_Q_msg *) s1ap_comm_req;
 	struct UE_info *ue_entry = GET_UE_ENTRY(ctxRelreq->ue_idx);
 
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "ctx_rel_req_processing for bad UE with index %d ", ctxRelreq->ue_idx);
+        return E_FAIL;
+    }
+
 	log_msg(LOG_INFO, "Ctx Release request received for ue %d\n",
 			ctxRelreq->ue_idx);
 
-	if((UNASSIGNED_ENTRY == ue_entry->ue_state)
-       || (!IS_VALID_UE_INFO(ue_entry)))
+	if((ue_entry == NULL) || 
+       (!IS_VALID_UE_INFO(ue_entry)) ||
+       (UNASSIGNED_ENTRY == ue_entry->ue_state))
     {
         log_msg(LOG_ERROR, "UE Entry invalid. Drop the packet.");
         return SUCCESS;
