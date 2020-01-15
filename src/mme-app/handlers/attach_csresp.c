@@ -188,6 +188,7 @@ post_to_next()
 
 	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
 
+	// tai format is compatible with nas interface tai format
 	memcpy(&(icr_msg.tai), &(ue_entry->tai), sizeof(struct TAI));
 
 	/*s1ap handler to use apn name and tai to generate mcc, mcn appended name*/
