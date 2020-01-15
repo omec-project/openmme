@@ -205,6 +205,11 @@ post_to_next()
 	* send GUTI to UE
 	* save GUTI in the UE Record 
 	*/
+	icr_msg.pco_length = csr_info->pco_length;
+	if(csr_info->pco_length) 
+	{
+		memcpy(&icr_msg.pco_options[0], &csr_info->pco_options[0], csr_info->pco_length);
+	}
 	write_ipc_channel(g_Q_icsreq_fd, (char *)&(icr_msg), S1AP_ICSREQ_STAGE6_BUF_SIZE);
 
 	/*Call DUMMY MB funcion*/
