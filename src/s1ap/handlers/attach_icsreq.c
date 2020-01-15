@@ -204,19 +204,8 @@ get_icsreq_protoie_value(struct proto_IE *value)
 
 	nasIEs[nasIeCnt].pduElement.tailist.type = 1;
 	nasIEs[nasIeCnt].pduElement.tailist.num_of_elements = 0;
-    /* S1AP TAI mcc 123, mnc 456 : 214365 */
-    /* NAS GUTI mcc 123, mnc 456 : 216354 */
-    unsigned char x3 = g_icsReqInfo->tai.plmn_id.idx[2]; 
-    unsigned char x2 = g_icsReqInfo->tai.plmn_id.idx[1]; 
-    unsigned char x31 = x3 >> 4;
-    unsigned char x32 = x3 & 0xf;
-    unsigned char x21 = x2 >> 4;
-    unsigned char x22  = x2 & 0xf;
-    x3 = x21 | (x32 <<4);
-    x2 = (x31 << 4) | x22;
-    g_icsReqInfo->tai.plmn_id.idx[1] = x2;
-    g_icsReqInfo->tai.plmn_id.idx[2] = x3;
-
+    	/* S1AP TAI mcc 123, mnc 456 : 214365 */
+    	/* NAS TAI mcc 123, mnc 456 : 216354 */
 	memcpy(&(nasIEs[nasIeCnt].pduElement.tailist.partial_list[0]),
 			&(g_icsReqInfo->tai), sizeof(g_icsReqInfo->tai));
 	nasIeCnt++;

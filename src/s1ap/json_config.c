@@ -65,9 +65,13 @@ parse_s1ap_conf()
 	mnc_dig3 = get_int_scalar("mme.mnc.dig3");
 	if(E_PARSING_FAILED == mcc_dig1) return E_PARSING_FAILED;
 
+	/*Carefuly note the s1ap protocol mcc+mnc coding 
+	 * if mcc = 123, mnc 456 then plmnId - 214365. 
+	 * this is octed string encodingas per 36.413 Section - 9.2.3.8  
+	*/
 	g_s1ap_cfg.mme_plmn_id.idx[0] = mcc_dig2 << 4 | mcc_dig1;
-	g_s1ap_cfg.mme_plmn_id.idx[1] = mnc_dig3 << 4 | mcc_dig3;
-	g_s1ap_cfg.mme_plmn_id.idx[2] = mnc_dig2 << 4 | mnc_dig1;
+	g_s1ap_cfg.mme_plmn_id.idx[1] = mnc_dig1 << 4 | mcc_dig3;
+	g_s1ap_cfg.mme_plmn_id.idx[2] = mnc_dig3 << 4 | mnc_dig2;
 
 	return SUCCESS;
 }
