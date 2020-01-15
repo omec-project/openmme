@@ -107,6 +107,12 @@ public:
     static void displayUint8Array512_v(Uint8Array512 const &data, Debug &stream);
 
 
+    static bool encodeUint8Array255(MsgBuffer &buffer, Uint8Array255 const &data);
+    static bool decodeUint8Array255(MsgBuffer &buffer, Uint8Array255 &data,
+                 Uint16 length, Uint16 count);
+    static void displayUint8Array255_v(Uint8Array255 const &data, Debug &stream);
+
+
     static bool encodeCgiFieldArray64(MsgBuffer &buffer, CgiFieldArray64 const &data);
     static bool decodeCgiFieldArray64(MsgBuffer &buffer, CgiFieldArray64 &data,
                  Uint16 length, Uint16 count);

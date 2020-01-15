@@ -22,7 +22,7 @@ PcoIe::~PcoIe() {
 
 bool PcoIe::encodePcoIe(MsgBuffer &buffer, PcoIeData const &data)
 {
-    if (!(DataTypeCodecUtils::encodeUint8Array16(buffer, data.pcoValue)))
+    if (!(DataTypeCodecUtils::encodeUint8Array255(buffer, data.pcoValue)))
     {
     errorStream.add((char *)"Encoding of pcoValue failed\n");
     return false;
@@ -39,7 +39,7 @@ bool PcoIe::decodePcoIe(MsgBuffer &buffer, PcoIeData &data, Uint16 length)
 
     Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
-    if (!(DataTypeCodecUtils::decodeUint8Array16(buffer, data.pcoValue, lengthLeft, 0)))
+    if (!(DataTypeCodecUtils::decodeUint8Array255(buffer, data.pcoValue, lengthLeft, 0)))
     {
         errorStream.add((char *)"Failed to decode: pcoValue\n");
         return false;
@@ -67,7 +67,7 @@ void PcoIe::displayPcoIe_v(PcoIeData const &data, Debug &stream)
   
     stream.add((char *)"pcoValue:");
     stream.endOfLine();
-    DataTypeCodecUtils::displayUint8Array16_v(data.pcoValue, stream);
+    DataTypeCodecUtils::displayUint8Array255_v(data.pcoValue, stream);
     stream.decrIndent();
     stream.decrIndent();
 }

@@ -1075,6 +1075,57 @@ void DataTypeCodecUtils::displayUint8Array512_v(Uint8Array512 const &data, Debug
     stream.decrIndent();
 }
 
+bool DataTypeCodecUtils::encodeUint8Array255(MsgBuffer &buffer,
+ Uint8Array255 const &data)
+{
+    Uint16 i;
+    for (i = 0; i < data.count; i++)
+    {
+        buffer.writeUint8(data.values[i]);
+    }
+    return true;
+}
+
+bool DataTypeCodecUtils::decodeUint8Array255(MsgBuffer &buffer,
+ Uint8Array255 &data, Uint16 length, Uint16 count)
+{
+    Uint16 i = 0;
+    data.count = 0;
+    bool readTillEnd = (count == 0);
+    Uint16 startIndex = buffer.getCurrentIndex();
+    Uint16 typeBoundary = startIndex+length;
+    
+    while ((i < count)||(readTillEnd && (buffer.getCurrentIndex() < typeBoundary)))
+    {
+        buffer.readUint8(data.values[i]);
+        if (buffer.getCurrentIndex() > typeBoundary)
+        {
+            errorStream.add((char *)"Attempt to read beyond type boundary:Uint8Array255\n");
+            return false;
+        }
+        data.count++;
+        i++;
+    }
+	return true;
+}
+
+void DataTypeCodecUtils::displayUint8Array255_v(Uint8Array255 const &data, Debug &stream)
+{
+    stream.incrIndent();
+    stream.add((char *)"Uint8Array255: Count: ");
+    stream.add(data.count);
+    stream.incrIndent();
+    stream.endOfLine();
+    Uint16 i;
+    for (i = 0; i < data.count; i++)
+    {
+        stream.add(data.values[i]);
+        stream.endOfLine();     
+    }
+    stream.decrIndent();
+    stream.decrIndent();
+}
+
 bool DataTypeCodecUtils::encodeCgiFieldArray64(MsgBuffer &buffer,
  CgiFieldArray64 const &data)
 {
