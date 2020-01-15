@@ -49,6 +49,13 @@
 #define SERVICE_REQ_SECURITY_HEADER 12
 #define SHORT_MAC_SIZE 2
 
+/* Should we put this in NAS header ?*/
+/* sec. 10.5.6.3 of 3GPP TS 24.008 has following statement:
+ * The protocol configuration options is a type 4 information element with a minimum length of 3 octets and a maximum length of 253 octets.
+ */
+
+#define MAX_PCO_OPTION_SIZE 260
+
 #define MSISDN_STR_LEN 10
 
 #define EMM_MAX_TAI_LIST 16
@@ -460,9 +467,9 @@ typedef union nas_pdu_elements_union {
 	guti mi_guti;
 	bool esm_info_tx_required;
 	unsigned char pti;
-    unsigned char eps_res;
-    unsigned char spare;
-    unsigned short int pco_options[10];
+	unsigned char eps_res;
+	unsigned char spare;
+	unsigned short int pco_options[MAX_PCO_OPTION_SIZE];
 }nas_pdu_elements_union;
 
 typedef struct nas_pdu_elements {
