@@ -151,6 +151,41 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
             return E_FAIL;
     }
 
+    /* Lets update plmnId .... What we received from s1ap is : 214365 and what we need on 
+     * s6a/s11/nas interfaces is - 216354*/
+
+    {
+      unsigned char plmn_byte2 = ue_info->tai.plmn_id.idx[1];
+      unsigned char plmn_byte3 = ue_info->tai.plmn_id.idx[2];
+      unsigned char mnc3 = plmn_byte3 >> 4; //  mnc3
+      unsigned char mnc2 = plmn_byte3 & 0xf; // mnc2
+      unsigned char mnc1 = plmn_byte2 >> 4;  // mnc1
+      unsigned char mcc3  = plmn_byte2 & 0xf; //mcc3
+      // First byte we are not changing             mcc2 mcc1
+      plmn_byte2 = (mnc3 << 4) | mcc3; // 2nd byte on NAS - mnc3 mcc3
+      plmn_byte3 = (mnc2 << 4) | mnc1; // 3rd byte on NAS - <mnc2 mnc1>
+      ue_info->tai.plmn_id.idx[1] = plmn_byte2;
+      ue_info->tai.plmn_id.idx[2] = plmn_byte3;
+    }
+
+    {
+      unsigned char plmn_byte2 = ue_info->utran_cgi.plmn_id.idx[1];
+      unsigned char plmn_byte3 = ue_info->utran_cgi.plmn_id.idx[2];
+      unsigned char mnc3 = plmn_byte3 >> 4; //  mnc3
+      unsigned char mnc2 = plmn_byte3 & 0xf; // mnc2
+      unsigned char mnc1 = plmn_byte2 >> 4;  // mnc1
+      unsigned char mcc3  = plmn_byte2 & 0xf; //mcc3
+      // First byte we are not changing             mcc2 mcc1
+      plmn_byte2 = (mnc3 << 4) | mcc3; // 2nd byte on NAS - mnc3 mcc3
+      plmn_byte3 = (mnc2 << 4) | mnc1; // 3rd byte on NAS - <mnc2 mnc1>
+      ue_info->utran_cgi.plmn_id.idx[1] = plmn_byte2;
+      ue_info->utran_cgi.plmn_id.idx[2] = plmn_byte3;
+    }
+
+
+
+
+
     log_msg(LOG_INFO,"%s - UE info flags %x \n",__FUNCTION__, ue_info->flags);
 
     if(UE_ID_GUTI(ue_info->flags))
@@ -219,7 +254,6 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
         ue_entry->esm_info_tx_required = ue_info->esm_info_tx_required;
         memcpy(&(ue_entry->tai), &(ue_info->tai),
                         sizeof(struct TAI));
-
         memcpy(&(ue_entry->utran_cgi), &(ue_info->utran_cgi),
                         sizeof(struct CGI));
         memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
