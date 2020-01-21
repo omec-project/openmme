@@ -39,9 +39,8 @@ mme_config g_mme_cfg;
 
 /*List of UEs attached to MME*/
 struct UE_info* g_UE_list[UE_POOL_SIZE];
+int g_tmsi_allocation_array[10000];
 
-/*Counter UE list. Add each element sequentially when UE attaches*/
-int g_UE_cnt = 0;
 
 pthread_t stage_tid[TOTAL_STAGES];
 
@@ -59,7 +58,7 @@ void
 check_mme_hdlr_status()
 {
 	/*TODO: not thread-safe*/
-	if(!(g_mme_hdlr_status ^ 511)) /*111111111 - 1 bit for init of 1 stage */
+	if(!(g_mme_hdlr_status ^ 131071)) /*1 1111 1111 1111 1111 - 1 bit for init of 1 stage */
 		log_msg(LOG_INFO, "MME setup is ready. Let's dance.\n");
 }
 
@@ -101,6 +100,15 @@ init_mme()
 
 	unlink(INITUE_STAGE1_QUEUE);
 	create_ipc_channel(INITUE_STAGE1_QUEUE);
+
+	unlink(S1AP_REQ_REJECT_QUEUE);
+	create_ipc_channel(S1AP_REQ_REJECT_QUEUE);
+
+	unlink(S1AP_ID_REQ_QUEUE);
+	create_ipc_channel(S1AP_ID_REQ_QUEUE);
+
+	unlink(S1AP_ID_RSP_QUEUE);
+	create_ipc_channel(S1AP_ID_RSP_QUEUE);
 
 	unlink(S6A_AIA_STAGE2_QUEUE);
 	create_ipc_channel(S6A_AIA_STAGE2_QUEUE);
@@ -172,6 +180,43 @@ init_mme()
 
 	unlink(S1AP_CTXRELRESP_STAGE3_QUEUE);
 	create_ipc_channel(S1AP_CTXRELRESP_STAGE3_QUEUE);
+
+    unlink(S11_DDN_QUEUE);
+	create_ipc_channel(S11_DDN_QUEUE);
+
+	unlink(S1AP_PAGING_QUEUE);
+	create_ipc_channel(S1AP_PAGING_QUEUE);
+	
+	unlink(S1AP_MME_QUEUE);
+	create_ipc_channel(S1AP_MME_QUEUE);
+   
+	unlink(S11_SEND_REQ_STAGE_QUEUE);
+	create_ipc_channel(S11_SEND_REQ_STAGE_QUEUE);
+   
+	unlink(S11_RECV_RSP_STAGE_QUEUE);
+	create_ipc_channel(S11_RECV_RSP_STAGE_QUEUE);
+   
+	unlink(S1AP_MME_TO_S1AP_QUEUE);
+	create_ipc_channel(S1AP_MME_TO_S1AP_QUEUE);
+
+	unlink(S11_DDN_ACK_QUEUE);
+	create_ipc_channel(S11_DDN_ACK_QUEUE);
+
+	unlink(S11_DDN_FAIL_QUEUE);
+        create_ipc_channel(S11_DDN_FAIL_QUEUE);
+	
+	//Service Request
+	unlink(S1AP_SERVICEREQ_QUEUE);
+	create_ipc_channel(S1AP_SERVICEREQ_QUEUE);
+ 
+	//TAU Request
+	unlink(S1AP_TAUREQ_QUEUE);
+	create_ipc_channel(S1AP_TAUREQ_QUEUE);
+
+	//TAU Response
+	unlink(S1AP_TAURSP_QUEUE);
+	create_ipc_channel(S1AP_TAURSP_QUEUE);
+
 	return SUCCESS;
 }
 
@@ -201,6 +246,13 @@ init_stage_handlers()
 	pthread_create(&stage_tid[8], &attr, &detach_stage1_mme_handler, NULL);
 	pthread_create(&stage_tid[9], &attr, &detach_stage2_handler, NULL);
 	pthread_create(&stage_tid[10], &attr, &detach_stage3_handler, NULL);
+	pthread_create(&stage_tid[11], &attr, &DDN_handler, NULL);
+	pthread_create(&stage_tid[12], &attr, &s1ap_req_common_mme_handler, NULL);
+	pthread_create(&stage_tid[13], &attr, &s11_rsp_common_mme_handler, NULL);
+	pthread_create(&stage_tid[14], &attr, &service_request_handler, NULL);
+	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
+	pthread_create(&stage_tid[16], &attr, &tau_request_handler, NULL);
+  
 	pthread_attr_destroy(&attr);
 	return SUCCESS;
 }
@@ -213,6 +265,9 @@ init_stage_handlers()
  */
 int main()
 {
+    srand(time(0));
+    for(int i=0;i<10000;i++)
+        g_tmsi_allocation_array[i] = -1;
 	/*Read MME configurations*/
     mme_parse_config(&g_mme_cfg); 
 

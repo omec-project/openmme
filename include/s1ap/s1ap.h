@@ -26,6 +26,7 @@
 #include "InitiatingMessage.h"
 #include "SuccessfulOutcome.h"
 #include "UnsuccessfulOutcome.h"
+#include "common_proc_info.h"
 
 int
 s1_init_ctx_resp_handler(SuccessfulOutcome_t *msg);
@@ -35,15 +36,35 @@ parse_IEs(char *msg, struct proto_IE *proto_ies, unsigned short proc_code);
 
 int convertToInitUeProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies);
 int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies);
+int convertUeCtxRelReqToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_ies);
 int convertInitCtxRspToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_ies);
+int convertUeCtxRelComplToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_ies);
 int
 s1_setup_handler(InitiatingMessage_t *msg, int enb_fd);
+
+int s1_ctx_release_req_handler(InitiatingMessage_t *msg);
 
 int
 s1_init_ue_handler(struct proto_IE *s1_init_ies, int enb_fd);
 
 void
 handle_s1ap_message(void *message);
+
+int s1ap_mme_encode_ue_context_release_command(
+        struct s1ap_common_req_Q_msg *s1apPDU, 
+        uint8_t **buffer, uint32_t *length);
+
+int s1ap_mme_encode_paging_request(
+        struct s1ap_common_req_Q_msg *s1apPDU, 
+        uint8_t **buffer, uint32_t *length);
+
+int s1ap_mme_encode_initiating(
+        struct s1ap_common_req_Q_msg *s1apPDU, 
+        uint8_t **buffer, uint32_t *length);
+
+int s1ap_mme_encode_initial_context_setup_request(
+        struct s1ap_common_req_Q_msg *s1apPDU,
+        uint8_t **buffer, uint32_t *length);
 
 int
 s1ap_mme_decode_initiating (InitiatingMessage_t *initiating_p, int enb_fd);
@@ -75,8 +96,21 @@ int s1_attach_complete_handler(struct proto_IE *s1_esm_resp_ies);
 int
 detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit);
 
+int 
+s1_identity_resp_handler(struct proto_IE *s1);
+
+int 
+s1_tau_request_handler(struct proto_IE *s1, int enb_fd);
+
+
 int
-s1_ctx_release_resp_handler(InitiatingMessage_t *msg);
+s1_init_ue_service_req_handler(struct proto_IE *service_req_ies, int enb_fd);
+
+int
+s1_ctx_release_resp_handler(SuccessfulOutcome_t *msg);
+
+int
+s1_ctx_release_req_handler(InitiatingMessage_t *msg);
 
 int
 copyU16(unsigned char *buffer, uint32_t val);

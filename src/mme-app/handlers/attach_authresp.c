@@ -122,6 +122,12 @@ stage3_processing()
 	struct authresp_Q_msg *auth_resp = (struct authresp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(auth_resp->ue_idx);
 
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "stage3_procesing on invalid UE index %d ", auth_resp->ue_idx);
+        return E_FAIL;
+    }
+
 	ue_entry->ue_state = STAGE3_WAITING;
 	/*Check the state*/
 	if(SUCCESS != auth_resp->status) {
@@ -170,6 +176,11 @@ post_to_next()
 	struct sec_mode_Q_msg sec_mode_msg;
 	struct authresp_Q_msg *authresp = (struct authresp_Q_msg *)buf;
 	struct UE_info *ue_entry = GET_UE_ENTRY(authresp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "post_to_next on invalid UE index %d ", authresp->ue_idx);
+        return E_FAIL;
+    }
 
 	if(STAGE3_WAITING == ue_entry->ue_state)
     {
@@ -177,6 +188,9 @@ post_to_next()
         sec_mode_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
         memcpy(&(sec_mode_msg.ue_network), &(ue_entry->ue_net_capab),
                sizeof(struct UE_net_capab));
+	    memcpy(&(sec_mode_msg.ms_net_capab), &(ue_entry->ms_net_capab),
+		       sizeof(struct MS_net_capab));
+
 
         memcpy(&(sec_mode_msg.key), &(ue_entry->aia_sec_info->kasme),
                sizeof(struct KASME));

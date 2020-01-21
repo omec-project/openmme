@@ -95,8 +95,13 @@ process_aia_resp()
 {
 	struct aia_Q_msg *aia_msg = (struct aia_Q_msg *)aia;
 	struct UE_info *ue_entry = GET_UE_ENTRY(aia_msg->ue_idx);;
-	log_msg(LOG_INFO, "AIA for UE idx = %d\n", aia_msg->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_aia_resp for bad UE at index %d ", aia_msg->ue_idx);
+        return E_FAIL;
+    }
 
+	log_msg(LOG_INFO, "AIA for UE idx = %d\n", aia_msg->ue_idx);
 	if(NULL == ue_entry->aia_sec_info) {
 		ue_entry->aia_sec_info = calloc(sizeof(struct E_UTRAN_sec_vector), 1);
 		if(NULL == ue_entry->aia_sec_info) {
@@ -125,6 +130,12 @@ process_ula_resp()
 {
 	struct ula_Q_msg *ula_msg = (struct ula_Q_msg *)ula;
 	struct UE_info *ue_entry = GET_UE_ENTRY(ula_msg->ue_idx);;
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_ula_resp for bad UE at index %d ", ula_msg->ue_idx);
+        return E_FAIL;
+    }
+
 	log_msg(LOG_INFO, "ULA for UE idx = %d\n", ula_msg->ue_idx);
 
 	memcpy(ue_entry->MSISDN, ula_msg->MSISDN, MSISDN_STR_LEN);
@@ -135,6 +146,14 @@ process_ula_resp()
 	ue_entry->access_restriction_data = ula_msg->access_restriction_data;
 	ue_entry->ambr.max_requested_bw_dl = ula_msg->max_requested_bw_dl;
 	ue_entry->ambr.max_requested_bw_ul = ula_msg->max_requested_bw_ul;
+    /*hardcoding apn for test*/
+    char apnn[] = "apn1";
+    char apn_enc[5] = {};
+    apn_enc[0] = strlen(apnn);
+    memcpy(&apn_enc[1], apnn, strlen(apnn));
+    ue_entry->apn.len = 5;
+
+    memcpy(&(ue_entry->apn.val), apn_enc, 5);
 
 	if(STAGE1_AIA_DONE == ue_entry->ue_state) {
 		ue_entry->ue_state = ATTACH_STAGE2;
@@ -236,6 +255,13 @@ static int
 post_to_next(int ue_index)
 {
 	struct UE_info *ue_entry = GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "post_to_next for bad UE at index %d ", ue_index);
+        return E_FAIL;
+    }
+
 	if(ue_entry->ue_state == ATTACH_STAGE2) {
 
 		/* Create integrity key */

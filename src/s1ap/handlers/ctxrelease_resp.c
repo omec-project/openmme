@@ -36,16 +36,26 @@ extern int g_enb_fd;
 extern ipc_handle ipcHndl_ctx_release_complete;
 
 int
-s1_ctx_release_resp_handler(InitiatingMessage_t *msg)
+s1_ctx_release_resp_handler(SuccessfulOutcome_t *msg)
 {
 	struct ctx_release_complete_Q_msg release_complete;
 	struct proto_IE s1_ctx_release_ies;
 
-    convertToInitUeProtoIe(msg, &s1_ctx_release_ies);
+    convertUeCtxRelComplToProtoIe(msg, &s1_ctx_release_ies);
 
 	/*TODO: Validate all eNB info*/
-
-	release_complete.ue_idx = s1_ctx_release_ies.data[0].val.mme_ue_s1ap_id;
+    for(int i = 0; i < s1_ctx_release_ies.no_of_IEs; i++)
+    {
+        switch(s1_ctx_release_ies.data[i].IE_type)
+        {
+            case S1AP_IE_MME_UE_ID:
+                {
+	                release_complete.ue_idx = s1_ctx_release_ies.data[i].val.mme_ue_s1ap_id;
+                }break;
+            default:
+                log_msg(LOG_WARNING,"Unhandled IE");
+        }
+    }
 
 	int i = 0;
 	i = write_ipc_channel(ipcHndl_ctx_release_complete,
