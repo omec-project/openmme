@@ -45,7 +45,7 @@ endif
 INCS := $(INC_DIRS) \
 	-I../gtpV2Codec -I../cmn \
 
-LIBS := -lpthread -lcrypto
+LIBS := -lpthread -lcrypto -lthreadpool -lusock
 #-L$(LIB_PATH) -ls6a
 
 $(TARGET): $(OBJECTS)
