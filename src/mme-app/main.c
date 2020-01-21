@@ -30,6 +30,8 @@
 #include "s6a.h"
 #include "ue_table.h"
 #include "mme_app.h"
+#include "thread_pool.h"
+#include "unix_sock.h"
 #include "hash.h"
 #include "ipc_api.h"
 #include "message_queues.h"
@@ -39,6 +41,10 @@ mme_config g_mme_cfg;
 
 /*List of UEs attached to MME*/
 struct UE_info* g_UE_list[UE_POOL_SIZE];
+int g_unix_fd = 0;
+struct thread_pool *g_tpool;
+pthread_t acceptUnix_t;
+
 int g_tmsi_allocation_array[10000];
 
 
@@ -280,6 +286,21 @@ int main()
 #ifdef  STATS
 	stat_init();
 #endif
+	/* Initialize thread pool for sctp request parsers */
+	g_tpool = thread_pool_new(THREADPOOL_SIZE);
+
+	if (g_tpool == NULL) {
+		log_msg(LOG_ERROR, "Error in creating thread pool. \n");
+		return -E_FAIL_INIT;
+	}
+	log_msg(LOG_INFO, "monitor Listener theadpool initalized.\n");
+
+	if (init_sock() != SUCCESS) {
+		log_msg(LOG_ERROR, "Error in initializing unix domain socket server.\n");
+		return -E_FAIL_INIT;
+	}
+
+	log_msg(LOG_INFO, "socket started in listen mode \n");
 
 	log_msg(LOG_INFO, "Register for config Triggers \n");
     register_config_updates();

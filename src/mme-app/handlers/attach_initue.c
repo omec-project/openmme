@@ -28,6 +28,8 @@
 #include "stage1_info.h"
 #include "ipc_api.h"
 #include "stage1_s6a_msg.h"
+#include "monitor_message.h"
+#include "unix_conn.h"
 
 /************************************************************************
 Current file : Stage 1 handler.
@@ -162,10 +164,13 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
       unsigned char mnc1 = plmn_byte2 >> 4;  // mnc1
       unsigned char mcc3  = plmn_byte2 & 0xf; //mcc3
       // First byte we are not changing             mcc2 mcc1
-      plmn_byte2 = (mnc3 << 4) | mcc3; // 2nd byte on NAS - mnc3 mcc3
-      plmn_byte3 = (mnc2 << 4) | mnc1; // 3rd byte on NAS - <mnc2 mnc1>
-      ue_info->tai.plmn_id.idx[1] = plmn_byte2;
-      ue_info->tai.plmn_id.idx[2] = plmn_byte3;
+      if(mnc1 != 0x0F)
+      {
+          plmn_byte2 = (mnc3 << 4) | mcc3; // 2nd byte on NAS - mnc3 mcc3
+          plmn_byte3 = (mnc2 << 4) | mnc1; // 3rd byte on NAS - <mnc2 mnc1>
+          ue_info->tai.plmn_id.idx[1] = plmn_byte2;
+          ue_info->tai.plmn_id.idx[2] = plmn_byte3;
+      }
     }
 
     {
@@ -176,10 +181,13 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
       unsigned char mnc1 = plmn_byte2 >> 4;  // mnc1
       unsigned char mcc3  = plmn_byte2 & 0xf; //mcc3
       // First byte we are not changing             mcc2 mcc1
-      plmn_byte2 = (mnc3 << 4) | mcc3; // 2nd byte on NAS - mnc3 mcc3
-      plmn_byte3 = (mnc2 << 4) | mnc1; // 3rd byte on NAS - <mnc2 mnc1>
-      ue_info->utran_cgi.plmn_id.idx[1] = plmn_byte2;
-      ue_info->utran_cgi.plmn_id.idx[2] = plmn_byte3;
+      if(mnc1 != 0x0F)
+      {
+          plmn_byte2 = (mnc3 << 4) | mcc3; // 2nd byte on NAS - mnc3 mcc3
+          plmn_byte3 = (mnc2 << 4) | mnc1; // 3rd byte on NAS - <mnc2 mnc1>
+          ue_info->utran_cgi.plmn_id.idx[1] = plmn_byte2;
+          ue_info->utran_cgi.plmn_id.idx[2] = plmn_byte3;
+      }
     }
 
 
@@ -479,4 +487,142 @@ stage1_handler(void *data)
 	}
 
 	return NULL;
+}
+
+void
+handle_monitor_imsi_req(struct monitor_imsi_req *mir, int sock_fd)
+{
+	struct monitor_imsi_rsp mia = {0};
+	struct UE_info *ue_entry = NULL;
+
+    for(int i = 0;i <= g_UE_cnt;i++)
+	{
+	    ue_entry = GET_UE_ENTRY(i);
+	    if(ue_entry && 
+	       (ATTACH_DONE == ue_entry->ue_state))
+        { 
+           char imsi[16] = {0};
+           mia.result = 2;
+
+	       /*Parse and validate  the buffer*/
+           imsi_bin_to_str(ue_entry->IMSI, imsi);
+           log_msg(LOG_ERROR, "imsi: %s", imsi);
+           if(strcmp((const char *)imsi, 
+                     (const char*)mir->imsi) == 0)
+           {
+               mia.bearer_id = ue_entry->bearer_id;
+               mia.result = 1;
+               memcpy(mia.imsi, imsi, IMSI_STR_LEN);
+               memcpy(&mia.tai, &ue_entry->tai, sizeof(struct TAI));
+               memcpy(&mia.ambr, &ue_entry->ambr, sizeof(struct AMBR));
+               /*memcpy(&mia.s11_sgw_c_fteid, &ue_entry->s11_sgw_c_fteid, sizeof(struct fteid));
+                 memcpy(&mia.s5s8_pgw_c_fteid, &ue_entry->s5s8_pgw_c_fteid, sizeof(struct fteid));
+                 memcpy(&mia.s1u_sgw_u_fteid, &ue_entry->s1u_sgw_u_fteid, sizeof(struct fteid));
+                 memcpy(&mia.s5s8_pgw_u_fteid, &ue_entry->s5s8_pgw_u_fteid, sizeof(struct fteid));
+                 memcpy(&mia.s1u_enb_u_fteid, &ue_entry->s1u_enb_u_fteid, sizeof(struct fteid));*/
+               break; 
+           }
+	    }
+	}
+	
+	unsigned char buf[BUFFER_SIZE] = {0};
+	struct monitor_resp_msg resp;
+	resp.hdr = MONITOR_IMSI_RSP;
+        //resp.result = 0;
+	memcpy(&resp.data.mia, &mia, 
+	      sizeof(struct monitor_imsi_rsp));
+	//memcpy(buf, &resp, sizeof(struct monitor_resp_msg));
+	memcpy(buf, &mia, sizeof(struct monitor_imsi_rsp));
+	//send_unix_msg(sock_fd, buf, sizeof(struct monitor_resp_msg));
+	send_unix_msg(sock_fd, buf, sizeof(struct monitor_imsi_rsp));
+
+	return;
+}
+
+void
+handle_imsi_list_req(struct monitor_imsi_req *mir, int sock_fd)
+{
+	struct monitor_imsi_list_rsp mia = {0};
+	struct UE_info *ue_entry = NULL;
+
+    char** imsi_list = (char**)malloc(sizeof(char*) * g_UE_cnt);
+    if(imsi_list)
+    {
+        mia.no_of_ue = g_UE_cnt;
+        mia.imsi_list = (unsigned char**)imsi_list;
+        for(int i = 0, j=0;i <= g_UE_cnt;i++)
+        {
+            ue_entry = GET_UE_ENTRY(i);
+            if(ue_entry && 
+               (ATTACH_DONE == ue_entry->ue_state))
+            { 
+                char* imsiVal = (char*)malloc(sizeof(char)*16);
+                char imsi[16] = {0};
+
+                imsi_bin_to_str(ue_entry->IMSI, imsi);
+                if(imsiVal)
+                {
+                    memcpy(imsiVal, imsi, IMSI_STR_LEN);
+                    imsi_list[j++] = imsiVal;
+                }
+            }
+        }
+    }
+	
+	unsigned char buf[BUFFER_SIZE] = {0};
+	memcpy(buf, &mia.no_of_ue, sizeof(int));
+    char* bufPtr = (char*)buf + sizeof(int);
+    int size = sizeof(int);
+    for(int i = 0;i< mia.no_of_ue;i++)
+    {
+        memcpy(bufPtr, mia.imsi_list[i], IMSI_STR_LEN);
+        bufPtr += IMSI_STR_LEN;
+        size += IMSI_STR_LEN;
+    }
+	
+    send_unix_msg(sock_fd, buf, size);
+
+	return;
+}
+
+
+/**
+* Monitor message processing.
+*/
+void
+handle_monitor_processing(void *message)
+{
+        log_msg(LOG_INFO, "Monitor Message Received");
+	int sock_fd = 0;
+	memcpy(&sock_fd, (char*)message, sizeof(int));
+	char *msg = ((char *) message) + (sizeof(int));
+	/*struct monitor_req_msg *msg = (struct monitor_req_msg*)message + sizeof(sock_fd);
+	switch(msg->hdr){
+	case MONITOR_IMSI_REQ:
+		handle_monitor_imsi_req((struct monitor_imsi_req *)&(msg->data.mir), sock_fd);
+		break;
+
+	default:
+		log_msg(LOG_ERROR, "Unknown message received from HSS - %d\n",
+			msg->hdr);
+	}*/
+	struct monitor_imsi_req* mir = (struct monitor_imsi_req*)msg;
+    switch(mir->req_type)
+    {
+        case 0:
+            {
+	            handle_monitor_imsi_req(mir, sock_fd);
+                break;
+            }
+        case 1:
+            {
+	            handle_imsi_list_req(mir, sock_fd);
+                break;
+            }
+            
+    }
+
+	/*free allocated message buffer*/
+	free(message);
+	return;
 }

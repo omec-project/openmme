@@ -67,6 +67,7 @@ void
 check_mme_hdlr_status();
 
 void* stage1_handler(void *);
+void  handle_monitor_processing(void *);
 void* stage2_handler(void *);
 void* stage3_handler(void *);
 void* stage4_handler(void *);

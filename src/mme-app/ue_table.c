@@ -17,6 +17,8 @@
 
 
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "ue_table.h"
 #include "log.h"
@@ -82,5 +84,30 @@ int insert_index_into_list(int index)
 	}
 	g_index_list_queue[g_in_index++] = index;
 	return 0;
+}
+
+/**
+ * @brief convert binary imsi to string imsi
+ * Binary imsi is stored in 8 bytes, each nibble representing each imsi char.
+ * char imsi stroes each char in 1 byte.
+ * @param[in] b_imsi : Binary imsi
+ * @param[out] s_imsi : Converted string imsi
+ * @return void
+ */
+void
+imsi_bin_to_str(unsigned char *b_imsi, char *s_imsi)
+{
+	if(NULL == b_imsi || NULL == s_imsi) return;
+       
+	memset(s_imsi, 0, STR_IMSI_LEN);
+
+	/* Byte 'AB' in b_imsi, is converted to two bytes 'A', 'B' in s_imsi*/
+	s_imsi[0] = '0' + ((b_imsi[0]>>4) & 0x0F);
+
+	for(int i=1; i < BINARY_IMSI_LEN; ++i) {
+		s_imsi[(i*2)-1] = '0' + (b_imsi[i] & 0x0F);
+		s_imsi[(i*2)] = '0' + ((b_imsi[i]>>4) & 0x0F);
+	}
+	s_imsi[(BINARY_IMSI_LEN*2)-1] = '\0';
 }
 
