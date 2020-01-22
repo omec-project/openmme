@@ -23,6 +23,7 @@ install_run_pkg_deps() {
 		openssl \
 		libidn11 \
 		libgnutls30 \
+		netbase \
 		libsctp1
 }
 
