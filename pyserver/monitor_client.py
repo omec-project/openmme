@@ -45,8 +45,8 @@ app = Flask(__name__)
 
 @app.route("/")
 
-def helloWorld():
-    return "Hello World\n"
+def Monitor_mme_page():
+    return "Use http://{ip}:3081/imsiInfo/ \n"
 
 def bytes_to_int(bytes):
     result = 0
@@ -91,7 +91,7 @@ def getImsiList():
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
         # Connect the socket to the port where the server is listening
-        server_address = '/tmp/unix_socket'
+        server_address = '/tmp/socket/unix_socket'
         print ('connecting to %s' % server_address, file=sys.stderr)
         try:
                sock.connect(server_address)
@@ -146,7 +146,7 @@ def getInfo(imsi):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
         # Connect the socket to the port where the server is listening
-        server_address = '/tmp/unix_socket'
+        server_address = '/tmp/socket/unix_socket'
         print ('connecting to %s' % server_address, file=sys.stderr)
         try:
            sock.connect(server_address)
