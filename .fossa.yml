@@ -18,7 +18,7 @@
 # Visit https://fossa.com to learn more
 
 # Usage: FOSSA_API_KEY=<> fossa analyze
-# -T <team-name> is not supported at this moment from fossa side.
+# -T <team-name> is not supported at this moment from fossa side
 
 version: 2
 cli:
