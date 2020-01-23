@@ -27,6 +27,8 @@
 allocate next pool */
 /*5 pools*/
 #define UE_POOL_SIZE 10
+#define STR_IMSI_LEN 16
+#define THREADPOOL_SIZE 10
 /*Each pool to have 65535 UEs*/
 #define UE_POOL_CNT 550000
 
@@ -160,5 +162,6 @@ struct UE_info{
 int allocate_ue_index();
 int get_index_from_list();
 int insert_index_into_list(int ue_index);
+void imsi_bin_to_str(unsigned char *b_imsi, char *s_imsi);
 
 #endif /*ue_table*/
