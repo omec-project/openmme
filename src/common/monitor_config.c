@@ -1,21 +1,3 @@
-/*
-* Copyright 2019-present Open Networking Foundation
-*
-* SPDX-License-Identifier: Apache-2.0
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-*/
 
 #include <stdio.h>
 #include <sys/inotify.h>
@@ -31,10 +13,10 @@
 #include <log.h>
 
 #define MAX_FILE_PATH 128
-struct entry 
+struct entry
 {
   configCbk    callback;
-  char         config_file[MAX_FILE_PATH]; 
+  char         config_file[MAX_FILE_PATH];
   bool         always;
 };
 
@@ -123,7 +105,7 @@ handle_events(int fd, int *wd, struct entry *config)
             if (wd[0] == event->wd) {
                 handled = true;
                 uint32_t flags=0;
-                config->callback(config->config_file, flags); 
+                config->callback(config->config_file, flags);
                 break;
             }
 
@@ -132,7 +114,7 @@ handle_events(int fd, int *wd, struct entry *config)
     return handled;
 }
 
-  
+
 
 
 #ifdef TEST_LOCALLY
@@ -150,7 +132,7 @@ int main()
 }
 #endif
 
-void * 
+void *
 config_thread_handler(void *config)
 {
   nfds_t nfds;
@@ -158,19 +140,19 @@ config_thread_handler(void *config)
   struct pollfd fds[1];
   int wd;
   struct entry *cfg = (struct entry *)config;
-  int fd = 0 ; 
+  int fd = 0 ;
 
   log_msg(LOG_INFO, "Thread started for monitoring config file %s \n",cfg->config_file);
 
   fd = inotify_init1(IN_NONBLOCK);
-  if (fd == -1) 
+  if (fd == -1)
   {
       perror("inotify_init1");
       exit(EXIT_FAILURE);
   }
 
   wd = inotify_add_watch(fd, cfg->config_file, IN_ALL_EVENTS); //OPEN | IN_CLOSE);
-  if (wd == -1) 
+  if (wd == -1)
   {
       log_msg(LOG_INFO, "Can not watch file. File does not exist - %s \n",cfg->config_file);
       return NULL;
@@ -186,21 +168,21 @@ config_thread_handler(void *config)
 
   /* Wait for events and/or terminal input */
 
-  while (1) 
+  while (1)
   {
     // -1 timeout means we wait till event received.
-    // That also means no tight looping 
+    // That also means no tight looping
     poll_num = poll(fds, nfds, 5000);
-    if (poll_num == -1) 
+    if (poll_num == -1)
     {
         if (errno == EINTR)
             continue;
         perror("poll");
         exit(1);
     }
-    else if (poll_num > 0) 
+    else if (poll_num > 0)
     {
-      if (fds[0].revents & POLLIN) 
+      if (fds[0].revents & POLLIN)
       {
         /* Inotify events are available */
         bool handled = handle_events(fd, &wd, cfg);
@@ -210,7 +192,7 @@ config_thread_handler(void *config)
           if(cfg->always == true)
           {
             wd = inotify_add_watch(fd, cfg->config_file, IN_ALL_EVENTS); //OPEN | IN_CLOSE);
-            if (wd == -1) 
+            if (wd == -1)
             {
               fprintf(stderr, "Cannot watch \n");
               perror("inotify_add_watch");
@@ -242,5 +224,5 @@ void watch_config_change(char *config_file, configCbk cbk, bool always)
   /* Create a thread which will monitor changes in the config file */
   pthread_create(&config_monitor_tid, &attr, &config_thread_handler, config_entry);
   pthread_attr_destroy(&attr);
-  return; 
+  return;
 }
