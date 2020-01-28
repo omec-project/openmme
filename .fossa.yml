@@ -24,7 +24,7 @@ version: 2
 cli:
   server: https://app.fossa.com
   fetcher: custom
-  project: openmme
+  project: openmme-master
 analyze:
   modules:
   - name: openmme
