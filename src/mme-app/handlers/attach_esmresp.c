@@ -148,7 +148,8 @@ post_to_next()
 	cs_msg.ue_idx = esm_resp->ue_idx;
 	memcpy(cs_msg.IMSI, ue_entry->IMSI, BINARY_IMSI_LEN);
 
-	memcpy(&(cs_msg.apn), &(ue_entry->apn),
+	// The selected apn by mme used for create session.
+	memcpy(&(cs_msg.selected_apn), &(ue_entry->selected_apn),
 		sizeof(struct apn_name));
 
 	memcpy(&(cs_msg.tai), &(ue_entry->tai),

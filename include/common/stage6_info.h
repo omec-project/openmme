@@ -43,6 +43,7 @@ struct init_ctx_req_Q_msg {
 	struct fteid gtp_teid;
 	struct TAI tai;
 	struct apn_name apn;
+	struct apn_name selected_apn;
 	struct PAA pdn_addr;
 	unsigned char sec_key[32];
 	unsigned char bearer_id;

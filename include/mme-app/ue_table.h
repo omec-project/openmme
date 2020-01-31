@@ -98,6 +98,10 @@ struct UE_info{
 	struct UE_net_capab  ue_net_capab;
 	struct apn_name apn; /*TODO: Make it dynamic to save space. otherwise
 								  required len will be 103 bytes*/
+	struct apn_name selected_apn; /* For high priority apn selected by
+					mme, also can be used as default apn
+					when there is no apn from UE */
+
 	// enum          RRC_est_cause rrc_cause;
 
 	/**Information received from ULA*/

@@ -166,6 +166,8 @@ post_to_next()
 
 	/*s1ap handler to use apn name and tai to generate mcc, mcn appended name*/
 	memcpy(&(icr_msg.apn), &(ue_entry->apn), sizeof(struct apn_name));
+	memcpy(&(icr_msg.selected_apn), &(ue_entry->selected_apn),
+			sizeof(struct apn_name));
 	memcpy(&(icr_msg.pdn_addr), &(ue_entry->pdn_addr), sizeof(struct PAA));
 	memcpy(&(icr_msg.int_key), &(ue_entry->ue_sec_info.int_key),
 			NAS_INT_KEY_SIZE);
