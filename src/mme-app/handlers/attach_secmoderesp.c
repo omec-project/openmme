@@ -163,9 +163,9 @@ post_to_next()
 		cs_msg.ue_idx = secmode_resp->ue_idx;
 		memcpy(cs_msg.IMSI, ue_entry->IMSI, BINARY_IMSI_LEN);
 
-		/*Where to get apn_name from? esm_info step is skipped here, which get
-		 * apn_name to use at this stage.*/
-		memcpy(&(cs_msg.apn), &(ue_entry->apn),
+		// Always use the apn name in hss db for create session request for
+		// default bearer.
+		memcpy(&(cs_msg.selected_apn), &(ue_entry->selected_apn),
 			sizeof(struct apn_name));
 
 		memcpy(&(cs_msg.tai), &(ue_entry->tai),

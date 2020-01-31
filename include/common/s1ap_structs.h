@@ -266,6 +266,7 @@ typedef struct esm_msg_container {
 	uint8_t session_management_msgs;
 	uint8_t eps_qos;  /* TODO: Revisit 24.301 - 9.9.4.3.1 */
 	struct apn_name apn;
+	struct apn_name selected_apn;
 	pdn_address pdn_addr;
 	linked_transcation_id linked_ti;
 	esm_qos negotiated_qos;

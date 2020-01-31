@@ -25,7 +25,7 @@
 struct CS_Q_msg {
 	int           ue_idx;
 	unsigned char IMSI[BINARY_IMSI_LEN];
-	struct        apn_name apn;
+	struct        apn_name selected_apn;
 	struct        TAI tai;
 	struct        CGI utran_cgi;
 	unsigned char MSISDN[MSISDN_STR_LEN];

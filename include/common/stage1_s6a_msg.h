@@ -60,6 +60,7 @@ struct ula_Q_msg {
 	unsigned int apn_config_profile_ctx_id;
 	int all_APN_cfg_included_ind;
 	char MSISDN[MSISDN_STR_LEN];
+	struct apn_name selected_apn;
 };
 
 #define S6A_REQ_Q_MSG_SIZE sizeof(struct s6a_Q_msg)
