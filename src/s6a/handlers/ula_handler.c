@@ -1,6 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,29 +138,67 @@ parse_ula_subscription_data(struct avp *avp_ptr, struct ula_Q_msg *ula)
 			/*APN profile has its own child elements, iterate through
 			 * those*/
 			struct avp *apn_cfg_prof_itr = NULL;
-			struct avp_hdr *apn_cfg_element = NULL;
+			struct avp_hdr *apn_cfg_prof_element = NULL;
 
 			CHECK_FCT_DO(fd_msg_browse(next, MSG_BRW_FIRST_CHILD,
 						&apn_cfg_prof_itr, NULL), return);
 
 			/*Iterate through subscription data child avps*/
 			while(NULL != apn_cfg_prof_itr) {
-				fd_msg_avp_hdr(apn_cfg_prof_itr, &apn_cfg_element);
+				fd_msg_avp_hdr(apn_cfg_prof_itr, &apn_cfg_prof_element);
 
 				if(g_fd_dict_data.ctx_id.avp_code ==
-						apn_cfg_element->avp_code) {
+						apn_cfg_prof_element->avp_code) {
 					ula->apn_config_profile_ctx_id =
-						apn_cfg_element->avp_value->u32;
+						apn_cfg_prof_element->avp_value->u32;
 				} else
 				if(g_fd_dict_data.all_APN_configs_included_ind.avp_code ==
-						apn_cfg_element->avp_code) {
+						apn_cfg_prof_element->avp_code) {
 					ula->all_APN_cfg_included_ind =
-						apn_cfg_element->avp_value->i32;
+						apn_cfg_prof_element->avp_value->i32;
 				} else
 				if(g_fd_dict_data.APN_config.avp_code ==
-						apn_cfg_element->avp_code){
+						apn_cfg_prof_element->avp_code){
+
 					//APN configuration list : There is list of elements to read
-					//TODO : Write function to read all elements
+					struct avp *apn_cfg_itr = NULL;
+					struct avp_hdr *apn_cfg_element = NULL;
+
+					CHECK_FCT_DO(fd_msg_browse(apn_cfg_prof_itr,
+							MSG_BRW_FIRST_CHILD, &apn_cfg_itr, NULL), return);
+
+					while(NULL != apn_cfg_itr){
+
+						fd_msg_avp_hdr(apn_cfg_itr, &apn_cfg_element);
+
+						// TODO g_fd_dict_data does not have service_slection
+						// will finish this part in the following patch
+						// service_slection code is 493
+						// if(g_fd_dict_data.service_slection ==
+						if (493 == apn_cfg_element->avp_code){
+
+							log_msg(LOG_INFO, "APN name recvd from hss - %s\n",
+									apn_cfg_element->avp_value->os.data);
+							log_msg(LOG_INFO, "APN length recvd from hss - %lu\n",
+									apn_cfg_element->avp_value->os.len);
+
+							// TODO will push another patch to extend
+							// message Q to use the code blow
+							/*
+							memcpy(ula->apn.val,
+									apn_cfg_element->avp_value->os.data,
+									apn_cfg_element->avp_value->os.len);
+							ula->apn.len = apn_cfg_element->avp_value->os.len;
+							*/
+						}
+
+						apn_cfg_prof_itr = apn_cfg_itr;
+
+						CHECK_FCT_DO(fd_msg_browse(apn_cfg_itr, MSG_BRW_NEXT,
+								&apn_cfg_itr, NULL), return);
+
+					}
+					continue;
 
 				}
 
