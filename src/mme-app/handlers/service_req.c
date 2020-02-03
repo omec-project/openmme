@@ -26,6 +26,7 @@
 #include "message_queues.h"
 #include "ipc_api.h"
 #include "stage6_info.h"
+#include "stage2_info.h"
 #include "servicereq_info.h"
 #include "common_proc_info.h"
 
@@ -39,9 +40,11 @@ Service Request-->service_request_handler-> init ctxt setup [Service Accept]
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
+extern int g_tmsi_allocation_array[];
 
 static int g_Q_servicereq_fd;
-extern int g_Q_mme_to_s1ap_fd;
+static int g_Q_authreq_fd;
+static int g_Q_mme_to_s1ap_fd;
 /*Making global just to avoid stack passing*/
 static char buf[S1AP_SERVICEREQ_BUF_SIZE];
 
@@ -63,8 +66,25 @@ init_stage()
 		log_msg(LOG_ERROR, "Error in opening reader for S1AP Service Request IPC channel.\n");
 		pthread_exit(NULL);
 	}
-	log_msg(LOG_INFO, "Service Request reader - s1ap service request complete: Connected\n");
+    
+    log_msg(LOG_INFO, "Service Request reader - s1ap service request complete: Connected\n");
 
+	if ((g_Q_mme_to_s1ap_fd  = open_ipc_channel(S1AP_MME_TO_S1AP_QUEUE,
+						IPC_WRITE)) == -1){
+		log_msg(LOG_ERROR, "Error in opening MME to S1AP write IPC channel.\n");
+		pthread_exit(NULL);
+	}
+
+	log_msg(LOG_INFO, "MME to S1AP write IPC Connected\n");
+	
+    log_msg(LOG_INFO, "Stage 2 witer  - s1ap Auth request: waiting\n");
+	g_Q_authreq_fd = open_ipc_channel(S1AP_AUTHREQ_STAGE2_QUEUE, IPC_WRITE);
+
+	if (g_Q_authreq_fd == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel: s1ap Auth req\n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "Stage2 writer - s1ap Auth request: Connected\n");
 	return;
 }
 
@@ -98,9 +118,23 @@ read_next_msg()
 static int
 service_request_processing()
 {
-	struct service_req_Q_msg *service_req =
-			(struct service_req_Q_msg *) buf;
-	struct UE_info *ue_entry = GET_UE_ENTRY(service_req->ue_idx);
+    struct service_req_Q_msg *service_req =
+        (struct service_req_Q_msg *) buf;
+    if(service_req->ue_idx >= 10000)
+    {
+        log_msg(LOG_INFO, "TMSI out of range %d ", service_req->ue_idx); 
+        return E_MAPPING_FAILED;
+    }
+    
+    unsigned int ue_index = g_tmsi_allocation_array[service_req->ue_idx];
+    if(ue_index == -1 )
+    {
+        log_msg(LOG_INFO, "TMSI not found %d ", service_req->ue_idx); 
+        return E_MAPPING_FAILED;
+    }
+
+    service_req->ue_idx = ue_index;
+    struct UE_info *ue_entry = GET_UE_ENTRY(service_req->ue_idx);
 
     if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
     {
@@ -112,7 +146,9 @@ service_request_processing()
 			service_req->ue_idx);
 
 	ue_entry->ue_state = SVC_REQ_WF_INIT_CTXT_RESP;
+    ue_entry->ue_curr_proc = SERVICE_REQ_PROC;
 	ue_entry->s1ap_enb_ue_id = service_req->s1ap_enb_ue_id;
+	ue_entry->enb_fd = service_req->enb_fd;
 
 	// TODO: KSI, SeqNum, MAC code val?
 	
@@ -127,7 +163,41 @@ service_request_processing()
 static int
 post_to_next()
 {
-	struct s1ap_common_req_Q_msg icr_msg;
+    log_msg(LOG_DEBUG, "Authentication for Service Req");
+    struct authreq_info authreq;
+	struct service_req_Q_msg *service_req =
+				(struct service_req_Q_msg *) buf;
+	struct UE_info *ue_entry =  GET_UE_ENTRY(service_req->ue_idx);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      service_req->ue_idx);
+		return -1;
+	}
+    create_integrity_key(ue_entry->aia_sec_info->kasme.val,
+                         ue_entry->ue_sec_info.int_key);
+
+    ue_entry->dl_seq_no = 0;
+
+    log_msg(LOG_INFO, "UE index  %d\n", service_req->ue_idx);
+
+
+    /*Create message to send to S1ap*/
+    authreq.enb_fd = ue_entry->enb_fd;
+    authreq.ue_idx = service_req->ue_idx;
+    authreq.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+    memcpy(&(authreq.rand), &(ue_entry->aia_sec_info->rand.val),
+           NAS_RAND_SIZE);
+    memcpy(&(authreq.autn), &(ue_entry->aia_sec_info->autn.val),
+           NAS_AUTN_SIZE);
+
+    /*post message to next stage i.e. s1ap auth req*/
+    write_ipc_channel(g_Q_authreq_fd, (char *)&(authreq),
+                      S1AP_AUTHREQ_STAGE2_BUF_SIZE);
+    log_msg(LOG_INFO, "Stage 2. Posted message to s1ap - Auth req\n");
+#if 0
+    struct s1ap_common_req_Q_msg icr_msg;
 
 	struct service_req_Q_msg *service_req =
 				(struct service_req_Q_msg *) buf;
@@ -144,7 +214,7 @@ post_to_next()
 
 	/* create KeNB key */
 	/* TODO: Generate nas_count from ul_seq_no */
-	uint32_t nas_count = 0;
+	uint32_t nas_count = ue_entry->dl_seq_no++;
 	create_kenb_key(ue_entry->aia_sec_info->kasme.val, ue_entry->ue_sec_info.kenb_key, nas_count);
 	icr_msg.IE_type = S1AP_INIT_CTXT_SETUP_REQ;
 	icr_msg.ue_idx = service_req->ue_idx;
@@ -162,6 +232,7 @@ post_to_next()
 
 	log_msg(LOG_INFO, "Post for service_req_wf_initctxt_resp processing. SUCCESS\n");
 	return SUCCESS;
+#endif
 }
 
 /**
@@ -171,6 +242,7 @@ void
 shutdown_servicereq_stage()
 {
 	close_ipc_channel(g_Q_servicereq_fd);
+	close_ipc_channel(g_Q_mme_to_s1ap_fd);
 	log_msg(LOG_INFO, "Shutdown Service Request handler \n");
 	pthread_exit(NULL);
 	return;

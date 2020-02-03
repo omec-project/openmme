@@ -36,7 +36,7 @@
 /*Making global just to avoid stack passing*/
 static char s1ap_common_req[S1AP_COMMON_REQ_BUF_SIZE];
 
-struct s1ap_common_req_Q_msg *g_mmeS1apInfo;
+static struct s1ap_common_req_Q_msg *g_mmeS1apInfo;
 
 static Buffer g_ctxrel_buffer;
 static Buffer g_icsreq_buffer;

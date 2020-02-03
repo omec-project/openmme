@@ -134,6 +134,13 @@ stage6_processing()
 
 	memcpy(&(ue_entry->pdn_addr), &(csr_info->pdn_addr),
 		sizeof(struct PAA));
+        memcpy(&(ue_entry->pdn_addr), &(csr_info->pdn_addr),
+                sizeof(struct PAA));
+
+    char imsi[16] = {0};
+    imsi_bin_to_str(ue_entry->IMSI, imsi);
+    log_msg(LOG_DEBUG, "IMSI %s - IP address assigned %s", 
+             imsi, inet_ntoa(ue_entry->pdn_addr.ip_type.ipv4));
 
 	/*post to next processing*/
 	return SUCCESS;
@@ -157,10 +164,6 @@ post_to_next()
 	log_msg(LOG_INFO, "Post for s1ap processing - stage 6.\n");
 
     uint32_t nas_count = 0;
-    if(ue_entry->ul_seq_no)
-    {
-        uint32_t nas_count = ue_entry->ul_seq_no--;
-    }
     create_kenb_key(ue_entry->aia_sec_info->kasme.val,
                         ue_entry->ue_sec_info.kenb_key, nas_count);
 #if 0

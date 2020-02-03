@@ -79,6 +79,13 @@ enum ue_stages{
 
 #define TOTAL_STAGES  20
 
+enum ue_proc{
+  UNKNOWN_PROC = 0,
+  ATTACH_PROC,
+  SERVICE_REQ_PROC,
+  TAU_PROC,
+  DETACH_PROC
+};
 
 enum ecm_states{
  ECM_IDLE,
@@ -104,6 +111,7 @@ struct AMBR {
 struct UE_info{
 	int             enb_fd;
 	enum ue_stages  ue_state;
+	enum ue_proc    ue_curr_proc;
 	enum ecm_states ecm_state;
 	int             s1ap_enb_ue_id;
 	unsigned char   IMSI[BINARY_IMSI_LEN];

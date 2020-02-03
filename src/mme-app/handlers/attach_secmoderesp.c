@@ -28,6 +28,8 @@
 #include "ipc_api.h"
 #include "stage4_info.h"
 #include "stage5_s11_info.h"
+#include "stage6_info.h"
+#include "common_proc_info.h"
 
 /************************************************************************
 Current file : Stage 4 handler.
@@ -49,6 +51,7 @@ extern int g_mme_hdlr_status;
 static int g_Q_secmoderesp_fd;
 static int g_Q_esmreq_fd;
 extern int g_Q_CSreq_fd;
+static int g_Q_mme_to_s1ap_fd;
 
 extern uint32_t attach_stage4_counter;
 extern uint32_t attach_stage5_counter;
@@ -68,6 +71,13 @@ init_stage()
 	}
 	log_msg(LOG_INFO, "Stage 4 reader - s1ap Security mode response : Connected\n");
 
+	if ((g_Q_mme_to_s1ap_fd  = open_ipc_channel(S1AP_MME_TO_S1AP_QUEUE,
+						IPC_WRITE)) == -1){
+		log_msg(LOG_ERROR, "Error in opening MME to S1AP write IPC channel.\n");
+		pthread_exit(NULL);
+	}
+
+	log_msg(LOG_INFO, "MME to S1AP write IPC Connected\n");
 	/*Open destination queue for writing. It is AIR, ULR Q in this stage*/
 	log_msg(LOG_INFO, "Stage 4 writer  - s1ap ESM info req: waiting\n");
 	g_Q_esmreq_fd = open_ipc_channel(S1AP_ESMREQ_STAGE4_QUEUE, IPC_WRITE);
@@ -152,6 +162,13 @@ post_to_next(char *buf)
     }
     log_msg(LOG_INFO, "Stiching stage 1 to stage 4 - 1 \n");
 
+    if(SERVICE_REQ_PROC == ue_entry->ue_curr_proc)
+    {
+        log_msg(LOG_DEBUG, "Security Done after Service Request");
+        log_msg(LOG_DEBUG, "Send Initial Ctx setup request");
+        return send_init_ctx_setup_req(secmode_resp->ue_idx);
+    }
+
 	if(ue_entry->esm_info_tx_required) {
 		esm_req.enb_fd = ue_entry->enb_fd;
 		esm_req.ue_idx = secmode_resp->ue_idx;
@@ -199,6 +216,44 @@ post_to_next(char *buf)
 	return SUCCESS;
 }
 
+int send_init_ctx_setup_req(int ue_index)
+{
+    log_msg(LOG_DEBUG,"create and send Init ctx setup request");
+    struct s1ap_common_req_Q_msg icr_msg;
+
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      ue_index);
+		return -1;
+	}
+
+	log_msg(LOG_INFO, "Post for s1ap processing - service_req_wf_initctxt_resp.\n");
+
+	/* create KeNB key */
+	/* TODO: Generate nas_count from ul_seq_no */
+	uint32_t nas_count = 0;
+	create_kenb_key(ue_entry->aia_sec_info->kasme.val, ue_entry->ue_sec_info.kenb_key, nas_count);
+	icr_msg.IE_type = S1AP_INIT_CTXT_SETUP_REQ;
+	icr_msg.ue_idx = ue_index;
+	icr_msg.enb_fd = ue_entry->enb_fd;
+	icr_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+	icr_msg.mme_s1ap_ue_id = ue_index;
+	icr_msg.ueag_max_dl_bitrate = ue_entry->ambr.max_requested_bw_dl;
+	icr_msg.ueag_max_ul_bitrate = ue_entry->ambr.max_requested_bw_ul;
+	icr_msg.bearer_id = ue_entry->bearer_id;
+	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
+	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key), KENB_SIZE);
+
+	//opened for write by s1 rel thread
+	write_ipc_channel(g_Q_mme_to_s1ap_fd, (char *)&(icr_msg), S1AP_COMMON_REQ_BUF_SIZE);
+
+	log_msg(LOG_INFO, "Post for service_req_wf_initctxt_resp processing. SUCCESS\n");
+    return SUCCESS;
+}
+
 /**
 * Thread exit function for future reference.
 */
@@ -207,6 +262,7 @@ shutdown_stage4()
 {
 	close_ipc_channel(g_Q_secmoderesp_fd);
 	close_ipc_channel(g_Q_esmreq_fd);
+	close_ipc_channel(g_Q_mme_to_s1ap_fd);
 	log_msg(LOG_INFO, "Shutdown Stage 4 handler \n");
 	pthread_exit(NULL);
 	return;

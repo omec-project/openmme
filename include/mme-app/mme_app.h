@@ -81,6 +81,7 @@ void* detach_stage3_handler(void *);
 void  guti_attach_post_to_next(int index);
 void *identity_rsp_handler(void *);
 int post_to_hss_stage(int idx);
+int send_init_ctx_setup_req(int idx);
 void* ddn_handler(void *);
 void* service_request_handler(void *);
 void* s1ap_req_common_mme_handler(void *);

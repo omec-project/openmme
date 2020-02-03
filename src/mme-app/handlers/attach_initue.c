@@ -259,6 +259,7 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
         memcpy(&(ue_entry->dl_seq_no), &(ue_info->seq_no), 1);
         ue_entry->s1ap_enb_ue_id = ue_info->s1ap_enb_ue_id;
         ue_entry->enb_fd = ue_info->enb_fd;
+        ue_entry->ue_curr_proc = ATTACH_PROC;
         ue_entry->esm_info_tx_required = ue_info->esm_info_tx_required;
         memcpy(&(ue_entry->tai), &(ue_info->tai),
                         sizeof(struct TAI));
@@ -593,6 +594,8 @@ void
 handle_monitor_processing(void *message)
 {
         log_msg(LOG_INFO, "Monitor Message Received");
+	free(message);
+	return;
 	int sock_fd = 0;
 	memcpy(&sock_fd, (char*)message, sizeof(int));
 	char *msg = ((char *) message) + (sizeof(int));

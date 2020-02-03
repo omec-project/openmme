@@ -169,7 +169,11 @@ int s1ap_mme_encode_ue_context_release_command(
     }
 
     log_msg(LOG_INFO,"free allocated msgs");
-    free(ue_id_val.choice.uE_S1AP_ID_pair);
+    if(ue_id_val.present == UE_S1AP_IDs_PR_uE_S1AP_ID_pair)
+    {
+        log_msg(LOG_INFO,"free UE id pair");
+        free(ue_id_val.choice.uE_S1AP_ID_pair);
+    }
     free(pdu.choice.initiatingMessage);
     
     *length = enc_ret;
@@ -188,10 +192,10 @@ int s1ap_mme_encode_initial_context_setup_request(
     memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
 
     pdu.present = S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = (InitiatingMessage_t*)malloc(sizeof(InitiatingMessage_t));
+    pdu.choice.initiatingMessage = calloc (sizeof(InitiatingMessage_t), sizeof(uint8_t));
     if(pdu.choice.initiatingMessage == NULL)
     {
-        log_msg(LOG_ERROR,"malloc failed.\n");
+        log_msg(LOG_ERROR,"calloc failed.\n");
         return -1;
     }
     initiating_msg = pdu.choice.initiatingMessage;
@@ -200,6 +204,7 @@ int s1ap_mme_encode_initial_context_setup_request(
     initiating_msg->value.present = InitiatingMessage__value_PR_InitialContextSetupRequest;
 
     InitialContextSetupRequestIEs_t val[6];
+    memset(val, 0, 6 * (sizeof(InitialContextSetupRequestIEs_t)));
 
     val[0].id = ProtocolIE_ID_id_MME_UE_S1AP_ID;
     val[0].criticality = 0;
@@ -217,26 +222,27 @@ int s1ap_mme_encode_initial_context_setup_request(
 
     val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.size = 5;
     val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf = calloc (5, sizeof(uint8_t));
-    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[0] = 0x18; // required?
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[0] = 0x0; 
     uint32_t temp_bitrate = htonl(s1apPDU->ueag_max_dl_bitrate);
-    memcpy (&val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[1], &temp_bitrate, sizeof(uint32_t));
+    memcpy (&(val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[1]), &temp_bitrate, sizeof(uint32_t));
 
     val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.size =  5;
     val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf = calloc (5, sizeof(uint8_t));
-    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[0] = 0x60; // required?
+    val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[0] = 0x0; 
     temp_bitrate = htonl(s1apPDU->ueag_max_ul_bitrate);
-    memcpy (&val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[1], &temp_bitrate, sizeof(uint32_t));
+    memcpy (&(val[2].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[1]), &temp_bitrate, sizeof(uint32_t));
 
     val[3].id = ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq;
     val[3].criticality = 0;
     val[3].value.present = InitialContextSetupRequestIEs__value_PR_E_RABToBeSetupListCtxtSUReq;
 
     E_RABToBeSetupItemCtxtSUReqIEs_t erab_to_be_setup_item;
+    memset(&erab_to_be_setup_item, 0, sizeof(E_RABToBeSetupItemCtxtSUReqIEs_t));
     E_RABToBeSetupItemCtxtSUReq_t* erab_to_be_setup = &(erab_to_be_setup_item.value.choice.E_RABToBeSetupItemCtxtSUReq);
 
     erab_to_be_setup_item.id = ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
     erab_to_be_setup_item.criticality = 0;
-    erab_to_be_setup_item.value.present = E_RABSetupItemCtxtSUResIEs__value_PR_E_RABSetupItemCtxtSURes;
+    erab_to_be_setup_item.value.present = E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
 
     erab_to_be_setup->e_RAB_ID = 5;
 
@@ -247,7 +253,9 @@ int s1ap_mme_encode_initial_context_setup_request(
 
     erab_to_be_setup->transportLayerAddress.size = 4;
     erab_to_be_setup->transportLayerAddress.buf = calloc(4, sizeof(uint8_t));
-    memcpy(erab_to_be_setup->transportLayerAddress.buf, &s1apPDU->gtp_teid.ip.ipv4.s_addr, 4);
+    uint32_t transport_layer_address = htonl(s1apPDU->gtp_teid.ip.ipv4.s_addr);
+    memcpy(erab_to_be_setup->transportLayerAddress.buf, &transport_layer_address, sizeof(uint32_t));
+    //memcpy(erab_to_be_setup->transportLayerAddress.buf, &s1apPDU->gtp_teid.ip.ipv4.s_addr, 4);
 
     erab_to_be_setup->gTP_TEID.size = 4;
     erab_to_be_setup->gTP_TEID.buf = calloc(4, sizeof(uint8_t));
@@ -256,7 +264,7 @@ int s1ap_mme_encode_initial_context_setup_request(
     erab_to_be_setup->gTP_TEID.buf[2] =  s1apPDU->gtp_teid.header.teid_gre >> 8;
     erab_to_be_setup->gTP_TEID.buf[3] =  s1apPDU->gtp_teid.header.teid_gre;
 
-    ASN_SEQUENCE_ADD(&val[3].value.choice.E_RABToBeSetupListCtxtSUReq.list, &erab_to_be_setup_item);
+    ASN_SEQUENCE_ADD(&(val[3].value.choice.E_RABToBeSetupListCtxtSUReq.list), &erab_to_be_setup_item);
 
     val[4].id = ProtocolIE_ID_id_UESecurityCapabilities;
     val[4].criticality = 0;
@@ -291,7 +299,7 @@ int s1ap_mme_encode_initial_context_setup_request(
         return -1;
     }
 
-    log_msg(LOG_INFO,"free allocated messages");
+    log_msg(LOG_INFO,"free allocated messages\n");
 
     free(val[5].value.choice.SecurityKey.buf);
     free(val[4].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf);
@@ -311,36 +319,39 @@ int s1ap_mme_encode_paging_request(
   uint8_t **buffer,
   uint32_t *length)
 {
-	S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+    log_msg(LOG_DEBUG,"Entered s1ap_encoder->s1ap_mme_encode_paging_request\n");
+
+    S1AP_PDU_t pdu = {(S1AP_PDU_PR_NOTHING)};
     InitiatingMessage_t *initiating_msg = NULL;
-	S1AP_PDU_t                             *pdu_p = &pdu;
-	int                                     enc_ret = -1;
-	memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+    S1AP_PDU_t *pdu_p = &pdu;
+    int enc_ret = -1;
+    memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
 
     pdu.present = S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = (InitiatingMessage_t*)malloc(sizeof(InitiatingMessage_t));
+    pdu.choice.initiatingMessage = calloc (sizeof(InitiatingMessage_t), sizeof(uint8_t));
     if(pdu.choice.initiatingMessage == NULL)
     {
-        log_msg(LOG_ERROR,"malloc failed.\n");
+        log_msg(LOG_ERROR,"calloc failed.\n");
         return -1;
     }
+
     initiating_msg = pdu.choice.initiatingMessage;
     initiating_msg->procedureCode = ProcedureCode_id_Paging;
     initiating_msg->criticality = 0;
     initiating_msg->value.present = InitiatingMessage__value_PR_Paging;  
-    //proto_c = &initiating_msg->value.choice.UEContextReleaseCommand.protocolIEs;
-            
-    PagingIEs_t val[5];
+
+    PagingIEs_t val[4];
+    memset(val, 0, 4 * sizeof(PagingIEs_t));
 
     val[0].id = ProtocolIE_ID_id_UEIdentityIndexValue;
     val[0].criticality = 0;
     val[0].value.present = PagingIEs__value_PR_UEIdentityIndexValue;
+
     UEIdentityIndexValue_t* UEIdentityIndexValue = &val[0].value.choice.UEIdentityIndexValue;
     uint64_t ue_imsi_value = 0;
     /* Set UE Identity Index value : IMSI mod 4096 */
     UEIdentityIndexValue->size = 2;
-    UEIdentityIndexValue->buf = (uint8_t*)malloc(
-                                    UEIdentityIndexValue->size * sizeof(uint8_t));
+    UEIdentityIndexValue->buf = calloc(2, sizeof(uint8_t));
 
     /* Conver string to value */
     uint8_t imsi_bcd[BCD_IMSI_STR_LEN];
@@ -356,19 +367,23 @@ int s1ap_mme_encode_paging_request(
     UEIdentityIndexValue->buf[1] = (index_value & 0x3f) << 6;
     UEIdentityIndexValue->bits_unused = 6;
 
+    log_msg(LOG_DEBUG,"Encoding STMSI\n");
+
     val[1].id = ProtocolIE_ID_id_UEPagingID;
     val[1].criticality = 0;
     val[1].value.present = PagingIEs__value_PR_UEPagingID;
+
     UEPagingID_t pagingId;
     pagingId.present = UEPagingID_PR_s_TMSI;
-    pagingId.choice.s_TMSI = (struct S_TMSI*)malloc(sizeof(struct S_TMSI));
+    pagingId.choice.s_TMSI = calloc(sizeof(struct S_TMSI), sizeof(uint8_t));
     if(pagingId.choice.s_TMSI == NULL)
     {
         log_msg(LOG_ERROR,"malloc failed.\n");
         free(pdu.choice.initiatingMessage);
         return -1;
     }
-    pagingId.choice.s_TMSI->mMEC.buf = (uint8_t*)malloc(sizeof(g_s1ap_cfg.mme_code));
+
+    pagingId.choice.s_TMSI->mMEC.buf = calloc(1, sizeof(uint8_t));
     if(NULL == pagingId.choice.s_TMSI->mMEC.buf)
     {
         log_msg(LOG_ERROR,"malloc failed.\n");
@@ -376,11 +391,11 @@ int s1ap_mme_encode_paging_request(
         free(pagingId.choice.s_TMSI);
         return -1;
     }
-    memcpy(pagingId.choice.s_TMSI->mMEC.buf, 
-           &g_s1ap_cfg.mme_code, sizeof(uint8_t));
+
+    memcpy(pagingId.choice.s_TMSI->mMEC.buf, &g_s1ap_cfg.mme_code, sizeof(uint8_t));
     pagingId.choice.s_TMSI->mMEC.size = sizeof(uint8_t);
     
-    pagingId.choice.s_TMSI->m_TMSI.buf = (uint8_t*)malloc(sizeof(s1apPDU->ue_idx));
+    pagingId.choice.s_TMSI->m_TMSI.buf = calloc(sizeof(uint32_t), sizeof(uint8_t));
     if(NULL == pagingId.choice.s_TMSI->m_TMSI.buf)
     {
         log_msg(LOG_ERROR,"malloc failed.\n");
@@ -389,32 +404,44 @@ int s1ap_mme_encode_paging_request(
         free(pagingId.choice.s_TMSI->mMEC.buf);
         return -1;
     }
+
     uint32_t ue_idx = htonl(s1apPDU->ue_idx);
     memcpy(pagingId.choice.s_TMSI->m_TMSI.buf, &ue_idx, sizeof(uint32_t));
     pagingId.choice.s_TMSI->m_TMSI.size = sizeof(uint32_t);
-    memcpy(&val[1].value.choice.UEPagingID, 
-             &pagingId, sizeof(UEPagingID_t));
+    memcpy(&val[1].value.choice.UEPagingID, &pagingId, sizeof(UEPagingID_t));
+
+    log_msg(LOG_INFO, "Encoding CNDomain\n");
 
     val[2].id = ProtocolIE_ID_id_CNDomain;
     val[2].criticality = 0;
     val[2].value.present = PagingIEs__value_PR_CNDomain;
-    val[1].value.choice.CNDomain = s1apPDU->cn_domain;;
-
+    val[2].value.choice.CNDomain = s1apPDU->cn_domain;
+    
+    log_msg(LOG_DEBUG,"Encoding TAI List\n");
+	
     val[3].id = ProtocolIE_ID_id_TAIList;
     val[3].criticality = 0;
     val[3].value.present = PagingIEs__value_PR_TAIList;
+
     TAIItemIEs_t tai_item;
+    memset(&tai_item, 0, sizeof(TAIItemIEs_t));
+
     tai_item.id = ProtocolIE_ID_id_TAIItem;
     tai_item.criticality = 0;
     tai_item.value.present = TAIItemIEs__value_PR_TAIItem;
-    memcpy(tai_item.value.choice.TAIItem.tAI.pLMNidentity.buf,
-            s1apPDU->tai.plmn_id.idx, 3);
-    tai_item.value.choice.TAIItem.tAI.pLMNidentity.size = 3;
-    memcpy(tai_item.value.choice.TAIItem.tAI.tAC.buf,
-            &s1apPDU->tai.tac, 2);
-    tai_item.value.choice.TAIItem.tAI.tAC.size = 2;
 
-    ASN_SEQUENCE_ADD(&val[0].value.choice.TAIList.list, &tai_item);
+    log_msg(LOG_DEBUG,"TAI List - Encode PLMN ID\n");
+    tai_item.value.choice.TAIItem.tAI.pLMNidentity.size = 3;
+    tai_item.value.choice.TAIItem.tAI.pLMNidentity.buf = calloc(3, sizeof(uint8_t));
+    memcpy(tai_item.value.choice.TAIItem.tAI.pLMNidentity.buf, &s1apPDU->tai.plmn_id.idx, 3);
+
+    log_msg(LOG_DEBUG,"TAI List - Encode TAC\n");
+    tai_item.value.choice.TAIItem.tAI.tAC.size = 2;
+    tai_item.value.choice.TAIItem.tAI.tAC.buf = calloc(2, sizeof(uint8_t));
+    memcpy(tai_item.value.choice.TAIItem.tAI.tAC.buf, &s1apPDU->tai.tac, 2);
+
+    ASN_SEQUENCE_ADD(&val[3].value.choice.TAIList.list, &tai_item);
+
     log_msg(LOG_INFO,"Add values to list.\n");
     ASN_SEQUENCE_ADD(&initiating_msg->value.choice.Paging.protocolIEs.list, &val[0]);
     ASN_SEQUENCE_ADD(&initiating_msg->value.choice.Paging.protocolIEs.list, &val[1]);
@@ -423,7 +450,7 @@ int s1ap_mme_encode_paging_request(
 
     if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) 
     {
-        log_msg(LOG_ERROR, "Encoding of Ctx Release Cmd failed\n");
+        log_msg(LOG_ERROR, "Encoding of Paging failed\n");
         return -1;
     }
 
@@ -433,6 +460,8 @@ int s1ap_mme_encode_paging_request(
     free(pagingId.choice.s_TMSI->mMEC.buf);
     free(pagingId.choice.s_TMSI->m_TMSI.buf);
     free(pagingId.choice.s_TMSI);
+    free(tai_item.value.choice.TAIItem.tAI.pLMNidentity.buf);
+    free(tai_item.value.choice.TAIItem.tAI.tAC.buf);
     
     *length = enc_ret;
     return enc_ret; 
