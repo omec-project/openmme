@@ -39,6 +39,7 @@
 enum gtpv2c_ie_type {
 	IE_RESERVED = 0,
 	IE_IMSI = 1,
+	IE_CAUSE = 2,
 	IE_APN = 71,
 	IE_AMBR = 72,
 	IE_EBI = 73,

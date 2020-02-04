@@ -17,6 +17,8 @@
 
 
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "ue_table.h"
 #include "log.h"
@@ -24,6 +26,8 @@
 
 int g_index_list_queue[UE_POOL_CNT+1];
 
+/*Counter UE list. Add each element sequentially when UE attaches*/
+int g_UE_cnt = 0;
 int g_out_index= 0;
 int g_in_index = 1;
 
@@ -31,6 +35,25 @@ int g_in_index = 1;
  * Input :
  * Output: Get the index of the detached UE from the list.
  */
+
+int allocate_ue_index()
+{
+  int index = ++g_UE_cnt;
+  if (index%UE_POOL_CNT == 0) {
+  
+  	log_msg(LOG_INFO, "UE Buffer Pool is full \n");
+  	g_UE_cnt--;
+  	index = get_index_from_list();
+  
+  	if (index != -1) {
+  		log_msg(LOG_INFO, "Index is  received from the list\n");
+  	} else {
+  		log_msg(LOG_ERROR, "Error: No Index found in the list \n");
+  	}
+  
+  }
+  return index;
+}
 
 
 int get_index_from_list()
@@ -61,5 +84,30 @@ int insert_index_into_list(int index)
 	}
 	g_index_list_queue[g_in_index++] = index;
 	return 0;
+}
+
+/**
+ * @brief convert binary imsi to string imsi
+ * Binary imsi is stored in 8 bytes, each nibble representing each imsi char.
+ * char imsi stroes each char in 1 byte.
+ * @param[in] b_imsi : Binary imsi
+ * @param[out] s_imsi : Converted string imsi
+ * @return void
+ */
+void
+imsi_bin_to_str(unsigned char *b_imsi, char *s_imsi)
+{
+	if(NULL == b_imsi || NULL == s_imsi) return;
+       
+	memset(s_imsi, 0, STR_IMSI_LEN);
+
+	/* Byte 'AB' in b_imsi, is converted to two bytes 'A', 'B' in s_imsi*/
+	s_imsi[0] = '0' + ((b_imsi[0]>>4) & 0x0F);
+
+	for(int i=1; i < BINARY_IMSI_LEN; ++i) {
+		s_imsi[(i*2)-1] = '0' + (b_imsi[i] & 0x0F);
+		s_imsi[(i*2)] = '0' + ((b_imsi[i]>>4) & 0x0F);
+	}
+	s_imsi[(BINARY_IMSI_LEN*2)-1] = '\0';
 }
 

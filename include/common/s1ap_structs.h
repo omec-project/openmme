@@ -36,12 +36,25 @@
 #define ICS_REQ_NO_OF_IES 6
 #define DTCH_ACCEPT_NO_OF_IES 3
 #define UE_CTX_RELEASE_NO_OF_IES 3
+#define ATTACH_REJECT_NO_OF_IES 3 
+#define ATTACH_ID_REQUEST_NO_OF_IES 3
+#define TAU_RSP_NO_OF_IES 3  /*mme s1ap id, enb s1ap id, nas pdu */
 
 #define AUTH_REQ_NO_OF_NAS_IES 2
 #define SEC_MODE_NO_OF_NAS_IES 1
 #define ICS_REQ_NO_OF_NAS_IES 5
+#define TAU_RSP_NO_OF_NAS_IES 2
 
 #define AUTHREQ_NAS_SECURITY_PARAM 0x01
+#define SERVICE_REQ_SECURITY_HEADER 12
+#define SHORT_MAC_SIZE 2
+
+/* Should we put this in NAS header ?*/
+/* sec. 10.5.6.3 of 3GPP TS 24.008 has following statement:
+ * The protocol configuration options is a type 4 information element with a minimum length of 3 octets and a maximum length of 253 octets.
+ */
+
+#define MAX_PCO_OPTION_SIZE 260
 
 #define MSISDN_STR_LEN 10
 
@@ -75,7 +88,36 @@ struct esm_sec_info {
 	struct proto_conf proto_config;
 };
 
+/*NAS MSG IE CODES */
+/* Message content : 
+   3gpp 24.301
+   Table 8.2.4.1: IEI Column.*/
+typedef enum
+{
+    NAS_IE_TYPE_EPS_MOBILE_ID_IMSI=0x1,
+    NAS_IE_TYPE_UE_NETWORK_CAPABILITY=0x2,
+    NAS_IE_TYPE_ESM_MSG=0x3,
+    NAS_IE_TYPE_TMSI_STATUS=0x09,
+    NAS_IE_TYPE_MS_NETWORK_FEATURE_SUPPORT=0x0C,
+    NAS_IE_TYPE_GUTI_TYPE=0x0E,
+    NAS_IE_TYPE_ADDITIONAL_UPDATE_TYPE=0xF,
+    NAS_IE_TYPE_MS_CLASSMARK_2=0x11,
+    NAS_IE_TYPE_LAI=0x13,
+    NAS_IE_TYPE_PTMSI_SIGNATURE=0x19,
+    NAS_IE_TYPE_MS_CLASSMARK_3=0x20,
+    NAS_IE_TYPE_APN=0x28,
+    NAS_IE_TYPE_AUTH_FAIL_PARAM=0x30,
+    NAS_IE_TYPE_MS_NETWORK_CAPABILITY=0x31,
+    NAS_IE_TYPE_DRX_PARAM=0x5C,
+    NAS_IE_TYPE_TAI=0x52,
+    NAS_IE_TYPE_VOICE_DOMAIN_PREF_UE_USAGE_SETTING=0x5D,
+    NAS_IE_TYPE_TX_FLAG=0xAA,
+    NAS_IE_TYPE_PCO=0xAB,
+    NAS_IE_TYPE_PTI=0xAC,
+}nas_ie_type;
+
 typedef struct MS_net_capab {
+        bool          pres;
 	unsigned char element_id;
 	unsigned char len;
 	unsigned char capab[6];
@@ -328,6 +370,8 @@ typedef struct nas_pdu_header {
 	unsigned char security_integrity_algo:4;
 	unsigned char nas_security_param;
 	unsigned char mac[MAC_SIZE];
+	unsigned char short_mac[SHORT_MAC_SIZE];
+	unsigned char ksi;
 	unsigned char seq_no;
 	unsigned char eps_bearer_identity;
 	unsigned char procedure_trans_identity;
@@ -337,12 +381,21 @@ typedef struct nas_pdu_header {
 
 /****Information elements presentations **/
 #define BINARY_IMSI_LEN 8 /*same as packet capture. TODO: Write macros*/
+#define BCD_IMSI_STR_LEN 15
 
 /*36.413 - 9.2.1.38*/
 struct CGI {
 	struct PLMN plmn_id;
 	int cell_id;
 };
+
+//Service Request
+struct STMSI {
+	uint8_t mme_code;
+        uint32_t m_TMSI;
+
+};
+
 /*36.413: 9.2.1.37*/
 #define MACRO_ENB_ID_SIZE 20
 struct ie_global_enb_id {
@@ -393,10 +446,11 @@ typedef struct eRAB_elements {
 /**eRAB structures end**/
 
 /**Information elements structs end**/
-typedef union nas_pdu_elements {
+typedef union nas_pdu_elements_union {
 	unsigned char rand[NAS_RAND_SIZE];
 	unsigned char autn[NAS_AUTN_SIZE];
 	unsigned char IMSI[BINARY_IMSI_LEN];
+	unsigned char short_mac[SHORT_MAC_SIZE];
 	struct esm_sec_info esm_info;
 	enum drx_params drx;
 	struct MS_net_capab ms_network;
@@ -414,12 +468,26 @@ typedef union nas_pdu_elements {
 	guti mi_guti;
 	bool esm_info_tx_required;
 	unsigned char pti;
+	unsigned char eps_res;
+	unsigned char spare;
+	unsigned short int pco_options[MAX_PCO_OPTION_SIZE];
+}nas_pdu_elements_union;
+
+typedef struct nas_pdu_elements {
+   nas_ie_type msgType;
+   nas_pdu_elements_union pduElement;
 }nas_pdu_elements;
+
+#define NAS_MSG_UE_IE_GUTI  0x00000001
+#define NAS_MSG_UE_IE_IMSI  0x00000002
+#define UE_ID_IMSI(flags)   ((flags & NAS_MSG_UE_IE_IMSI) == NAS_MSG_UE_IE_IMSI)
+#define UE_ID_GUTI(flags)   ((flags & NAS_MSG_UE_IE_GUTI) == NAS_MSG_UE_IE_GUTI)
 
 typedef struct nasPDU {
 	nas_pdu_header header;
 	unsigned char elements_len;
 	nas_pdu_elements *elements;
+        unsigned int flags; 
 } nasPDU;
 
 #pragma pack(1)
@@ -451,6 +519,113 @@ typedef struct ERABSetup {
 } ERABSetup;
 
 #pragma pack()
+/* Dependencies */
+typedef enum s1apCause_PR {
+    s1apCause_PR_NOTHING,   /* No components present */
+    s1apCause_PR_radioNetwork,
+    s1apCause_PR_transport,
+    s1apCause_PR_nas,
+    s1apCause_PR_protocol,
+    s1apCause_PR_misc
+
+} s1apCause_PR;
+
+typedef enum s1apCause_PR_transporauseRadioNetwork {
+    s1apCauseRadioNetwork_unspecified   = 0,
+    s1apCauseRadioNetwork_tx2relocoverall_expiry    = 1,
+    s1apCauseRadioNetwork_successful_handover   = 2,
+    s1apCauseRadioNetwork_release_due_to_eutran_generated_reason    = 3,
+    s1apCauseRadioNetwork_handover_cancelled    = 4,
+    s1apCauseRadioNetwork_partial_handover  = 5,
+    s1apCauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system = 6,
+    s1apCauseRadioNetwork_ho_target_not_allowed = 7,
+    s1apCauseRadioNetwork_tS1relocoverall_expiry    = 8,
+    s1apCauseRadioNetwork_tS1relocprep_expiry   = 9,
+    s1apCauseRadioNetwork_cell_not_available    = 10,
+    s1apCauseRadioNetwork_unknown_targetID  = 11,
+    s1apCauseRadioNetwork_no_radio_resources_available_in_target_cell   = 12,
+    s1apCauseRadioNetwork_unknown_mme_ue_s1ap_id    = 13,
+    s1apCauseRadioNetwork_unknown_enb_ue_s1ap_id    = 14,
+    s1apCauseRadioNetwork_unknown_pair_ue_s1ap_id   = 15,
+    s1apCauseRadioNetwork_handover_desirable_for_radio_reason   = 16,
+    s1apCauseRadioNetwork_time_critical_handover    = 17,
+    s1apCauseRadioNetwork_resource_optimisation_handover    = 18,
+    s1apCauseRadioNetwork_reduce_load_in_serving_cell   = 19,
+    s1apCauseRadioNetwork_user_inactivity   = 20,
+    s1apCauseRadioNetwork_radio_connection_with_ue_lost = 21,
+    s1apCauseRadioNetwork_load_balancing_tau_required   = 22,
+    s1apCauseRadioNetwork_cs_fallback_triggered = 23,
+    s1apCauseRadioNetwork_ue_not_available_for_ps_service   = 24,
+    s1apCauseRadioNetwork_radio_resources_not_available = 25,
+    s1apCauseRadioNetwork_failure_in_radio_interface_procedure  = 26,
+    s1apCauseRadioNetwork_invalid_qos_combination   = 27,
+    s1apCauseRadioNetwork_interrat_redirection  = 28,
+    s1apCauseRadioNetwork_interaction_with_other_procedure  = 29,
+    s1apCauseRadioNetwork_unknown_E_RAB_ID  = 30,
+    s1apCauseRadioNetwork_multiple_E_RAB_ID_instances   = 31,
+    s1apCauseRadioNetwork_encryption_and_or_integrity_protection_algorithms_not_supported   = 32,
+    s1apCauseRadioNetwork_s1_intra_system_handover_triggered    = 33,
+    s1apCauseRadioNetwork_s1_inter_system_handover_triggered    = 34,
+    s1apCauseRadioNetwork_x2_handover_triggered = 35,
+    s1apCauseRadioNetwork_redirection_towards_1xRTT = 36,
+    s1apCauseRadioNetwork_not_supported_QCI_value   = 37,
+    s1apCauseRadioNetwork_invalid_CSG_Id    = 38,
+    s1apCauseRadioNetwork_release_due_to_pre_emption    = 39
+} e_s1apCauseRadioNetwork;
+
+typedef enum s1apCauseTransport {
+    s1apCauseTransport_transport_resource_unavailable   = 0,
+    s1apCauseTransport_unspecified  = 1
+} e_s1apCauseTransport;
+
+typedef enum s1apCauseNas {
+    s1apCauseNas_normal_release = 0,
+    s1apCauseNas_authentication_failure = 1,
+    s1apCauseNas_detach = 2,
+    s1apCauseNas_unspecified    = 3,
+    s1apCauseNas_csg_subscription_expiry    = 4
+} e_s1apCauseNas;
+
+typedef enum s1apCauseProtocol {
+    s1apCauseProtocol_transfer_syntax_error = 0,
+    s1apCauseProtocol_abstract_syntax_error_reject  = 1,
+    s1apCauseProtocol_abstract_syntax_error_ignore_and_notify   = 2,
+    s1apCauseProtocol_message_not_compatible_with_receiver_state    = 3,
+    s1apCauseProtocol_semantic_error    = 4,
+    s1apCauseProtocol_abstract_syntax_error_falsely_constructed_message = 5,
+    s1apCauseProtocol_unspecified   = 6
+} e_s1apCauseProtocol;
+
+typedef enum s1apCauseMisc {
+    s1apCauseMisc_control_processing_overload   = 0,
+    s1apCauseMisc_not_enough_user_plane_processing_resources    = 1,
+    s1apCauseMisc_hardware_failure  = 2,
+    s1apCauseMisc_om_intervention   = 3,
+    s1apCauseMisc_unspecified   = 4,
+    s1apCauseMisc_unknown_PLMN  = 5
+} e_s1apCauseMisc;
+
+/* s1apCauseMisc */
+typedef long     s1apCauseMisc_t;
+/* s1apCauseProtocol */
+typedef long     s1apCauseProtocol_t;
+/* s1apCauseNas */
+typedef long     s1apCauseNas_t;
+/* s1apCauseTransport */
+typedef long     s1apCauseTransport_t;
+/* s1apCauseRadioNetwork */
+typedef long     s1apCauseRadioNetwork_t;
+
+typedef struct s1apCause {
+    s1apCause_PR present;
+    union s1apCause_u {
+        s1apCauseRadioNetwork_t  radioNetwork;
+        s1apCauseTransport_t     transport;
+        s1apCauseNas_t   nas;
+        s1apCauseProtocol_t  protocol;
+        s1apCauseMisc_t  misc;
+    } choice;
+} s1apCause_t;
 
 typedef struct proto_IE_data {
 	int 			IE_type;
@@ -460,8 +635,10 @@ typedef struct proto_IE_data {
         long			enb_ue_s1ap_id;
         long			mme_ue_s1ap_id;
         struct 			nasPDU nas;
-        struct TAI 		tai;
-        struct CGI 		utran_cgi;
+        struct s1apCause cause;
+        struct TAI 		 tai;
+        struct CGI 		 utran_cgi;
+        struct STMSI	 s_tmsi;
         enum ie_RRC_est_cause 	rrc_est_cause;
         struct eRAB_elements 	erab;
         ue_aggregate_maximum_bitrate ue_aggrt_max_bit_rate;
@@ -476,6 +653,9 @@ struct proto_IE {
     Criticality_t    criticality;
 	short 		no_of_IEs;
 	proto_IEs	*data;
+    uint8_t     ie_nas_index;
+    uint8_t     ie_tai_index;
+    uint8_t     ie_cgi_index;
 };
 
 enum protocolie_id {
@@ -504,8 +684,12 @@ enum criticality{
 
 enum eps_nas_mesage_type {
 	AttachAccept = 0x42,
+	AttachReject = 0x44,
 	DetachAccept = 0x46,
+    TauAccept    = 0x49,
+    TauReject    = 0x4b,
 	AuthenticationRequest = 0x52,
+    IdentityRequest       = 0x55,
 	SecurityModeCommand = 0x5d,
 	ESMInformationRequest = 0xd9,
 };
@@ -513,6 +697,7 @@ enum eps_nas_mesage_type {
 enum procedure_code {
 	id_InitialContextSetup = 9,
 	id_downlinkNASTransport = 11,
+	id_errorIndication = 15,
 	id_UEContexRelease = 23,
 };
 
