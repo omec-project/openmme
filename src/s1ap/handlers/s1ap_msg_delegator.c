@@ -397,62 +397,15 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
                     continue;
 
                 }
-
                 if(0x27 == val)
                 {
                     unsigned short int pco_offset =  msg_offset;
                     unsigned char pco_length = msg[msg_offset+1];
-                    pco_offset += 2; // now points to first pco payload byte
-                    pco_offset += 1; // 1 byte header skipping Extension + Configuration Protocol
-                    unsigned short int pco_options=0;
-                    log_msg(LOG_INFO, "PCO length %d Msg offset = %d , pco offset = %d ", pco_length, msg_offset, pco_offset);
+                    // element Id 1 byte and pco length 1 byte 
+                    // Copy from - 1 byte header Extension + Configuration Protocol
                     index++;
                     nas->elements[index].msgType = NAS_IE_TYPE_PCO;
-                    while(pco_offset < (msg_offset + pco_length))
-                    {
-                        log_msg(LOG_INFO, "Inside PCO length %d Msg offset = %d , pco offset = %d ", pco_length, msg_offset, pco_offset);
-                        unsigned short int type;
-                        unsigned char oct_len;
-                        memcpy(&type, &msg[pco_offset], sizeof(type));
-                        type = htons(type);
-                        pco_offset += 2;
-                        oct_len = msg[pco_offset];
-                        pco_offset += 1;
-                        log_msg(LOG_INFO, "pco element_id=%x len %d \n", type, oct_len);
-                        if(type == 0x8021)
-                        {
-                            nas->elements[index].pduElement.pco_options[pco_options] = 0x8021;
-                            pco_options++;
-                        }
-                        else if(type == 0x000d)
-                        {
-                            nas->elements[index].pduElement.pco_options[pco_options] = 0x000d;
-                            pco_options++;
-                        }
-                        else if(type == 0x000a)
-                        {
-                            nas->elements[index].pduElement.pco_options[pco_options] = 0x000a;
-                            pco_options++;
-                        }
-                        else if(type == 0x0005)
-                        {
-                            nas->elements[index].pduElement.pco_options[pco_options] = 0x0005;
-                            pco_options++;
-                        }
-                        else if(type == 0x0010)
-                        {
-                            nas->elements[index].pduElement.pco_options[pco_options] = 0x0010;
-                            pco_options++;
-                        }
-                        else if(type == 0x0011)
-                        {
-                            nas->elements[index].pduElement.pco_options[pco_options] = 0x0011;
-                            pco_options++;
-                        }
-                        pco_offset += oct_len;
-                    }
-
-                    //pco
+                    memcpy(&nas->elements[index].pduElement.pco_options[0], &msg[msg_offset+2], pco_length); 
                     msg_offset = pco_length + 2; // msg offset was already at PCO AVP type. Now it should point to next AVP type
                     continue;
                 }

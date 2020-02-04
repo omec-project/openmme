@@ -36,6 +36,7 @@ typedef struct mme_config
 	unsigned short mme_egtp_def_port;
 	char  *mme_egtp_def_hostname;
 	char  *mme_name;
+    char  *logging;
 
 	char  mcc_dig1;
 	char  mcc_dig2;
@@ -57,7 +58,7 @@ void
 init_parser(char *path);
 
 int
-parse_mme_conf();
+parse_mme_conf(mme_config *config);
 
 int
 start_mme();
@@ -66,6 +67,7 @@ void
 check_mme_hdlr_status();
 
 void* stage1_handler(void *);
+void  handle_monitor_processing(void *);
 void* stage2_handler(void *);
 void* stage3_handler(void *);
 void* stage4_handler(void *);
@@ -90,5 +92,9 @@ void *tau_request_handler(void *);
 void
 send_dummy_mbr();
 void stat_init();
+
+/* Register for config change trigger */
+void register_config_updates(void);
+void mme_parse_config(mme_config *);
 
 #endif /*__MME_APP_H_*/

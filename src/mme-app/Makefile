@@ -45,7 +45,7 @@ endif
 INCS := $(INC_DIRS) \
 	-I../gtpV2Codec -I../cmn \
 
-LIBS := -lpthread -lcrypto
+LIBS := -lpthread -lcrypto -lthreadpool -lusock
 #-L$(LIB_PATH) -ls6a
 
 $(TARGET): $(OBJECTS)
@@ -54,7 +54,7 @@ $(TARGET): $(OBJECTS)
 	@mkdir -p $(BUILDDIR)/handlers
 	@mkdir -p $(BUILDDIR)/sec
 	#@echo " $(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface $(LIBS)";
-	$(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -ljson $(LIBS)
+	$(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -ljson -lmonitor_config $(LIBS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)

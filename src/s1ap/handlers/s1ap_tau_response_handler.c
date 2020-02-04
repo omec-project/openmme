@@ -314,26 +314,15 @@ s1ap_tau_rsp_processing(void)
 	u8value = 246; /* TODO: remove hard coding */
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
 
-    unsigned char x3 = tau_resp->tai.plmn_id.idx[2]; 
-    unsigned char x2 = tau_resp->tai.plmn_id.idx[1]; 
-    unsigned char x31 = x3 >> 4;
-    unsigned char x32 = x3 & 0xf;
-    unsigned char x21 = x2 >> 4;
-    unsigned char x22  = x2 & 0xf;
-    x3 = x21 | (x32 <<4);
-    x2 = (x31 << 4) | x22;
-    tau_resp->tai.plmn_id.idx[1] = x2;
-    tau_resp->tai.plmn_id.idx[2] = x3;
-
 	buffer_copy(&g_buffer, &tau_resp->tai.plmn_id, 3);
 
-    uint16_t grpid = htons(g_s1ap_cfg.mme_group_id);
+	uint16_t grpid = htons(g_s1ap_cfg.mme_group_id);
 	buffer_copy(&g_buffer, &grpid, sizeof(grpid)); 
 
-    u8value = g_s1ap_cfg.mme_code;
+	u8value = g_s1ap_cfg.mme_code;
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
 
-    uint32_t mtmsi = htonl(tau_resp->m_tmsi); 
+	uint32_t mtmsi = htonl(tau_resp->m_tmsi); 
 	buffer_copy(&g_buffer, &(mtmsi), sizeof(mtmsi));
 #endif
 
@@ -345,10 +334,10 @@ s1ap_tau_rsp_processing(void)
 	datalen = 0x05;
 	buffer_copy(&g_buffer, &datalen, sizeof(datalen));
     
-    u8value = 0xf4; //
+	u8value = 0xf4; //
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
 
-    mtmsi = htonl(tau_resp->ue_idx); 
+    	mtmsi = htonl(tau_resp->ue_idx); 
 	buffer_copy(&g_buffer, &(mtmsi), sizeof(mtmsi));
 #endif
 	/* NAS PDU end */
