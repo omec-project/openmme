@@ -67,6 +67,13 @@ enum s1ap_common_req_type
     S1AP_REQ_UNKNOWN
 };
 
+enum s1ap_common_rej_type
+{
+    S1AP_ATTACH_REJECT,
+    S1AP_SERVICE_REJECT,
+    S1AP_REJ_UNKNOWN
+};
+
 enum s11_common_req_type
 {
     S11_RABR_REQ,

@@ -138,9 +138,11 @@ stage6_processing()
                 sizeof(struct PAA));
 
     char imsi[16] = {0};
+    struct in_addr paa=ue_entry->pdn_addr.ip_type.ipv4;
+    paa.s_addr = ntohl(paa.s_addr);
     imsi_bin_to_str(ue_entry->IMSI, imsi);
     log_msg(LOG_DEBUG, "IMSI %s - IP address assigned %s", 
-             imsi, inet_ntoa(ue_entry->pdn_addr.ip_type.ipv4));
+             imsi, inet_ntoa(paa));
 
 	/*post to next processing*/
 	return SUCCESS;

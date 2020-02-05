@@ -37,6 +37,7 @@
 #define DTCH_ACCEPT_NO_OF_IES 3
 #define UE_CTX_RELEASE_NO_OF_IES 3
 #define ATTACH_REJECT_NO_OF_IES 3 
+#define SERVICE_REJECT_NO_OF_IES 3 
 #define ATTACH_ID_REQUEST_NO_OF_IES 3
 #define TAU_RSP_NO_OF_IES 3  /*mme s1ap id, enb s1ap id, nas pdu */
 
@@ -687,6 +688,7 @@ enum eps_nas_mesage_type {
 	DetachAccept = 0x46,
     TauAccept    = 0x49,
     TauReject    = 0x4b,
+	ServiceReject = 0x4e,
 	AuthenticationRequest = 0x52,
     IdentityRequest       = 0x55,
 	SecurityModeCommand = 0x5d,
@@ -747,7 +749,7 @@ typedef enum security_integrity_algo {
 }security_integrity_algo;
 
 
-#define BUFFER_SIZE 255
+#define BUFFER_SIZE 2056
 
 typedef struct Buffer {
 	unsigned char buf[BUFFER_SIZE];

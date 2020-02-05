@@ -141,7 +141,7 @@ read_next_msg()
 * Stage specific message processing.
 */
 static int
-stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej, struct attachIdReq_info *s1ap_id_req)
+stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, struct attachIdReq_info *s1ap_id_req)
 {
     struct ue_attach_info *ue_info = (struct ue_attach_info*)buf;
     struct UE_info *ue_entry = NULL;
@@ -413,7 +413,7 @@ post_to_hss_stage(int ue_index)
 * Post message to s1ap handler about the failure of this stage 
 */
 static int
-post_fail_s1ap(struct attachReqRej_info *s1ap_rej)
+post_fail_s1ap(struct commonRej_info *s1ap_rej)
 {
         /*in case of GUTI attach and subscriber belong to this MME then we dont want to 
          * do the subscriber authorization again. 
@@ -462,7 +462,7 @@ stage1_handler(void *data)
 	init_stage();
     static struct s6a_Q_msg s6a_req;
     static struct attachIdReq_info s1ap_id_req;
-    static struct attachReqRej_info s1ap_rej;
+    static struct commonRej_info s1ap_rej;
 
 	log_msg(LOG_INFO, "Stage 1 Ready.\n");
 	g_mme_hdlr_status <<= 1;
@@ -496,10 +496,11 @@ handle_monitor_imsi_req(struct monitor_imsi_req *mir, int sock_fd)
 	struct monitor_imsi_rsp mia = {0};
 	struct UE_info *ue_entry = NULL;
 
-    for(int i = 0;i <= g_UE_cnt;i++)
+    for(int i = 0;i < UE_POOL_CNT;i++)
 	{
 	    ue_entry = GET_UE_ENTRY(i);
-	    if(ue_entry && 
+	    if(ue_entry &&
+           (IS_VALID_UE_INFO(ue_entry)) &&
 	       (ATTACH_DONE == ue_entry->ue_state))
         { 
            char imsi[16] = {0};
@@ -507,12 +508,15 @@ handle_monitor_imsi_req(struct monitor_imsi_req *mir, int sock_fd)
 
 	       /*Parse and validate  the buffer*/
            imsi_bin_to_str(ue_entry->IMSI, imsi);
-           log_msg(LOG_ERROR, "imsi: %s", imsi);
            if(strcmp((const char *)imsi, 
                      (const char*)mir->imsi) == 0)
            {
                mia.bearer_id = ue_entry->bearer_id;
                mia.result = 1;
+               struct in_addr paa=ue_entry->pdn_addr.ip_type.ipv4;
+               //paa.s_addr = ntohl(paa.s_addr);
+               mia.paa  = paa.s_addr;
+               log_msg(LOG_ERROR, "imsi: %s address %x \n", imsi, mia.paa);
                memcpy(mia.imsi, imsi, IMSI_STR_LEN);
                memcpy(&mia.tai, &ue_entry->tai, sizeof(struct TAI));
                memcpy(&mia.ambr, &ue_entry->ambr, sizeof(struct AMBR));
@@ -540,21 +544,24 @@ handle_monitor_imsi_req(struct monitor_imsi_req *mir, int sock_fd)
 	return;
 }
 
+#if 0
 void
 handle_imsi_list_req(struct monitor_imsi_req *mir, int sock_fd)
 {
 	struct monitor_imsi_list_rsp mia = {0};
 	struct UE_info *ue_entry = NULL;
 
+    log_msg(LOG_DEBUG, "imsi list request, ue count %d\n", g_UE_cnt);
     char** imsi_list = (char**)malloc(sizeof(char*) * g_UE_cnt);
     if(imsi_list)
     {
-        mia.no_of_ue = g_UE_cnt;
+        mia.no_of_ue = 0;
         mia.imsi_list = (unsigned char**)imsi_list;
-        for(int i = 0, j=0;i <= g_UE_cnt;i++)
+        for(int i = 0, j=0;i < UE_POOL_CNT;i++)
         {
             ue_entry = GET_UE_ENTRY(i);
             if(ue_entry && 
+               (IS_VALID_UE_INFO(ue_entry)) &&
                (ATTACH_DONE == ue_entry->ue_state))
             { 
                 char* imsiVal = (char*)malloc(sizeof(char)*16);
@@ -563,18 +570,22 @@ handle_imsi_list_req(struct monitor_imsi_req *mir, int sock_fd)
                 imsi_bin_to_str(ue_entry->IMSI, imsi);
                 if(imsiVal)
                 {
+                    log_msg(LOG_DEBUG, "monitor imsi %s\n", imsi);
                     memcpy(imsiVal, imsi, IMSI_STR_LEN);
+                    mia.no_of_ue++;
                     imsi_list[j++] = imsiVal;
                 }
             }
+            if(j == g_UE_cnt)
+                break;
         }
     }
 	
 	unsigned char buf[BUFFER_SIZE] = {0};
-	memcpy(buf, &mia.no_of_ue, sizeof(int));
-    char* bufPtr = (char*)buf + sizeof(int);
-    int size = sizeof(int);
-    for(int i = 0;i< mia.no_of_ue;i++)
+	memcpy(buf, &mia.no_of_ue, sizeof(uint32_t));
+    uint32_t size = sizeof(uint32_t);
+    char* bufPtr = (char*)buf + size;
+    for(int i = 0;i< mia.no_of_ue && (BUFFER_SIZE > (size + IMSI_STR_LEN));i++)
     {
         memcpy(bufPtr, mia.imsi_list[i], IMSI_STR_LEN);
         bufPtr += IMSI_STR_LEN;
@@ -585,7 +596,40 @@ handle_imsi_list_req(struct monitor_imsi_req *mir, int sock_fd)
 
 	return;
 }
-
+#endif
+void
+handle_imsi_list_req(struct monitor_imsi_req *mir, int sock_fd)
+{
+    struct monitor_imsi_list_rsp mia = {0};
+    struct UE_info *ue_entry = NULL;
+    uint32_t no_of_ue = 0;
+    unsigned char buf[BUFFER_SIZE] = {0};
+    uint32_t size = sizeof(uint32_t);
+    char* bufPtr = (char*)buf + size;
+    log_msg(LOG_DEBUG, "imsi list request, ue count %d\n", g_UE_cnt);
+    for(int i = 0, j=0;i < UE_POOL_CNT;i++)
+    {
+        ue_entry = GET_UE_ENTRY(i);
+        if(ue_entry &&
+           (IS_VALID_UE_INFO(ue_entry)) &&
+           (ATTACH_DONE == ue_entry->ue_state))
+        {
+            char imsi[16] = {0};
+            imsi_bin_to_str(ue_entry->IMSI, imsi);
+            log_msg(LOG_DEBUG, "monitor imsi %s\n", imsi);
+            memcpy(bufPtr, &imsi[0], IMSI_STR_LEN);
+            bufPtr += IMSI_STR_LEN;
+            size += IMSI_STR_LEN;
+            no_of_ue++;
+        }
+        //if(no_of_ue == g_UE_cnt || ((size + IMSI_STR_LEN) > BUFFER_SIZE))
+        if(((size + IMSI_STR_LEN) > BUFFER_SIZE))
+            break;
+    }
+    memcpy(buf, &no_of_ue, sizeof(uint32_t));
+    send_unix_msg(sock_fd, buf, size);
+    return;
+}
 
 /**
 * Monitor message processing.
@@ -593,9 +637,9 @@ handle_imsi_list_req(struct monitor_imsi_req *mir, int sock_fd)
 void
 handle_monitor_processing(void *message)
 {
-        log_msg(LOG_INFO, "Monitor Message Received");
-	free(message);
-	return;
+    log_msg(LOG_INFO, "Monitor Message Received");
+	//free(message);
+	//return;
 	int sock_fd = 0;
 	memcpy(&sock_fd, (char*)message, sizeof(int));
 	char *msg = ((char *) message) + (sizeof(int));
@@ -614,11 +658,13 @@ handle_monitor_processing(void *message)
     {
         case 0:
             {
+                log_msg(LOG_DEBUG, "imsi request");
 	            handle_monitor_imsi_req(mir, sock_fd);
                 break;
             }
         case 1:
             {
+                log_msg(LOG_DEBUG, "imsi list request");
 	            handle_imsi_list_req(mir, sock_fd);
                 break;
             }

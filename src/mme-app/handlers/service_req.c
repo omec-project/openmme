@@ -19,13 +19,13 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
-
 #include "mme_app.h"
 #include "ue_table.h"
 #include "err_codes.h"
 #include "message_queues.h"
 #include "ipc_api.h"
 #include "stage6_info.h"
+#include "stage1_info.h"
 #include "stage2_info.h"
 #include "servicereq_info.h"
 #include "common_proc_info.h"
@@ -41,6 +41,7 @@ Service Request-->service_request_handler-> init ctxt setup [Service Accept]
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
 extern int g_tmsi_allocation_array[];
+static int g_Q_s1ap_service_reject;
 
 static int g_Q_servicereq_fd;
 static int g_Q_authreq_fd;
@@ -76,6 +77,15 @@ init_stage()
 	}
 
 	log_msg(LOG_INFO, "MME to S1AP write IPC Connected\n");
+	
+    /*Open destination queue for writing s1ap service req failure */
+	g_Q_s1ap_service_reject = open_ipc_channel(S1AP_REQ_REJECT_QUEUE, IPC_WRITE);
+	if (g_Q_s1ap_service_reject == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel: S1AP Reject Queue \n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "Stage1 writer - S1AP reject Pipe : Connected\n");
+ 
 	
     log_msg(LOG_INFO, "Stage 2 witer  - s1ap Auth request: waiting\n");
 	g_Q_authreq_fd = open_ipc_channel(S1AP_AUTHREQ_STAGE2_QUEUE, IPC_WRITE);
@@ -235,6 +245,23 @@ post_to_next()
 #endif
 }
 
+/*
+* Post message to s1ap handler about the failure of this stage 
+*/
+static int
+post_service_reject()
+{
+    struct commonRej_info s1ap_rej;
+	log_msg(LOG_INFO, "Sending Service Rej \n");
+	struct service_req_Q_msg *service_req =
+				(struct service_req_Q_msg *) buf;
+    s1ap_rej.IE_type = S1AP_SERVICE_REJECT;
+    s1ap_rej.enb_fd = service_req->enb_fd;
+    s1ap_rej.s1ap_enb_ue_id = service_req->s1ap_enb_ue_id;
+	write_ipc_channel(g_Q_s1ap_service_reject, (char *)(&s1ap_rej), S1AP_REQ_REJECT_BUF_SIZE );
+	return SUCCESS;
+}
+
 /**
 * Thread exit function for future reference.
 */
@@ -243,6 +270,7 @@ shutdown_servicereq_stage()
 {
 	close_ipc_channel(g_Q_servicereq_fd);
 	close_ipc_channel(g_Q_mme_to_s1ap_fd);
+	close_ipc_channel(g_Q_s1ap_service_reject);
 	log_msg(LOG_INFO, "Shutdown Service Request handler \n");
 	pthread_exit(NULL);
 	return;
@@ -263,9 +291,15 @@ service_request_handler(void *data)
 	while(1){
 		read_next_msg();
 		
-		service_request_processing();
+		if(SUCCESS == service_request_processing())
+        {
 		
-		post_to_next();
+		    post_to_next();
+        }
+        else
+        {
+            post_service_reject();
+        }
 		
 	}
 

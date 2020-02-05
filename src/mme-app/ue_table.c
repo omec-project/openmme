@@ -83,6 +83,10 @@ int insert_index_into_list(int index)
 		return -1;
 	}
 	g_index_list_queue[g_in_index++] = index;
+  	if(g_UE_cnt)
+    {
+        g_UE_cnt--;
+    }
 	return 0;
 }
 

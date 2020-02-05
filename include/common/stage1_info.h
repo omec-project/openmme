@@ -49,15 +49,16 @@ struct ue_attach_info {
 
 #define INITUE_STAGE1_BUF_SIZE sizeof(struct ue_attach_info)
 
-struct attachReqRej_info 
+struct commonRej_info 
 {
+  int IE_type; 
   int ue_idx; /*mme s1ap UE id*/
   int s1ap_enb_ue_id;
   int enb_fd;
   unsigned char cause; 
 };
 
-#define S1AP_REQ_REJECT_BUF_SIZE sizeof(struct attachReqRej_info) 
+#define S1AP_REQ_REJECT_BUF_SIZE sizeof(struct commonRej_info) 
 
 struct attachIdReq_info 
 {

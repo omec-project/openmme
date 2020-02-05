@@ -34,13 +34,14 @@ enum e_BUF_HDR {
 
 /*Monitor IMSI Request*/
 struct monitor_imsi_req {
-    int  req_type;
+    uint32_t  req_type;
 	char imsi[IMSI_STR_LEN];
 };
 
 /*Monitor IMSI Response*/
 struct monitor_imsi_rsp {
-        int             result;
+    uint32_t             result;
+    uint32_t             paa;
 	unsigned char   imsi[IMSI_STR_LEN];
 	unsigned char   bearer_id;
 	struct TAI      tai;//TODO: will be list of 16 TAI's for UE.
@@ -54,7 +55,7 @@ struct monitor_imsi_rsp {
 
 /*Monitor IMSI List Response*/
 struct monitor_imsi_list_rsp {
-    int             no_of_ue;
+    uint32_t             no_of_ue;
 	unsigned char   **imsi_list;
 };
 
