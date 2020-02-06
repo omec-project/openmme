@@ -22,14 +22,14 @@
 
 #include <stdbool.h>
 
-
+/*Refrence document 3GPP TS 36.413 (http://www.arib.or.jp/english/html/overview/doc/STD-T104v3_00/5_Appendix/Rel12/36/36413-c50.pdf) */
 enum e_rab_struct_val
 {
-  RAB_ID = 1,
-  QCI = 9,
-  PRIOLEVEL = 15,
-  PRE_EMPTION_CAPAB = 1,
-  PRE_EMPTION_VULNERBILITY =1 
+  E_RAB_ID = 1, //the E-RAB ID uniquely identifies an E-RAB for one UE
+  QCI = 9,  // QoS class identifier in TS 23.401[11]
+  PRIORITY_LEVEL = 15, //this is Parameter of "priority of allocation and retention" and value 15 means no priority.
+  PRE_EMPTION_CAPABILITY = 1, /*It applies to the allocation of resources for an E-RAB and as such it provides the trigger to the pre-emption procedures/processes of the eNB*/
+  PRE_EMPTION_VULNERBILITY =1 /*It applies for the entire duration of the E-RAB(default), and indicate if E-RAB is a target of the pre-emption procedures/processes of the eNB.*/
 };
 
 

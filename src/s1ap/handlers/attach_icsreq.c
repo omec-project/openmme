@@ -30,8 +30,7 @@
 #include "main.h"
 #include "s1ap.h"
 #include "stage6_info.h"
-#include "s1ap_macros.h"
-
+#include "3gpp_s1ap_36413.h"
 /*Making global just to avoid stack passing*/
 static char buf[S1AP_ICSREQ_STAGE6_BUF_SIZE];
 
@@ -149,10 +148,11 @@ get_icsreq_protoie_value(struct proto_IE *value)
 
 	/* E-RABToBeSetupItemCtxtSUReq start */
 	ERABSetup *e_rab = &(value->data[ieCnt].val.E_RABToBeSetupItemCtxtSUReq);
-        e_rab->e_RAB_ID = RAB_ID;
-	e_rab->e_RAB_QoS_Params.qci = QCI;
-	e_rab->e_RAB_QoS_Params.arPrio.prioLevel = PRIOLEVEL;
-	e_rab->e_RAB_QoS_Params.arPrio.preEmptionCapab = PRE_EMPTION_CAPAB;
+	/* These are default value for E_RAB structure*/
+        e_rab->e_RAB_ID = E_RAB_ID; 
+	e_rab->e_RAB_QoS_Params.qci = QCI; 
+	e_rab->e_RAB_QoS_Params.arPrio.prioLevel = PRIORITY_LEVEL; 
+	e_rab->e_RAB_QoS_Params.arPrio.preEmptionCapab = PRE_EMPTION_CAPABILITY;
 	e_rab->e_RAB_QoS_Params.arPrio.preEmptionVulnebility = PRE_EMPTION_VULNERBILITY;
  	log_msg(LOG_INFO, "e_rab enum value is size is %d\t%d\t%d\t%d\t%d\n", e_rab->e_RAB_ID ,  e_rab->e_RAB_QoS_Params.qci ,  e_rab->e_RAB_QoS_Params.arPrio.prioLevel ,e_rab->e_RAB_QoS_Params.arPrio.preEmptionCapab,  e_rab->e_RAB_QoS_Params.arPrio.preEmptionVulnebility);
 
