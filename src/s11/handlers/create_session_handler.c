@@ -169,7 +169,7 @@ create_session_processing()
 	gtpHeader.msgType = GTP_CREATE_SESSION_REQ;
 	gtpHeader.sequenceNumber = g_s11_sequence;
 	gtpHeader.teidPresent = true;
-	gtpHeader.teid = 1;
+	gtpHeader.teid = 0;
 
 	g_s11_sequence++;
 
@@ -229,18 +229,17 @@ create_session_processing()
 	msgData.ratType.ratType = 6;
 
 	msgData.indicationFlagsIePresent = true;
-	msgData.indicationFlags.iDFI = true;
 	msgData.indicationFlags.iMSV = true;
 
 	msgData.senderFTeidForControlPlane.ipv4present = true;
 	msgData.senderFTeidForControlPlane.interfaceType = 10;
-	msgData.senderFTeidForControlPlane.ipV4Address.ipValue = g_s11_cfg.local_egtp_ip;
-	msgData.senderFTeidForControlPlane.teidGreKey = g_csReqInfo->ue_idx;
+	msgData.senderFTeidForControlPlane.ipV4Address.ipValue = g_s11_cfg.local_egtp_ip; /* network byte ordered */
+	msgData.senderFTeidForControlPlane.teidGreKey = g_csReqInfo->ue_idx; /* Control is in the MME-app to give TEID */
 
 	msgData.pgwS5S8AddressForControlPlaneOrPmipIePresent = true;
 	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipv4present = true;
 	msgData.pgwS5S8AddressForControlPlaneOrPmip.interfaceType = 7;
-	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipV4Address.ipValue = g_s11_cfg.pgw_ip;
+	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipV4Address.ipValue = ntohl(g_s11_cfg.pgw_ip);
 
 	msgData.accessPointName.apnValue.count = g_csReqInfo->apn.len;
 	memcpy(msgData.accessPointName.apnValue.values, g_csReqInfo->apn.val, g_csReqInfo->apn.len);
