@@ -541,11 +541,18 @@ icsreq_processing()
 			sizeof(ies[3].pduElement.esm_msg.eps_qos));
 
 	/* apn */
+/*	char apn_name[25]={};
+	strncpy(apn_name, (char *)ies[3].pduElement.esm_msg.apn.val,
+             ies[3].pduElement.esm_msg.apn.len);
+	datalen = ies[3].pduElement.esm_msg.apn.len;
+	buffer_copy(&g_nas_buffer, &datalen, sizeof(datalen));
+	buffer_copy(&g_nas_buffer, (char *)ies[3].pduElement.esm_msg.apn.val, datalen);
+*/
 	// There is one category of UE, they do not send not apn to MME.
 	// In this case, the apn length from esm will be 0.
 	// Then MME will use the selected apn name from HSS-DB.
-	if (ies[3].esm_msg.apn.len == 0 ) {
-		datalen = (int) g_icsReqInfo->selected_apn.len + 1;
+	if (ies[3].pduElement.esm_msg.apn.len == 0 ) {
+		datalen = g_icsReqInfo->selected_apn.len + 1;
 		buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
 		unsigned char selected_apn_len[25] = {};
 		selected_apn_len[0] = g_icsReqInfo->selected_apn.len;
@@ -555,9 +562,9 @@ icsreq_processing()
 
 	}else {
 		// Return the same apn sent by UE
-		datalen = ies[3].esm_msg.apn.len;
+		datalen = ies[3].pduElement.esm_msg.apn.len;
 		buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
-		buffer_copy(&g_ics_buffer, (char *)ies[3].esm_msg.apn.val, datalen);
+		buffer_copy(&g_ics_buffer, (char *)ies[3].pduElement.esm_msg.apn.val, datalen);
 	}
 
 
