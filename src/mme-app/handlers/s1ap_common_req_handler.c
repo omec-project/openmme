@@ -126,7 +126,7 @@ ctx_rel_req_processing()
        (UNASSIGNED_ENTRY == ue_entry->ue_state))
     {
         log_msg(LOG_ERROR, "UE Entry invalid. Drop the packet.");
-        return SUCCESS;
+        return E_FAIL;
     }
 
     ue_entry->ul_seq_no++;

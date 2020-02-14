@@ -64,6 +64,8 @@ enum s1ap_common_req_type
     S1AP_CTX_REL_CMD,
     S1AP_INIT_CTXT_SETUP_REQ,
     S1AP_PAGING_REQ,
+    S1AP_ATTACH_REJ,
+    S1AP_SERVICE_REJ,
     S1AP_REQ_UNKNOWN
 };
 

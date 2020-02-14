@@ -410,6 +410,12 @@ struct ie_enb_name {
 	char enb_name[ENB_NAME_SIZE];
 };
 
+enum ie_fail_internal_cause {
+	AIA_FAIL,
+	SECURITY_MOD_REJECT_FAIL,
+	MAX_FAIL_CAUSE
+};
+
 /*36.413: 9.2.1.3a*/
 enum ie_RRC_est_cause {
 	EMERGENCY,
@@ -749,7 +755,7 @@ typedef enum security_integrity_algo {
 }security_integrity_algo;
 
 
-#define BUFFER_SIZE 2056
+#define BUFFER_SIZE 255
 
 typedef struct Buffer {
 	unsigned char buf[BUFFER_SIZE];

@@ -42,8 +42,8 @@ extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
 
 static int g_Q_s11_rsp_fd;
-int g_Q_mme_to_s1ap_fd;
-
+extern int g_Q_s1ap_common_reject;
+extern pthread_mutex_t s1ap_reject_queue_mutex;
 /*Making global just to avoid stack passing*/
 
 static char buf[S11_COMM_RES_STAGE_BUF_SIZE];
@@ -64,13 +64,6 @@ init_stage()
 		pthread_exit(NULL);
 	}
 	log_msg(LOG_INFO, "S11 resp stage: Connected\n");
-	/*Writing the detach signal to S11 Queue*/
-	if ((g_Q_mme_to_s1ap_fd  = open_ipc_channel(S1AP_MME_TO_S1AP_QUEUE,
-						IPC_WRITE)) == -1){
-		log_msg(LOG_ERROR, "Error in opening MME to S1AP write IPC channel.\n");
-		pthread_exit(NULL);
-	}
-	log_msg(LOG_INFO, "MME to S1AP write IPC Connected\n");
 
 	return;
 }
@@ -129,8 +122,10 @@ post_ctx_rel_command(int ue_index)
     req.cause.present = s1apCause_PR_radioNetwork;
     req.cause.choice.radioNetwork = s1apCauseRadioNetwork_user_inactivity; 
     /*post message to next stage i.e. s1ap auth req*/
-    write_ipc_channel(g_Q_mme_to_s1ap_fd, (char *)&(req),
+    pthread_mutex_lock(&s1ap_reject_queue_mutex);
+    write_ipc_channel(g_Q_s1ap_common_reject, (char *)&(req),
                       S1AP_COMMON_REQ_BUF_SIZE);
+    pthread_mutex_unlock(&s1ap_reject_queue_mutex);
     log_msg(LOG_INFO, "Posted message to s1ap - DCtx Rel Command\n");
 
 	return SUCCESS;
@@ -143,7 +138,6 @@ void
 shutdown_s11_rsp_common_handler()
 {
 	close_ipc_channel(g_Q_s11_rsp_fd);
-	close_ipc_channel(g_Q_mme_to_s1ap_fd);
 	log_msg(LOG_INFO, "Shutdown Stage common rsp handler \n");
 	pthread_exit(NULL);
 	return;

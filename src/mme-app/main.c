@@ -39,6 +39,9 @@
 /*Globals and externs*/
 mme_config g_mme_cfg;
 
+int g_Q_s1ap_common_reject; 
+pthread_mutex_t s1ap_reject_queue_mutex;
+
 /*List of UEs attached to MME*/
 struct UE_info* g_UE_list[UE_POOL_SIZE];
 int g_unix_fd = 0;
@@ -51,7 +54,7 @@ int g_tmsi_allocation_array[10000];
 pthread_t stage_tid[TOTAL_STAGES];
 
 int g_mme_hdlr_status;
-extern init_backtrace();
+extern void init_backtrace();
 
 /*End globals and externs*/
 
@@ -260,6 +263,12 @@ init_stage_handlers()
 	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
 	pthread_create(&stage_tid[16], &attr, &tau_request_handler, NULL);
   
+	if ((g_Q_s1ap_common_reject  = open_ipc_channel(S1AP_MME_TO_S1AP_QUEUE,
+						IPC_WRITE)) == -1){
+		log_msg(LOG_ERROR, "Error in opening MME to S1AP write IPC channel.\n");
+		pthread_exit(NULL);
+	}
+
 	pthread_attr_destroy(&attr);
 	return SUCCESS;
 }
