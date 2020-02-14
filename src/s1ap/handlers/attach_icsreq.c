@@ -547,11 +547,8 @@ icsreq_processing()
 	if (ies[3].pduElement.esm_msg.apn.len == 0 ) {
 		datalen = g_icsReqInfo->selected_apn.len + 1;
 		buffer_copy(&g_nas_buffer, &datalen, sizeof(datalen));
-		unsigned char selected_apn_len[25] = {};
-		selected_apn_len[0] = g_icsReqInfo->selected_apn.len;
-		selected_apn_len[1] = '\0';
-		buffer_copy(&g_nas_buffer, strcat(selected_apn_len,
-                    g_icsReqInfo->selected_apn.val), datalen);
+		buffer_copy(&g_nas_buffer + 1, g_icsReqInfo->selected_apn.val,
+				g_icsReqInfo->selected_apn.len);
 
 	}else {
 		// Return the same apn sent by UE
