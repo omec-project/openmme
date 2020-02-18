@@ -265,6 +265,7 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
         memcpy(&(ue_entry->utran_cgi), &(ue_info->utran_cgi),
                         sizeof(struct CGI));
         memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
+        ue_entry->pco_length = ue_info->pco_length;
 	    memcpy(&(ue_entry->ue_net_capab), &(ue_info->ue_net_capab),
 	  	sizeof(struct UE_net_capab));
 	    memcpy(&(ue_entry->ms_net_capab), &(ue_info->ms_net_capab),
@@ -337,8 +338,10 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
     }
 
 
+    ue_entry->pco_length = ue_info->pco_length;
     memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
 	ue_entry->bearer_id = 5; /* Bearer Management */
+    log_msg(LOG_INFO, "PCO length = %d \n", ue_entry->pco_length);
 
     s1ap_id_req->ue_idx = index;
 	/* Collect information for next processing*/
@@ -488,4 +491,3 @@ stage1_handler(void *data)
 
 	return NULL;
 }
-

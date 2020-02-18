@@ -219,7 +219,9 @@ post_to_next(char *buf)
 		memset(cs_msg.MSISDN, 0, 10);
 		memcpy(cs_msg.MSISDN,ue_entry->MSISDN,10);
         memcpy(&cs_msg.pco_options[0], &ue_entry->pco_options[0], sizeof(ue_entry->pco_options));
+        cs_msg.pco_length = ue_entry->pco_length; 
 
+		log_msg(LOG_INFO, "PCO length %d \n", cs_msg.pco_length);
 		write_ipc_channel(g_Q_CSreq_fd, (char *)&(cs_msg),
 				S11_CSREQ_STAGE5_BUF_SIZE);
 

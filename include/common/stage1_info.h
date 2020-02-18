@@ -43,7 +43,8 @@ struct ue_attach_info {
 	guti mi_guti;
     unsigned char seq_no;
     unsigned char dns_present;
-    unsigned short int pco_options[10];
+    unsigned short int pco_length;
+    unsigned char pco_options[MAX_PCO_OPTION_SIZE];
     
 };
 

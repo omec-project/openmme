@@ -86,11 +86,13 @@ s11_CS_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr)
 	csr_info.pco_length = 0; 
 	if(msgData.protocolConfigurationOptionsIePresent == true)
 	{
+   	    printf("PCO found in the CSRsp = \n"); 
 		csr_info.pco_length = msgData.protocolConfigurationOptions.pcoValue.count; 
 		memcpy(&csr_info.pco_options[0], &msgData.protocolConfigurationOptions.pcoValue.values[0], msgData.protocolConfigurationOptions.pcoValue.count);
 	}
-	else
+else
 	{
+        printf("PCO not found in the CSRsp = \n"); 
 		/* Temporary hardcoding so that UE gets min DNS address.*/
 		char pco_options[27] = {0x80, 0x80, 0x21, 0x10, 0x03, 0x00, 0x00,0x10, 0x81, 0x06, 0x08,0x08,0x08, 0x08,0x83,0x06,0x08,0x08,0x08,0x04,0x00,0x0d, 0x04,0x08,0x08,0x08,0x08};
 		memcpy(&csr_info.pco_options[0], &pco_options[0], 27);

@@ -165,7 +165,7 @@ typedef struct
 
 typedef struct
 {
-  Uint8Array16 pcoValue;
+  Uint8Array512 pcoValue;
 
 }PcoIeData;
 

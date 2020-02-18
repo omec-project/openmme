@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, jsonify, Response
 import prometheus_client
 from prometheus_client import Summary, Counter, Histogram, Gauge
@@ -53,6 +54,7 @@ app = Flask(__name__)
 def helloWorld():
     return "Hello World\n"
 
+
 def bytes_to_int(bytes):
     result = 0
     for b in bytes:
@@ -97,6 +99,7 @@ def getImsiList():
 
         # Connect the socket to the port where the server is listening
         server_address = '/tmp/unix_socket'
+
         print ('connecting to %s' % server_address, file=sys.stderr)
         try:
                sock.connect(server_address)
