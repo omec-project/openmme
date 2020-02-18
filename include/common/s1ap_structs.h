@@ -37,6 +37,7 @@
 #define DTCH_ACCEPT_NO_OF_IES 3
 #define UE_CTX_RELEASE_NO_OF_IES 3
 #define ATTACH_REJECT_NO_OF_IES 3 
+#define SERVICE_REJECT_NO_OF_IES 3 
 #define ATTACH_ID_REQUEST_NO_OF_IES 3
 #define TAU_RSP_NO_OF_IES 3  /*mme s1ap id, enb s1ap id, nas pdu */
 
@@ -410,6 +411,12 @@ struct ie_enb_name {
 	char enb_name[ENB_NAME_SIZE];
 };
 
+enum ie_fail_internal_cause {
+	AIA_FAIL,
+	SECURITY_MOD_REJECT_FAIL,
+	MAX_FAIL_CAUSE
+};
+
 /*36.413: 9.2.1.3a*/
 enum ie_RRC_est_cause {
 	EMERGENCY,
@@ -688,6 +695,7 @@ enum eps_nas_mesage_type {
 	DetachAccept = 0x46,
     TauAccept    = 0x49,
     TauReject    = 0x4b,
+	ServiceReject = 0x4e,
 	AuthenticationRequest = 0x52,
     IdentityRequest       = 0x55,
 	SecurityModeCommand = 0x5d,

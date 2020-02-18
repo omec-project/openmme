@@ -28,6 +28,8 @@
 #include "ipc_api.h"
 #include "stage4_info.h"
 #include "stage5_s11_info.h"
+#include "stage6_info.h"
+#include "common_proc_info.h"
 
 /************************************************************************
 Current file : Stage 4 handler.
@@ -45,10 +47,14 @@ ATTACH stages :
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
+extern int g_tmsi_allocation_array[];
 
 static int g_Q_secmoderesp_fd;
 static int g_Q_esmreq_fd;
 extern int g_Q_CSreq_fd;
+extern int g_Q_s1ap_common_reject;
+extern pthread_mutex_t s1ap_reject_queue_mutex;
+static int g_Q_s1ap_service_reject;
 
 extern uint32_t attach_stage4_counter;
 extern uint32_t attach_stage5_counter;
@@ -68,6 +74,7 @@ init_stage()
 	}
 	log_msg(LOG_INFO, "Stage 4 reader - s1ap Security mode response : Connected\n");
 
+	log_msg(LOG_INFO, "MME to S1AP write IPC Connected\n");
 	/*Open destination queue for writing. It is AIR, ULR Q in this stage*/
 	log_msg(LOG_INFO, "Stage 4 writer  - s1ap ESM info req: waiting\n");
 	g_Q_esmreq_fd = open_ipc_channel(S1AP_ESMREQ_STAGE4_QUEUE, IPC_WRITE);
@@ -76,6 +83,13 @@ init_stage()
 		pthread_exit(NULL);
 	}
 	log_msg(LOG_INFO, "Stage 4 writer - s1ap ESM info request: Connected\n");
+	g_Q_s1ap_service_reject = open_ipc_channel(S1AP_REQ_REJECT_QUEUE, IPC_WRITE);
+	if (g_Q_s1ap_service_reject == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel: S1AP Reject Queue \n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "S1AP reject Pipe : Connected\n");
+ 
 	return;
 }
 
@@ -130,6 +144,7 @@ stage4_processing(char *buf)
 	else {
 		log_msg(LOG_INFO, "Sec mode failed. UE-%d\n",
 			secmode_resp->ue_idx);
+        ue_entry->ue_state = STAGE4_FAIL;
 		//Do something ue_entry->ue_state = STAGE4_WAITING;
 	}
 
@@ -151,6 +166,21 @@ post_to_next(char *buf)
         return E_FAIL;
     }
     log_msg(LOG_INFO, "Stiching stage 1 to stage 4 - 1 \n");
+
+    if(SERVICE_REQ_PROC == ue_entry->ue_curr_proc)
+    {
+        if(STAGE4_FAIL == ue_entry->ue_state)
+        {
+            log_msg(LOG_DEBUG, "Sec mode cmd failed in service req proc. \
+                                    Send service reject and clear context");
+            post_svc_reject(secmode_resp->ue_idx);
+            post_ctx_rel_and_clr_uectx(secmode_resp->ue_idx);
+			return SUCCESS;
+        }
+        log_msg(LOG_DEBUG, "Security Done after Service Request. \
+                                  Send Initial Ctx setup request");
+        return send_init_ctx_setup_req(secmode_resp->ue_idx);
+    }
 
 	if(ue_entry->esm_info_tx_required) {
 		esm_req.enb_fd = ue_entry->enb_fd;
@@ -199,6 +229,107 @@ post_to_next(char *buf)
 	return SUCCESS;
 }
 
+int send_init_ctx_setup_req(int ue_index)
+{
+    log_msg(LOG_DEBUG,"create and send Init ctx setup request");
+    struct s1ap_common_req_Q_msg icr_msg;
+
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      ue_index);
+		return -1;
+	}
+
+	log_msg(LOG_INFO, "Post for s1ap processing - service_req_wf_initctxt_resp.\n");
+
+	/* create KeNB key */
+	/* TODO: Generate nas_count from ul_seq_no */
+	uint32_t nas_count = 0;
+	create_kenb_key(ue_entry->aia_sec_info->kasme.val, ue_entry->ue_sec_info.kenb_key, nas_count);
+	icr_msg.IE_type = S1AP_INIT_CTXT_SETUP_REQ;
+	icr_msg.ue_idx = ue_index;
+	icr_msg.enb_fd = ue_entry->enb_fd;
+	icr_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+	icr_msg.mme_s1ap_ue_id = ue_index;
+	icr_msg.ueag_max_dl_bitrate = ue_entry->ambr.max_requested_bw_dl;
+	icr_msg.ueag_max_ul_bitrate = ue_entry->ambr.max_requested_bw_ul;
+	icr_msg.bearer_id = ue_entry->bearer_id;
+	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
+	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key), KENB_SIZE);
+
+	//opened for write by s1 rel thread
+    pthread_mutex_lock(&s1ap_reject_queue_mutex);
+	write_ipc_channel(g_Q_s1ap_common_reject, (char *)&(icr_msg), S1AP_COMMON_REQ_BUF_SIZE);
+    pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+
+	log_msg(LOG_INFO, "Post for service_req_wf_initctxt_resp processing. SUCCESS\n");
+    return SUCCESS;
+}
+
+/*
+* Post message to s1ap handler about the failure of this stage 
+*/
+int
+post_svc_reject(int ue_index)
+{
+    struct commonRej_info s1ap_rej;
+	log_msg(LOG_INFO, "Sending Service Rej \n");
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      ue_index);
+		return -1;
+	}
+    s1ap_rej.IE_type = S1AP_SERVICE_REJECT;
+    s1ap_rej.enb_fd = ue_entry->enb_fd;
+    s1ap_rej.s1ap_enb_ue_id = ue_entry->s1ap_enb_ue_id;
+	write_ipc_channel(g_Q_s1ap_service_reject, (char *)(&s1ap_rej), S1AP_REQ_REJECT_BUF_SIZE );
+	return SUCCESS;
+}
+
+int
+post_ctx_rel_and_clr_uectx(int ue_index)
+{
+	struct s1ap_common_req_Q_msg ctx_rel = {0};
+	log_msg(LOG_INFO, "Sending ctx release \n");
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      ue_index);
+		return -1;
+    }
+    
+    ctx_rel.IE_type = S1AP_CTX_REL_CMD;
+    ctx_rel.enb_fd = ue_entry->enb_fd;
+    ctx_rel.mme_s1ap_ue_id = ue_index;
+    ctx_rel.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+    ctx_rel.cause.present = s1apCause_PR_nas;
+    ctx_rel.cause.choice.nas = s1apCauseNas_normal_release; 
+    pthread_mutex_lock(&s1ap_reject_queue_mutex);
+    write_ipc_channel(g_Q_s1ap_common_reject, (char *)(&ctx_rel), 
+                      S1AP_COMMON_REQ_BUF_SIZE );
+    
+    pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+    log_msg(LOG_INFO, "Releasing UE session\n");
+    ue_entry->ue_state = UNASSIGNED_ENTRY;
+    ue_entry->magic = UE_INFO_INVALID_MAGIC;
+    g_tmsi_allocation_array[ue_entry->m_tmsi] = -1;
+    int ret = insert_index_into_list(ue_index);
+    if (ret == -1) {
+        log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");
+    } else {
+        log_msg(LOG_INFO, "Index with %d is added to list\n",ue_index);
+    }
+	return SUCCESS;
+}
+
 /**
 * Thread exit function for future reference.
 */
@@ -207,6 +338,7 @@ shutdown_stage4()
 {
 	close_ipc_channel(g_Q_secmoderesp_fd);
 	close_ipc_channel(g_Q_esmreq_fd);
+	close_ipc_channel(g_Q_s1ap_service_reject);
 	log_msg(LOG_INFO, "Shutdown Stage 4 handler \n");
 	pthread_exit(NULL);
 	return;
