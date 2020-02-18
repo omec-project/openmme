@@ -48,6 +48,8 @@ typedef struct mme_config
 
 	unsigned int mme_s1ap_ip;
 	unsigned int mme_egtp_ip;
+	unsigned short mme_group_id;
+	unsigned char mme_code;
 } mme_config;
 
 
@@ -65,6 +67,7 @@ void
 check_mme_hdlr_status();
 
 void* stage1_handler(void *);
+void  handle_monitor_processing(void *);
 void* stage2_handler(void *);
 void* stage3_handler(void *);
 void* stage4_handler(void *);
@@ -75,6 +78,18 @@ void* stage8_handler(void *);
 void* detach_stage1_mme_handler(void *);
 void* detach_stage2_handler(void *);
 void* detach_stage3_handler(void *);
+void  guti_attach_post_to_next(int index);
+void *identity_rsp_handler(void *);
+int post_to_hss_stage(int idx);
+int post_ctx_rel_and_clr_uectx(int idx);
+int post_svc_reject(int idx);
+int send_init_ctx_setup_req(int idx);
+void* ddn_handler(void *);
+void* service_request_handler(void *);
+void* s1ap_req_common_mme_handler(void *);
+void* s11_rsp_common_mme_handler(void *);
+void* DDN_handler(void *);
+void *tau_request_handler(void *);
 
 //for testing, delete it
 void

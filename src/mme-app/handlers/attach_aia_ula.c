@@ -29,6 +29,7 @@
 #include "stage1_s6a_msg.h"
 #include "stage2_info.h"
 #include "sec.h"
+#include "common_proc_info.h"
 
 /************************************************************************
 Current file : Stage 2 handler.
@@ -46,10 +47,14 @@ ATTACH stages :
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
+extern int g_tmsi_allocation_array[];
 
 static int g_Q_aia_fd;
 static int g_Q_ula_fd;
 static int g_Q_authreq_fd;
+extern int g_Q_s1ap_common_reject;
+extern pthread_mutex_t s1ap_reject_queue_mutex;
+extern uint32_t attach_reject_counter;
 
 /*Making global just to avoid stack passing*/
 static char aia[S6A_AIA_STAGE2_BUF_SIZE];
@@ -95,8 +100,13 @@ process_aia_resp()
 {
 	struct aia_Q_msg *aia_msg = (struct aia_Q_msg *)aia;
 	struct UE_info *ue_entry = GET_UE_ENTRY(aia_msg->ue_idx);;
-	log_msg(LOG_INFO, "AIA for UE idx = %d\n", aia_msg->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_aia_resp for bad UE at index %d ", aia_msg->ue_idx);
+        return E_FAIL;
+    }
 
+	log_msg(LOG_INFO, "AIA for UE idx = %d\n", aia_msg->ue_idx);
 	if(NULL == ue_entry->aia_sec_info) {
 		ue_entry->aia_sec_info = calloc(sizeof(struct E_UTRAN_sec_vector), 1);
 		if(NULL == ue_entry->aia_sec_info) {
@@ -104,6 +114,13 @@ process_aia_resp()
 			exit(0);
 		}
 	}
+
+    if(S6A_AIA_FAILED == aia_msg->res)
+    {
+        /* send attach reject and release UE */
+		ue_entry->ue_state = STAGE1_AIA_FAIL;
+        return aia_msg->ue_idx;
+    }
 
 	memcpy(ue_entry->aia_sec_info,
 		&(aia_msg->sec),
@@ -125,6 +142,12 @@ process_ula_resp()
 {
 	struct ula_Q_msg *ula_msg = (struct ula_Q_msg *)ula;
 	struct UE_info *ue_entry = GET_UE_ENTRY(ula_msg->ue_idx);;
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_ula_resp for bad UE at index %d ", ula_msg->ue_idx);
+        return E_FAIL;
+    }
+
 	log_msg(LOG_INFO, "ULA for UE idx = %d\n", ula_msg->ue_idx);
 
 	memcpy(ue_entry->MSISDN, ula_msg->MSISDN, MSISDN_STR_LEN);
@@ -135,6 +158,14 @@ process_ula_resp()
 	ue_entry->access_restriction_data = ula_msg->access_restriction_data;
 	ue_entry->ambr.max_requested_bw_dl = ula_msg->max_requested_bw_dl;
 	ue_entry->ambr.max_requested_bw_ul = ula_msg->max_requested_bw_ul;
+    /*hardcoding apn for test*/
+    char apnn[] = "apn1";
+    char apn_enc[5] = {};
+    apn_enc[0] = strlen(apnn);
+    memcpy(&apn_enc[1], apnn, strlen(apnn));
+    ue_entry->apn.len = 5;
+
+    memcpy(&(ue_entry->apn.val), apn_enc, 5);
 
 	if(STAGE1_AIA_DONE == ue_entry->ue_state) {
 		ue_entry->ue_state = ATTACH_STAGE2;
@@ -236,6 +267,13 @@ static int
 post_to_next(int ue_index)
 {
 	struct UE_info *ue_entry = GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "post_to_next for bad UE at index %d ", ue_index);
+        return E_FAIL;
+    }
+
 	if(ue_entry->ue_state == ATTACH_STAGE2) {
 
 		/* Create integrity key */
@@ -264,7 +302,40 @@ post_to_next(int ue_index)
 
 		/*TODO free g_UE_list[][].aia_sec_info??*/
 	}
-	return SUCCESS;
+    else if (STAGE1_AIA_FAIL == ue_entry->ue_state)
+    {
+        log_msg(LOG_ERROR, "Error AIA from HSS\n");
+        log_msg(LOG_INFO, "Releasing UE session\n");
+        ue_entry->ue_state = UNASSIGNED_ENTRY;
+        ue_entry->magic = UE_INFO_INVALID_MAGIC;
+        g_tmsi_allocation_array[ue_entry->m_tmsi] = -1;
+        int ret = insert_index_into_list(ue_index);
+        if (ret == -1) {
+            log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");
+        } else {
+            log_msg(LOG_INFO, "Index with %d is added to list\n",ue_index);
+        }
+#if 0
+        log_msg(LOG_INFO, "Sending Attach Reject\n");
+	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+        s1ap_rej.IE_type = S1AP_ATTACH_REJ;
+        s1ap_rej.ue_idx = ue_index;
+        s1ap_rej.mme_s1ap_ue_id = ue_index;
+        s1ap_rej.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+        s1ap_rej.enb_fd = ue_entry->enb_fd;
+        s1ap_rej.cause.present = s1apCause_PR_misc;
+        s1ap_rej.cause.choice.misc = s1apCauseMisc_unknown_PLMN;
+		
+        pthread_mutex_lock(&s1ap_reject_queue_mutex);
+        write_ipc_channel(g_Q_s1ap_common_reject, 
+                          (char *)&(s1ap_rej),
+				          S1AP_COMMON_REQ_BUF_SIZE);
+        pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+        post_ctx_rel_and_clr_uectx(ue_index);
+#endif
+    }
+	
+    return SUCCESS;
 }
 
 /**

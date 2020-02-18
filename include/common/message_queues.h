@@ -89,6 +89,8 @@ Message queues used across MME, S1ap, S11, S6a
 #define S1AP_DTCHREQ_STAGE1_QUEUE  "/tmp/s1ap/s1ap_dtchreq_stage1_Q"
 
 #define S11_DTCHREQ_STAGE1_QUEUE   "/tmp/mme-app/s11_dtchreq_stage1_Q"
+#define S11_SEND_REQ_STAGE_QUEUE      "/tmp/mme-app/s11_req_stage_Q"
+#define S11_RECV_RSP_STAGE_QUEUE      "/tmp/mme-app/s11_resp_stage_Q"
 
 #define S6A_DTCHREQ_STAGE1_QUEUE  "/tmp/mme-app/s6a_dtchreq_stage1_Q"
 
@@ -109,5 +111,36 @@ Message queues used across MME, S1ap, S11, S6a
 #define S1AP_CTXRELRESP_STAGE3_QUEUE  "/tmp/s1ap/s1ap_ctxrelease_stage3_Q"
 
 /********* STAGE 3 DETACH END    ***************/
+/********* DDN  ***************/
 
+
+#define S1AP_REQ_REJECT_QUEUE "/tmp/s1ap/s1ap_reject_Q"
+
+#define S1AP_ID_REQ_QUEUE "/tmp/s1ap/s1ap_id_req_Q"
+#define S1AP_ID_RSP_QUEUE "/tmp/s1ap/s1ap_id_rsp_Q"
+
+
+#define S11_DDN_QUEUE  "/tmp/s11/s11_ddn_Q"
+#define S11_DDN_ACK_QUEUE  "/tmp/s11/s11_ddn_ack_Q"
+#define S11_DDN_FAIL_QUEUE  "/tmp/s11/s11_ddn_fail_Q"
+
+
+/********* DDN    ***************/
+
+/********* PAGING MESSAGE ***************/
+
+#define S1AP_PAGING_QUEUE  "/tmp/s1ap/s1ap_paging_Q"
+
+/********* PAGING END    ***************/
+/********* COMMON START ***************/
+#define S1AP_MME_QUEUE  "/tmp/s1ap/s1ap_mme_Q"
+#define S1AP_MME_TO_S1AP_QUEUE  "/tmp/s1ap/mme_to_s1ap_Q"
+/********* COMMON END *****************/
+
+/******** SERVICE REQ *****************/
+#define S1AP_SERVICEREQ_QUEUE "/tmp/s1ap/s1ap_servicereq_Q"
+/******** SERVICE REQ *****************/
+
+#define S1AP_TAUREQ_QUEUE  "/tmp/s1ap/s1ap_taureq_Q"
+#define S1AP_TAURSP_QUEUE  "/tmp/s1ap/s1ap_taursp_Q"
 #endif /*__MESSAGE_QUEUES_H*/
