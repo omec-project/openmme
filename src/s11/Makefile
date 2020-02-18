@@ -17,7 +17,8 @@
 ifndef ROOT
 include ../../build-config
 ROOT=../..
-LIB_PATH +=-L../common/
+LIB_PATH +=-L../common/ \
+	   -L../../build/libs/
 TARGET_DIR := $(ROOT)/target
 endif
 SRCDIR := .
@@ -41,22 +42,25 @@ ifeq ($(DEBUG),false)
 	CFLAGS += -O3
 endif
 
-INCS := $(INC_DIRS)
+INCS := $(INC_DIRS) \
+	-I../gtpV2Codec -I../cmn \
 
 LIBS := -lpthread	\
-	-lsctp
+	-lsctp \
+	-lgtpV2Codec \
+	-lcommonUtils
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
 	@mkdir -p $(BUILDDIR)/handlers
 	@mkdir -p $(BUILDDIR)/message_handlers
 	#@echo " $(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface $(LIBS)";
-	$(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson $(LIBS)
+	g++ $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson $(LIBS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)/handlers
 	@mkdir -p $(BUILDDIR)/message_handlers
-	@echo " $(CC) $(CFLAGS) $(INCS) -c -o $@ $<"; $(CC) $(CFLAGS) $(INCS) -c -o $@ $<
+	@echo " $(CC) $(CFLAGS) $(INCS) -c -o $@ $<"; gcc $(CFLAGS) $(INCS) -c -o $@ $<
 
 all:$(TARGET)
 

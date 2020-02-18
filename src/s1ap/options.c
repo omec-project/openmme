@@ -69,3 +69,24 @@ void log_buffer_free(char** buffer)
         free(*buffer);
     *buffer = NULL;
 }
+
+void convert_imsi_to_bcd_str(uint8_t *src, uint8_t* dest) 
+{
+  if (!src || !dest)
+  {
+      log_msg(LOG_ERROR, "invalid buffer pointers.\n");
+      return;
+  }
+
+  int len  = BINARY_IMSI_LEN;
+  int i = 0;
+  for (; i < len - 1; i++) {
+      dest[2 * i] = '0' + ((src[i] >> 4) & 0x0F);
+      dest[2 * i + 1] = '0' + ((src[i]) & 0x0F);
+  }
+
+  dest[2 * (len-1)] = '0' + ((src[i] >> 4) & 0x0F);
+
+  return;
+}
+

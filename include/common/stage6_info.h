@@ -30,9 +30,11 @@ struct csr_Q_msg {
 	struct fteid s1u_sgw_fteid;
 	struct fteid s5s8_pgwu_fteid;
 	struct PAA pdn_addr;
+	unsigned char pco_length;
+	unsigned char pco_options[MAX_PCO_OPTION_SIZE];
+	
 	//ebi info??
 	//apn restriction?
-	//paa?
 };
 
 struct init_ctx_req_Q_msg {
@@ -50,6 +52,9 @@ struct init_ctx_req_Q_msg {
 	uint16_t dl_seq_no;
 	int enb_fd;
 	unsigned char pti;
+        unsigned char pco_length;
+        unsigned char pco_options[MAX_PCO_OPTION_SIZE];
+	unsigned int m_tmsi;
 };
 
 
