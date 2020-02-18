@@ -281,6 +281,14 @@ create_session_processing()
 	msgData.aggregateMaximumBitRate.maxMbrUplink = g_csReqInfo->max_requested_bw_ul;
 	msgData.aggregateMaximumBitRate.maxMbrDownlink = g_csReqInfo->max_requested_bw_dl;
 
+    log_msg(LOG_INFO, "PCO length = %d\n", g_csReqInfo->pco_length);
+    if(g_csReqInfo->pco_length > 0)
+    {
+        msgData.protocolConfigurationOptionsIePresent = true;
+        msgData.protocolConfigurationOptions.pcoValue.count = g_csReqInfo->pco_length;
+        memcpy(&msgData.protocolConfigurationOptions.pcoValue.values[0], &g_csReqInfo->pco_options[0], g_csReqInfo->pco_length);
+    }
+
 	GtpV2Stack_buildGtpV2Message(gtpStack_gp, csReqMsgBuf_p, &gtpHeader, &msgData);
 
 	return SUCCESS;

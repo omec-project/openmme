@@ -4,6 +4,7 @@
  * Revisit header later
  *      Author: hariharanb
  */
+#include "assert.h"
 #include "createSessionResponseMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
 #include "../ieClasses/gtpV2IeFactory.h"
@@ -47,6 +48,7 @@
 #include "../ieClasses/fContainerIe.h"
 #include "../ieClasses/chargingIdIe.h"
 #include "../ieClasses/epcoIe.h"
+#include "stdio.h"
 
 CreateSessionResponseMsg::CreateSessionResponseMsg()
 {
@@ -1544,7 +1546,6 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                         return false;
                     }
                 }
-
                 else
                 {
                     // Unknown IE instance print error

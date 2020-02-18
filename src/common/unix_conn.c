@@ -33,7 +33,7 @@ int create_unix_socket()
 {
 	int fd;
 	struct sockaddr_un addr;
-	char *socket_path = "/mnt/host-rootfs/unix_socket";
+	char *socket_path = "/tmp/unix_socket";
 
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);
 

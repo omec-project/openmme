@@ -156,7 +156,8 @@ struct UE_info{
     unsigned int m_tmsi;
   unsigned short int ue_index;
   uint8_t arp;
-  unsigned short int pco_options[10];
+  uint16_t pco_length;
+  unsigned char pco_options[MAX_PCO_OPTION_SIZE];
 };
 
 int allocate_ue_index();

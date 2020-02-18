@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
@@ -444,6 +445,12 @@ typedef struct eRAB_elements {
 }eRAB_elements;
 /**eRAB structures end**/
 
+struct pco 
+{
+    unsigned short int pco_length;
+    unsigned char pco_options[MAX_PCO_OPTION_SIZE];
+};
+
 /**Information elements structs end**/
 typedef union nas_pdu_elements_union {
 	unsigned char rand[NAS_RAND_SIZE];
@@ -469,7 +476,7 @@ typedef union nas_pdu_elements_union {
 	unsigned char pti;
 	unsigned char eps_res;
 	unsigned char spare;
-	unsigned short int pco_options[MAX_PCO_OPTION_SIZE];
+    struct pco pco_opt;
 }nas_pdu_elements_union;
 
 typedef struct nas_pdu_elements {

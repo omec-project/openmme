@@ -133,11 +133,8 @@ s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
                                 }
                             case NAS_IE_TYPE_PCO:
                                 {
-                                    for(int pco=0; pco < 10; pco++)
-                                    {
-                                        ue_info.pco_options[pco] = 
-                                            s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_options[pco];
-                                    }
+                                        memcpy(&ue_info.pco_options[0], &s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_opt.pco_options[0], s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_opt.pco_length);
+                                    ue_info.pco_length = s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_opt.pco_length;
                                     break;
                                 }
                             default:
