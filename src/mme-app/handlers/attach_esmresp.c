@@ -153,7 +153,7 @@ post_to_next()
         log_msg(LOG_ERROR, "Ignore post_to_next for invalid UE . Index ", esm_resp->ue_idx);
         return E_FAIL;
     }
-	struct CS_Q_msg cs_msg;
+	struct CS_Q_msg cs_msg = {0};
 
 	cs_msg.ue_idx = esm_resp->ue_idx;
 	memcpy(cs_msg.IMSI, ue_entry->IMSI, BINARY_IMSI_LEN);
@@ -172,6 +172,9 @@ post_to_next()
 
 	memset(cs_msg.MSISDN, 0, 10);
 	memcpy(cs_msg.MSISDN,ue_entry->MSISDN,10);
+    memcpy(&cs_msg.pco_options[0], &ue_entry->pco_options[0], sizeof(ue_entry->pco_options));
+    cs_msg.pco_length = ue_entry->pco_length;
+    log_msg(LOG_INFO, "PCO length %d \n", cs_msg.pco_length);
 
 	write_ipc_channel(g_Q_CSreq_fd, (char *)&(cs_msg), S11_CSREQ_STAGE5_BUF_SIZE);
 	log_msg(LOG_INFO, "Posted Create Session message to S11-app - stage 5.\n");
