@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -265,6 +256,7 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
         memcpy(&(ue_entry->utran_cgi), &(ue_info->utran_cgi),
                         sizeof(struct CGI));
         memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
+        ue_entry->pco_length = ue_info->pco_length;
 	    memcpy(&(ue_entry->ue_net_capab), &(ue_info->ue_net_capab),
 	  	sizeof(struct UE_net_capab));
 	    memcpy(&(ue_entry->ms_net_capab), &(ue_info->ms_net_capab),
@@ -337,8 +329,10 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
     }
 
 
+    ue_entry->pco_length = ue_info->pco_length;
     memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
 	ue_entry->bearer_id = 5; /* Bearer Management */
+    log_msg(LOG_INFO, "PCO length = %d \n", ue_entry->pco_length);
 
     s1ap_id_req->ue_idx = index;
 	/* Collect information for next processing*/
@@ -488,4 +482,3 @@ stage1_handler(void *data)
 
 	return NULL;
 }
-

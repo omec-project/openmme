@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -133,11 +124,8 @@ s1_init_ue_handler(struct proto_IE *s1_init_ies, int enodeb_fd)
                                 }
                             case NAS_IE_TYPE_PCO:
                                 {
-                                    for(int pco=0; pco < 10; pco++)
-                                    {
-                                        ue_info.pco_options[pco] = 
-                                            s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_options[pco];
-                                    }
+                                        memcpy(&ue_info.pco_options[0], &s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_opt.pco_options[0], s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_opt.pco_length);
+                                    ue_info.pco_length = s1_init_ies->data[i].val.nas.elements[nas_index].pduElement.pco_opt.pco_length;
                                     break;
                                 }
                             default:
