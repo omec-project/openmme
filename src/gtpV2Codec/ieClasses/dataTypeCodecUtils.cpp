@@ -1055,7 +1055,7 @@ bool DataTypeCodecUtils::decodeUint8Array512(MsgBuffer &buffer,
         data.count++;
         i++;
     }
-	return true;
+    return true;
 }
 
 void DataTypeCodecUtils::displayUint8Array512_v(Uint8Array512 const &data, Debug &stream)

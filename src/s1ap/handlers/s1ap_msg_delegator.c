@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -405,8 +396,10 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
                     // Copy from - 1 byte header Extension + Configuration Protocol
                     index++;
                     nas->elements[index].msgType = NAS_IE_TYPE_PCO;
-                    memcpy(&nas->elements[index].pduElement.pco_options[0], &msg[msg_offset+2], pco_length); 
+                    memcpy(&nas->elements[index].pduElement.pco_opt.pco_options[0], &msg[msg_offset+2], pco_length); 
+                    nas->elements[index].pduElement.pco_opt.pco_length = pco_length;
                     msg_offset = pco_length + 2; // msg offset was already at PCO AVP type. Now it should point to next AVP type
+                    log_msg(LOG_DEBUG, "PCO length = %d \n", pco_length);
                     continue;
                 }
                 break; // unhandled ESM AVP...Add support..for now just break out..else we would be in tight loop

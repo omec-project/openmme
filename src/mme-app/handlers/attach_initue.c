@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -28,7 +19,6 @@
 #include "stage1_info.h"
 #include "ipc_api.h"
 #include "stage1_s6a_msg.h"
-#include "monitor_message.h"
 #include "unix_conn.h"
 
 /************************************************************************
@@ -141,7 +131,7 @@ read_next_msg()
 * Stage specific message processing.
 */
 static int
-stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej, struct attachIdReq_info *s1ap_id_req)
+stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, struct attachIdReq_info *s1ap_id_req)
 {
     struct ue_attach_info *ue_info = (struct ue_attach_info*)buf;
     struct UE_info *ue_entry = NULL;
@@ -259,12 +249,14 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
         memcpy(&(ue_entry->dl_seq_no), &(ue_info->seq_no), 1);
         ue_entry->s1ap_enb_ue_id = ue_info->s1ap_enb_ue_id;
         ue_entry->enb_fd = ue_info->enb_fd;
+        ue_entry->ue_curr_proc = ATTACH_PROC;
         ue_entry->esm_info_tx_required = ue_info->esm_info_tx_required;
         memcpy(&(ue_entry->tai), &(ue_info->tai),
                         sizeof(struct TAI));
         memcpy(&(ue_entry->utran_cgi), &(ue_info->utran_cgi),
                         sizeof(struct CGI));
         memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
+        ue_entry->pco_length = ue_info->pco_length;
 	    memcpy(&(ue_entry->ue_net_capab), &(ue_info->ue_net_capab),
 	  	sizeof(struct UE_net_capab));
 	    memcpy(&(ue_entry->ms_net_capab), &(ue_info->ms_net_capab),
@@ -337,8 +329,10 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct attachReqRej_info *s1ap_rej,
     }
 
 
+    ue_entry->pco_length = ue_info->pco_length;
     memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
 	ue_entry->bearer_id = 5; /* Bearer Management */
+    log_msg(LOG_INFO, "PCO length = %d \n", ue_entry->pco_length);
 
     s1ap_id_req->ue_idx = index;
 	/* Collect information for next processing*/
@@ -412,7 +406,7 @@ post_to_hss_stage(int ue_index)
 * Post message to s1ap handler about the failure of this stage 
 */
 static int
-post_fail_s1ap(struct attachReqRej_info *s1ap_rej)
+post_fail_s1ap(struct commonRej_info *s1ap_rej)
 {
         /*in case of GUTI attach and subscriber belong to this MME then we dont want to 
          * do the subscriber authorization again. 
@@ -461,7 +455,7 @@ stage1_handler(void *data)
 	init_stage();
     static struct s6a_Q_msg s6a_req;
     static struct attachIdReq_info s1ap_id_req;
-    static struct attachReqRej_info s1ap_rej;
+    static struct commonRej_info s1ap_rej;
 
 	log_msg(LOG_INFO, "Stage 1 Ready.\n");
 	g_mme_hdlr_status <<= 1;
@@ -487,142 +481,4 @@ stage1_handler(void *data)
 	}
 
 	return NULL;
-}
-
-void
-handle_monitor_imsi_req(struct monitor_imsi_req *mir, int sock_fd)
-{
-	struct monitor_imsi_rsp mia = {0};
-	struct UE_info *ue_entry = NULL;
-
-    for(int i = 0;i <= g_UE_cnt;i++)
-	{
-	    ue_entry = GET_UE_ENTRY(i);
-	    if(ue_entry && 
-	       (ATTACH_DONE == ue_entry->ue_state))
-        { 
-           char imsi[16] = {0};
-           mia.result = 2;
-
-	       /*Parse and validate  the buffer*/
-           imsi_bin_to_str(ue_entry->IMSI, imsi);
-           log_msg(LOG_ERROR, "imsi: %s", imsi);
-           if(strcmp((const char *)imsi, 
-                     (const char*)mir->imsi) == 0)
-           {
-               mia.bearer_id = ue_entry->bearer_id;
-               mia.result = 1;
-               memcpy(mia.imsi, imsi, IMSI_STR_LEN);
-               memcpy(&mia.tai, &ue_entry->tai, sizeof(struct TAI));
-               memcpy(&mia.ambr, &ue_entry->ambr, sizeof(struct AMBR));
-               /*memcpy(&mia.s11_sgw_c_fteid, &ue_entry->s11_sgw_c_fteid, sizeof(struct fteid));
-                 memcpy(&mia.s5s8_pgw_c_fteid, &ue_entry->s5s8_pgw_c_fteid, sizeof(struct fteid));
-                 memcpy(&mia.s1u_sgw_u_fteid, &ue_entry->s1u_sgw_u_fteid, sizeof(struct fteid));
-                 memcpy(&mia.s5s8_pgw_u_fteid, &ue_entry->s5s8_pgw_u_fteid, sizeof(struct fteid));
-                 memcpy(&mia.s1u_enb_u_fteid, &ue_entry->s1u_enb_u_fteid, sizeof(struct fteid));*/
-               break; 
-           }
-	    }
-	}
-	
-	unsigned char buf[BUFFER_SIZE] = {0};
-	struct monitor_resp_msg resp;
-	resp.hdr = MONITOR_IMSI_RSP;
-        //resp.result = 0;
-	memcpy(&resp.data.mia, &mia, 
-	      sizeof(struct monitor_imsi_rsp));
-	//memcpy(buf, &resp, sizeof(struct monitor_resp_msg));
-	memcpy(buf, &mia, sizeof(struct monitor_imsi_rsp));
-	//send_unix_msg(sock_fd, buf, sizeof(struct monitor_resp_msg));
-	send_unix_msg(sock_fd, buf, sizeof(struct monitor_imsi_rsp));
-
-	return;
-}
-
-void
-handle_imsi_list_req(struct monitor_imsi_req *mir, int sock_fd)
-{
-	struct monitor_imsi_list_rsp mia = {0};
-	struct UE_info *ue_entry = NULL;
-
-    char** imsi_list = (char**)malloc(sizeof(char*) * g_UE_cnt);
-    if(imsi_list)
-    {
-        mia.no_of_ue = g_UE_cnt;
-        mia.imsi_list = (unsigned char**)imsi_list;
-        for(int i = 0, j=0;i <= g_UE_cnt;i++)
-        {
-            ue_entry = GET_UE_ENTRY(i);
-            if(ue_entry && 
-               (ATTACH_DONE == ue_entry->ue_state))
-            { 
-                char* imsiVal = (char*)malloc(sizeof(char)*16);
-                char imsi[16] = {0};
-
-                imsi_bin_to_str(ue_entry->IMSI, imsi);
-                if(imsiVal)
-                {
-                    memcpy(imsiVal, imsi, IMSI_STR_LEN);
-                    imsi_list[j++] = imsiVal;
-                }
-            }
-        }
-    }
-	
-	unsigned char buf[BUFFER_SIZE] = {0};
-	memcpy(buf, &mia.no_of_ue, sizeof(int));
-    char* bufPtr = (char*)buf + sizeof(int);
-    int size = sizeof(int);
-    for(int i = 0;i< mia.no_of_ue;i++)
-    {
-        memcpy(bufPtr, mia.imsi_list[i], IMSI_STR_LEN);
-        bufPtr += IMSI_STR_LEN;
-        size += IMSI_STR_LEN;
-    }
-	
-    send_unix_msg(sock_fd, buf, size);
-
-	return;
-}
-
-
-/**
-* Monitor message processing.
-*/
-void
-handle_monitor_processing(void *message)
-{
-        log_msg(LOG_INFO, "Monitor Message Received");
-	int sock_fd = 0;
-	memcpy(&sock_fd, (char*)message, sizeof(int));
-	char *msg = ((char *) message) + (sizeof(int));
-	/*struct monitor_req_msg *msg = (struct monitor_req_msg*)message + sizeof(sock_fd);
-	switch(msg->hdr){
-	case MONITOR_IMSI_REQ:
-		handle_monitor_imsi_req((struct monitor_imsi_req *)&(msg->data.mir), sock_fd);
-		break;
-
-	default:
-		log_msg(LOG_ERROR, "Unknown message received from HSS - %d\n",
-			msg->hdr);
-	}*/
-	struct monitor_imsi_req* mir = (struct monitor_imsi_req*)msg;
-    switch(mir->req_type)
-    {
-        case 0:
-            {
-	            handle_monitor_imsi_req(mir, sock_fd);
-                break;
-            }
-        case 1:
-            {
-	            handle_imsi_list_req(mir, sock_fd);
-                break;
-            }
-            
-    }
-
-	/*free allocated message buffer*/
-	free(message);
-	return;
 }

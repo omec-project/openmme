@@ -388,11 +388,17 @@ decodeBearerContextsCreatedInCreateSessionResponse(MsgBuffer &buffer,
                          &data, Uint16 length)
 {
 
+    Uint16 boundry = length + buffer.getCurrentIndex();
     bool rc = false;
     GtpV2IeHeader ieHeader;
     set<Uint16> mandatoryIeLocalList = mandatoryIeSet;
     while (buffer.lengthLeft() > IE_HEADER_SIZE)
     {
+        if(buffer.getCurrentIndex() >= boundry)
+        {
+          rc = true;
+          return rc; // we finished reading bearer context 
+	}
         GtpV2Ie::decodeGtpV2IeHeader(buffer, ieHeader);
         if (ieHeader.length > buffer.lengthLeft())
         {

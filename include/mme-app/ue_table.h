@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __UE_TABLE_H_
@@ -46,12 +37,14 @@ enum ue_stages{
 		  in next stage*/
   STAGE1_ULA_DONE,
   STAGE1_AIA_DONE,
+  STAGE1_AIA_FAIL,
   ATTACH_STAGE2,
   STAGE2_WAITING,
   ATTACH_STAGE3,
   STAGE3_WAITING,
   ATTACH_STAGE4,
   STAGE4_WAITING,
+  STAGE4_FAIL,
   ATTACH_STAGE5,
   STAGE5_WAITING,
   ATTACH_STAGE6,
@@ -79,6 +72,13 @@ enum ue_stages{
 
 #define TOTAL_STAGES  20
 
+enum ue_proc{
+  UNKNOWN_PROC = 0,
+  ATTACH_PROC,
+  SERVICE_REQ_PROC,
+  TAU_PROC,
+  DETACH_PROC
+};
 
 enum ecm_states{
  ECM_IDLE,
@@ -104,6 +104,7 @@ struct AMBR {
 struct UE_info{
 	int             enb_fd;
 	enum ue_stages  ue_state;
+	enum ue_proc    ue_curr_proc;
 	enum ecm_states ecm_state;
 	int             s1ap_enb_ue_id;
 	unsigned char   IMSI[BINARY_IMSI_LEN];
@@ -116,6 +117,10 @@ struct UE_info{
 	struct UE_net_capab  ue_net_capab;
 	struct apn_name apn; /*TODO: Make it dynamic to save space. otherwise
 								  required len will be 103 bytes*/
+	struct apn_name selected_apn; /* For high priority apn selected by
+					mme, also can be used as default apn
+					when there is no apn from UE */
+
 	// enum          RRC_est_cause rrc_cause;
 
 	/**Information received from ULA*/
@@ -156,7 +161,8 @@ struct UE_info{
     unsigned int m_tmsi;
   unsigned short int ue_index;
   uint8_t arp;
-  unsigned short int pco_options[10];
+  uint16_t pco_length;
+  unsigned char pco_options[MAX_PCO_OPTION_SIZE];
 };
 
 int allocate_ue_index();

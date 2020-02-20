@@ -1,10 +1,19 @@
 /*
+<<<<<<< HEAD
 Copyright 2019-present Infosys Limited  
    
 SPDX-License-Identifier: Apache-2.0  
   
 */ 
 
+=======
+ * createSessionResponseMsg.cpp
+ *
+ * Revisit header later
+ *      Author: hariharanb
+ */
+#include "assert.h"
+>>>>>>> 729e1b7d2556e2873f92b7440d367a77f7e71d20
 #include "createSessionResponseMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
 #include "../ieClasses/gtpV2IeFactory.h"
@@ -48,6 +57,7 @@ SPDX-License-Identifier: Apache-2.0  
 #include "../ieClasses/fContainerIe.h"
 #include "../ieClasses/chargingIdIe.h"
 #include "../ieClasses/epcoIe.h"
+#include "stdio.h"
 
 CreateSessionResponseMsg::CreateSessionResponseMsg()
 {
@@ -1606,7 +1616,6 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                         return false;
                     }
                 }
-
                 else
                 {
                     // Unknown IE instance print error
