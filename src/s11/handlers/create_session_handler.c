@@ -232,8 +232,12 @@ create_session_processing()
 	msgData.pgwS5S8AddressForControlPlaneOrPmip.interfaceType = 7;
 	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipV4Address.ipValue = ntohl(g_s11_cfg.pgw_ip);
 
-	msgData.accessPointName.apnValue.count = g_csReqInfo->apn.len;
-	memcpy(msgData.accessPointName.apnValue.values, g_csReqInfo->apn.val, g_csReqInfo->apn.len);
+	msgData.accessPointName.apnValue.count =
+			g_csReqInfo->selected_apn.len + 1;
+	memcpy(msgData.accessPointName.apnValue.values,
+			&(g_csReqInfo->selected_apn.len), 1);
+	memcpy(msgData.accessPointName.apnValue.values + 1,
+			g_csReqInfo->selected_apn.val, g_csReqInfo->selected_apn.len);
 
 	msgData.selectionModeIePresent = true;
 	msgData.selectionMode.selectionMode = 1;
