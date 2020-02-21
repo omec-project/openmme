@@ -229,7 +229,6 @@ s1ap_attach_id_req_processing()
 	buffer_copy(&g_buffer, &g_value_buffer,
 						g_value_buffer.pos);
 
-	free(s1apPDU.value.data[2].val.nas.elements);
 	free(s1apPDU.value.data);
 
 	return SUCCESS;

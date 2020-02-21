@@ -1,19 +1,10 @@
 
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __S1AP_STRUCTS_H_
@@ -38,6 +29,7 @@
 #define DTCH_ACCEPT_NO_OF_IES 3
 #define UE_CTX_RELEASE_NO_OF_IES 3
 #define ATTACH_REJECT_NO_OF_IES 3 
+#define SERVICE_REJECT_NO_OF_IES 3 
 #define ATTACH_ID_REQUEST_NO_OF_IES 3
 #define TAU_RSP_NO_OF_IES 3  /*mme s1ap id, enb s1ap id, nas pdu */
 
@@ -309,6 +301,7 @@ typedef struct esm_msg_container {
 	uint8_t session_management_msgs;
 	uint8_t eps_qos;  /* TODO: Revisit 24.301 - 9.9.4.3.1 */
 	struct apn_name apn;
+	struct apn_name selected_apn;
 	pdn_address pdn_addr;
 	linked_transcation_id linked_ti;
 	esm_qos negotiated_qos;
@@ -408,6 +401,12 @@ struct ie_global_enb_id {
 #define ENB_NAME_SIZE 150
 struct ie_enb_name {
 	char enb_name[ENB_NAME_SIZE];
+};
+
+enum ie_fail_internal_cause {
+	AIA_FAIL,
+	SECURITY_MOD_REJECT_FAIL,
+	MAX_FAIL_CAUSE
 };
 
 /*36.413: 9.2.1.3a*/
@@ -694,6 +693,7 @@ enum eps_nas_mesage_type {
 	DetachAccept = 0x46,
     TauAccept    = 0x49,
     TauReject    = 0x4b,
+	ServiceReject = 0x4e,
 	AuthenticationRequest = 0x52,
     IdentityRequest       = 0x55,
 	SecurityModeCommand = 0x5d,

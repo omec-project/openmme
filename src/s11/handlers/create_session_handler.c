@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -169,7 +160,7 @@ create_session_processing()
 	gtpHeader.msgType = GTP_CREATE_SESSION_REQ;
 	gtpHeader.sequenceNumber = g_s11_sequence;
 	gtpHeader.teidPresent = true;
-	gtpHeader.teid = 1;
+	gtpHeader.teid = 0;
 
 	g_s11_sequence++;
 
@@ -229,21 +220,24 @@ create_session_processing()
 	msgData.ratType.ratType = 6;
 
 	msgData.indicationFlagsIePresent = true;
-	msgData.indicationFlags.iDFI = true;
 	msgData.indicationFlags.iMSV = true;
 
 	msgData.senderFTeidForControlPlane.ipv4present = true;
 	msgData.senderFTeidForControlPlane.interfaceType = 10;
-	msgData.senderFTeidForControlPlane.ipV4Address.ipValue = g_s11_cfg.local_egtp_ip;
-	msgData.senderFTeidForControlPlane.teidGreKey = g_csReqInfo->ue_idx;
+	msgData.senderFTeidForControlPlane.ipV4Address.ipValue = g_s11_cfg.local_egtp_ip; /* network byte ordered */
+	msgData.senderFTeidForControlPlane.teidGreKey = g_csReqInfo->ue_idx; /* Control is in the MME-app to give TEID */
 
 	msgData.pgwS5S8AddressForControlPlaneOrPmipIePresent = true;
 	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipv4present = true;
 	msgData.pgwS5S8AddressForControlPlaneOrPmip.interfaceType = 7;
-	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipV4Address.ipValue = g_s11_cfg.pgw_ip;
+	msgData.pgwS5S8AddressForControlPlaneOrPmip.ipV4Address.ipValue = ntohl(g_s11_cfg.pgw_ip);
 
-	msgData.accessPointName.apnValue.count = g_csReqInfo->apn.len;
-	memcpy(msgData.accessPointName.apnValue.values, g_csReqInfo->apn.val, g_csReqInfo->apn.len);
+	msgData.accessPointName.apnValue.count =
+			g_csReqInfo->selected_apn.len + 1;
+	memcpy(msgData.accessPointName.apnValue.values,
+			&(g_csReqInfo->selected_apn.len), 1);
+	memcpy(msgData.accessPointName.apnValue.values + 1,
+			g_csReqInfo->selected_apn.val, g_csReqInfo->selected_apn.len);
 
 	msgData.selectionModeIePresent = true;
 	msgData.selectionMode.selectionMode = 1;

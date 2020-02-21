@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __MME_APP_H_
@@ -81,6 +72,9 @@ void* detach_stage3_handler(void *);
 void  guti_attach_post_to_next(int index);
 void *identity_rsp_handler(void *);
 int post_to_hss_stage(int idx);
+int post_ctx_rel_and_clr_uectx(int idx);
+int post_svc_reject(int idx);
+int send_init_ctx_setup_req(int idx);
 void* ddn_handler(void *);
 void* service_request_handler(void *);
 void* s1ap_req_common_mme_handler(void *);
