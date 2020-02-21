@@ -37,31 +37,6 @@ bool PcoIe::encodePcoIe(MsgBuffer &buffer, PcoIeData const &data)
 bool PcoIe::decodePcoIe(MsgBuffer &buffer, PcoIeData &data, Uint16 length)
 {     
     // TODO optimize the length checks
-<<<<<<< HEAD
-    
-    Uint16 ieBoundary = buffer.getCurrentIndex() + length;
-
-    Uint16 lengthLeft = length;
-    lengthLeft = ieBoundary - buffer.getCurrentIndex();
-    if (!(DataTypeCodecUtils::decodeUint8Array255(buffer, data.pcoValue, lengthLeft, 0)))
-    {
-        errorStream.add((char *)"Failed to decode: pcoValue\n");
-        return false;
-    }
-
-    // The IE is decoded now. The buffer index should be pointing to the 
-    // IE Boundary. If not, we have some more data left for the IE which we don't know
-    // how to decode
-    if (ieBoundary == buffer.getCurrentIndex())
-    {
-        return true;
-    }
-    else
-    {
-        errorStream.add((char *)"Unable to decode IE PcoIe\n");
-        return false;
-    }
-=======
     if (!(DataTypeCodecUtils::decodeUint8Array512(buffer, data.pcoValue, length, 0)))
     {
         errorStream.add("Failed to decode: pcoValue\n");
@@ -69,7 +44,6 @@ bool PcoIe::decodePcoIe(MsgBuffer &buffer, PcoIeData &data, Uint16 length)
         return false;
     }
    return true;
->>>>>>> 729e1b7d2556e2873f92b7440d367a77f7e71d20
 }
 void PcoIe::displayPcoIe_v(PcoIeData const &data, Debug &stream)
 {
@@ -80,11 +54,7 @@ void PcoIe::displayPcoIe_v(PcoIeData const &data, Debug &stream)
   
     stream.add((char *)"pcoValue:");
     stream.endOfLine();
-<<<<<<< HEAD
-    DataTypeCodecUtils::displayUint8Array255_v(data.pcoValue, stream);
-=======
     DataTypeCodecUtils::displayUint8Array512_v(data.pcoValue, stream);
->>>>>>> 729e1b7d2556e2873f92b7440d367a77f7e71d20
     stream.decrIndent();
     stream.decrIndent();
 }

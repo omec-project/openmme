@@ -13,6 +13,10 @@
 /****S1AP Procedude codes****/
 #define S1AP_SETUP_REQUEST_CODE 17
 #define S1AP_INITIAL_UE_MSG_CODE 12
+#define S1AP_HANDOVER_REQUIRED_CODE 0
+#define S1AP_HANDOVER_ACKNOWLEDGE_CODE 1
+#define S1AP_HANDOVER_NOTIFY_CODE 2
+#define S1AP_ENB_STATUS_TRANSFER_CODE 24
 /*uplink NAS Transport*/
 #define S1AP_UL_NAS_TX_MSG_CODE 13
 #define S1AP_INITIAL_CTX_RESP_CODE 9
@@ -38,6 +42,12 @@
 #define S1AP_IE_S_TMSI  96
 #define S1AP_IE_RRC_EST_CAUSE  134
 #define S1AP_ERAB_SETUP_CTX_SUR 51
+#define S1AP_IE_HANDOVER_TYPE  1
+#define S1AP_IE_TARGET_ID 4
+#define S1AP_IE_SOURCE_TOTARGET_TRANSPARENTCONTAINER	104
+#define S1AP_IE_E_RABAdmitted	18
+#define S1AP_IE_Target_ToSource_TransparentContainer	123
+#define S1AP_IE_ENB_Status_Transfer_TransparentContainer	90
 
 /*NAS message type codes*/
 #define NAS_ATTACH_REQUEST 0x41

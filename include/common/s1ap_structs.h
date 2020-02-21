@@ -22,6 +22,7 @@
 #define NAS_RAND_SIZE 16
 #define NAS_AUTN_SIZE 16
 
+#define TRANS_CONT_SIZE 256
 #define AUTH_REQ_NO_OF_IES 3
 #define SEC_MODE_NO_OF_IES 3
 #define ESM_REQ_NO_OF_IES 3
@@ -66,6 +67,7 @@ APN name can be in range of min 3 octets to max 102 octets
 */
 #define MAX_APN_LEN 102
 
+#define MAX_ERAB_SIZE 10
 
 struct apn_name {
 	unsigned char len;
@@ -523,6 +525,61 @@ typedef struct ERABSetup {
 	struct nasPDU nas;
 } ERABSetup;
 
+typedef enum handoverType {
+        IntraLTE,
+        LTEtoUTRAN,
+        LTEtoGERAN,
+        UTRANtoLTE,
+        GERANtoLTE,
+        LTEtoNR,
+        NRtoLTE
+}handoverType;
+
+typedef struct ERAB_admitted{
+        uint8_t e_RAB_ID;
+        uint32_t transportLayerAddress;
+        uint32_t gtp_teid;
+
+}ERAB_admitted;
+
+
+typedef struct targetId{
+        struct ie_global_enb_id global_enb_id;
+        struct TAI selected_tai;
+}targetId;
+
+struct count_t{
+        int pdcp_sn;
+        int hfn;
+};
+
+ struct enB_status_transfer_transparent_container{
+        unsigned short  eRAB_id;
+        struct count_t ul_count_value;
+        struct count_t dl_count_value;
+};
+struct enB_status_transfer_transparent_container_list{
+        int count;
+        struct enB_status_transfer_transparent_container enB_status_transfer_transparent_container[10];
+};
+
+
+struct security_context{
+        int next_hop_chaining_count ;
+        int next_hop_nh;
+};
+
+struct ERAB_admitted_list{
+        int count ;
+        ERAB_admitted erab_admitted[MAX_ERAB_SIZE];
+};
+
+struct ERABSetupList{
+        int count ;
+        ERABSetup eRABSetup[MAX_ERAB_SIZE];
+};
+
+
 #pragma pack()
 /* Dependencies */
 typedef enum s1apCause_PR {
@@ -650,6 +707,12 @@ typedef struct proto_IE_data {
         ERABSetup E_RABToBeSetupItemCtxtSUReq;
         ue_sec_capabilities ue_sec_capab;
         uint8_t sec_key[SECURITY_KEY_SIZE];
+        struct targetId target_id;
+        enum handoverType handoverType;
+        unsigned char srcToTargetTranspContainer;
+    	struct ERAB_admitted_list erab_admittedlist;
+    	unsigned char targetToSrcTranspContainer;
+    	struct enB_status_transfer_transparent_container_list enB_status_transfer_transparent_containerlist;        
     }val;
 }proto_IEs;
 

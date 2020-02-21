@@ -1,19 +1,11 @@
 /*
-<<<<<<< HEAD
 Copyright 2019-present Infosys Limited  
    
 SPDX-License-Identifier: Apache-2.0  
   
 */ 
 
-=======
- * createSessionResponseMsg.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
 #include "assert.h"
->>>>>>> 729e1b7d2556e2873f92b7440d367a77f7e71d20
 #include "createSessionResponseMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
 #include "../ieClasses/gtpV2IeFactory.h"

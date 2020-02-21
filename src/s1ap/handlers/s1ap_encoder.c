@@ -60,7 +60,19 @@ int s1ap_mme_encode_initiating(
 	        log_msg(LOG_INFO, "Init context setup req encode\n");
 	        return s1ap_mme_encode_initial_context_setup_request(
 		          message_p, buffer, length); 
-        case S1AP_ATTACH_REJ:
+	case S1AP_HANDOVER_REQ:
+        	log_msg(LOG_INFO, "Handover req encode\n");
+        	return s1ap_mme_encode_handover_request(
+        			  message_p, buffer, length);
+        case S1AP_HANDOVER_COMMAND:
+        	log_msg(LOG_INFO, "Handover command encode\n");
+        	return s1ap_mme_encode_handover_command(
+        			  message_p, buffer, length);
+        case S1AP_MME_STATUS_TRANSFER:
+        	log_msg(LOG_INFO, "Handover mme status transfer encode\n");
+        	return s1ap_mme_encode_handover_mme_status_transfer(
+        			  message_p, buffer, length);
+	case S1AP_ATTACH_REJ:
 	        log_msg(LOG_INFO, "Attach Reject encode\n");
 	        return s1ap_mme_encode_attach_rej(
 		          message_p, buffer, length); 
@@ -663,3 +675,331 @@ int s1ap_mme_encode_paging_request(
     *length = enc_ret;
     return enc_ret; 
 }
+
+int s1ap_mme_encode_handover_request(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+	S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+    	InitiatingMessage_t *initiating_msg = NULL;
+	S1AP_PDU_t                             *pdu_p = &pdu;
+	int                                     enc_ret = -1;
+	memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+
+    	pdu.present = S1AP_PDU_PR_initiatingMessage;
+    	pdu.choice.initiatingMessage = calloc (sizeof(InitiatingMessage_t), sizeof(uint8_t));
+    	if(pdu.choice.initiatingMessage == NULL)
+    	{
+        	log_msg(LOG_ERROR,"calloc failed.\n");
+        	return -1;
+    	}	
+    	initiating_msg = pdu.choice.initiatingMessage;
+    	initiating_msg->procedureCode = ProcedureCode_id_HandoverResourceAllocation;
+    	initiating_msg->criticality = 0;
+    	initiating_msg->value.present = InitiatingMessage__value_PR_HandoverRequest;
+
+
+    	HandoverRequestIEs_t val[8];
+    	memset(val, 0, 6* (sizeof(HandoverRequestIEs_t)));
+    	val[0].id = ProtocolIE_ID_id_MME_UE_S1AP_ID;
+	val[0].criticality = 0;
+	val[0].value.present = 	HandoverRequestIEs__value_PR_MME_UE_S1AP_ID;
+	val[0].value.choice.MME_UE_S1AP_ID = s1apPDU->msg.handover_request.s1ap_mme_ue_id;
+
+	val[1].id = ProtocolIE_ID_id_HandoverType;
+	val[1].criticality = 0;
+	val[1].value.present = HandoverRequestIEs__value_PR_HandoverType;
+	val[1].value.choice.HandoverType = s1apPDU->msg.handover_request.handoverType;
+
+	val[2].id = ProtocolIE_ID_id_Cause;
+	val[2].criticality = 0;
+	val[2].value.present = HandoverRequestIEs__value_PR_Cause;
+	val[2].value.choice.Cause.present = s1apPDU->msg.handover_request.cause.present;
+    	switch(s1apPDU->msg.handover_request.cause.present)
+    	{
+        	case Cause_PR_radioNetwork:
+            		val[2].value.choice.Cause.choice.radioNetwork
+                	= s1apPDU->msg.handover_request.cause.choice.radioNetwork;
+        		break;
+        	case Cause_PR_transport:
+            		val[2].value.choice.Cause.choice.transport
+                	= s1apPDU->msg.handover_request.cause.choice.transport;
+       	 		break;
+        	case Cause_PR_nas:
+            		val[2].value.choice.Cause.choice.nas
+                	= s1apPDU->msg.handover_request.cause.choice.nas;
+        		break;
+        	case Cause_PR_protocol:
+            		val[2].value.choice.Cause.choice.protocol
+                	= s1apPDU->msg.handover_request.cause.choice.protocol;
+        		break;
+        	case Cause_PR_misc:
+            		val[2].value.choice.Cause.choice.misc
+                	= s1apPDU->msg.handover_request.cause.choice.misc;
+        	break;
+        	case Cause_PR_NOTHING:
+        	default:
+            	log_msg(LOG_WARNING,"Unknown Cause type:%d\n",s1apPDU->msg.handover_request.cause.present);
+    	}	
+
+	val[3].id = ProtocolIE_ID_id_uEaggregateMaximumBitrate;
+   	val[3].criticality = 0;
+	val[3].value.present = HandoverRequestIEs__value_PR_UEAggregateMaximumBitrate;
+
+	val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.size = 5;
+	val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf = calloc (5, sizeof(uint8_t));
+ 	val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[0] = 0x0;
+	uint32_t temp_bitrate = htonl(s1apPDU->ueag_max_dl_bitrate);
+	memcpy (&(val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf[1]), &temp_bitrate, sizeof(uint32_t));
+
+	val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.size =  5;
+	val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf = calloc (5, sizeof(uint8_t));
+	val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[0] = 0x0;
+	temp_bitrate = htonl(s1apPDU->ueag_max_ul_bitrate);
+	memcpy (&(val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf[1]), &temp_bitrate, sizeof(uint32_t));
+
+
+	val[4].id = ProtocolIE_ID_id_E_RABToBeSetupListHOReq;
+	val[4].criticality = 0;
+	val[4].value.present = HandoverRequestIEs__value_PR_E_RABToBeSetupListHOReq;
+
+	E_RABToBeSetupItemHOReqIEs_t erab_to_be_setup_item;
+	memset(&erab_to_be_setup_item, 0, sizeof(E_RABToBeSetupItemHOReqIEs_t));
+	E_RABToBeSetupItemHOReq_t* erab_to_be_setup = &(erab_to_be_setup_item.value.choice.E_RABToBeSetupItemHOReq);
+
+	erab_to_be_setup_item.id = ProtocolIE_ID_id_E_RABToBeSetupItemHOReq;
+	erab_to_be_setup_item.criticality = 0;
+	erab_to_be_setup_item.value.present = E_RABToBeSetupItemHOReqIEs__value_PR_E_RABToBeSetupItemHOReq;
+
+	erab_to_be_setup->e_RAB_ID = 5;
+
+	erab_to_be_setup->transportLayerAddress.size = 4;
+	erab_to_be_setup->transportLayerAddress.buf = calloc(4, sizeof(uint8_t));
+	uint32_t transport_layer_address = htonl(s1apPDU->gtp_teid.ip.ipv4.s_addr);
+    	memcpy(erab_to_be_setup->transportLayerAddress.buf, &transport_layer_address, sizeof(uint32_t));
+
+	erab_to_be_setup->gTP_TEID.size = 4;
+	erab_to_be_setup->gTP_TEID.buf = calloc(4, sizeof(uint8_t));
+	erab_to_be_setup->gTP_TEID.buf[0] =  s1apPDU->gtp_teid.header.teid_gre >> 24;
+	erab_to_be_setup->gTP_TEID.buf[1] =  s1apPDU->gtp_teid.header.teid_gre >> 16;
+	erab_to_be_setup->gTP_TEID.buf[2] =  s1apPDU->gtp_teid.header.teid_gre >> 8;
+	erab_to_be_setup->gTP_TEID.buf[3] =  s1apPDU->gtp_teid.header.teid_gre;
+
+
+	erab_to_be_setup->e_RABlevelQosParameters.allocationRetentionPriority.priorityLevel = 15;
+	erab_to_be_setup->e_RABlevelQosParameters.allocationRetentionPriority.pre_emptionCapability = 1;
+	erab_to_be_setup->e_RABlevelQosParameters.allocationRetentionPriority.pre_emptionVulnerability = 1;
+	erab_to_be_setup->e_RABlevelQosParameters.qCI = 9;
+	ASN_SEQUENCE_ADD(&(val[4].value.choice.E_RABToBeSetupListHOReq.list), &erab_to_be_setup_item);
+
+	val[5].id = ProtocolIE_ID_id_Source_ToTarget_TransparentContainer;
+	val[5].criticality = 0;
+	val[5].value.present = 	HandoverRequestIEs__value_PR_Source_ToTarget_TransparentContainer;
+	val[5].value.choice.Source_ToTarget_TransparentContainer.size = TRANS_CONT_SIZE;
+	val[5].value.choice.Source_ToTarget_TransparentContainer.buf = calloc(TRANS_CONT_SIZE, sizeof(uint8_t));
+	memcpy(val[5].value.choice.Source_ToTarget_TransparentContainer.buf,
+	s1apPDU->msg.handover_request.srcToTargetTranspContainer, sizeof(TRANS_CONT_SIZE));
+	
+
+	val[6].id = ProtocolIE_ID_id_UESecurityCapabilities;
+	val[6].criticality = 0;
+	val[6].value.present = HandoverRequestIEs__value_PR_UESecurityCapabilities;
+	val[6].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf = calloc(2, sizeof(uint8_t));
+	val[6].value.choice.UESecurityCapabilities.encryptionAlgorithms.size = 2;
+	val[6].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf[0] = 0xe0;
+	val[6].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf[1] = 0x00;
+	val[6].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf = calloc(2, sizeof(uint8_t));
+	val[6].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.size = 2;
+	val[6].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf[0] = 0xc0;
+	val[6].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf[1] = 0x00;
+
+	val[7].id = ProtocolIE_ID_id_SecurityContext;
+	val[7].criticality = 0;
+	val[7].value.present = HandoverRequestIEs__value_PR_SecurityContext;
+	val[7].value.choice.SecurityContext.nextHopChainingCount = 0;
+	val[7].value.choice.SecurityContext.nextHopParameter.size = SECURITY_KEY_SIZE;
+   	val[7].value.choice.SecurityContext.nextHopParameter.buf = calloc(SECURITY_KEY_SIZE, sizeof(uint8_t));
+   	memcpy(val[7].value.choice.SecurityContext.nextHopParameter.buf, s1apPDU->sec_key, SECURITY_KEY_SIZE);
+
+	log_msg(LOG_INFO,"Add values to list.\n");
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.HandoverRequest.protocolIEs.list, &val[0]);
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.HandoverRequest.protocolIEs.list, &val[1]);
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.HandoverRequest.protocolIEs.list, &val[2]);
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.HandoverRequest.protocolIEs.list, &val[3]);
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.HandoverRequest.protocolIEs.list, &val[4]);
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.HandoverRequest.protocolIEs.list, &val[5]);
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.HandoverRequest.protocolIEs.list, &val[6]);
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.HandoverRequest.protocolIEs.list, &val[7]);
+
+	if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0)
+	{
+		log_msg(LOG_ERROR, "Encoding of Handover Request failed\n");
+		return -1;
+	}
+
+	log_msg(LOG_INFO,"free allocated messages");
+
+	free(val[7].value.choice.SecurityContext.nextHopParameter.buf);
+	free(val[6].value.choice.UESecurityCapabilities.integrityProtectionAlgorithms.buf);
+	free(val[6].value.choice.UESecurityCapabilities.encryptionAlgorithms.buf);
+	free(erab_to_be_setup->gTP_TEID.buf);
+	free(erab_to_be_setup->transportLayerAddress.buf);
+	free(val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateUL.buf);
+	free(val[3].value.choice.UEAggregateMaximumBitrate.uEaggregateMaximumBitRateDL.buf);
+	free(pdu.choice.initiatingMessage);
+
+	*length = enc_ret;
+	return enc_ret;
+
+}
+
+
+int s1ap_mme_encode_handover_command(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+	S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+	SuccessfulOutcome_t *successfulOutcome_msg = NULL;
+	S1AP_PDU_t                             *pdu_p = &pdu;
+	int                                     enc_ret = -1;
+	memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+
+   	pdu.present = S1AP_PDU_PR_successfulOutcome;
+    	pdu.choice.successfulOutcome = calloc(sizeof(SuccessfulOutcome_t), sizeof(uint8_t));
+    	if(pdu.choice.successfulOutcome == NULL)
+    	{
+        	log_msg(LOG_ERROR,"calloc failed.\n");
+        	return -1;
+    	}
+   	successfulOutcome_msg = pdu.choice.successfulOutcome;
+    	successfulOutcome_msg->procedureCode = ProcedureCode_id_HandoverPreparation;
+    	successfulOutcome_msg->criticality = 0;
+    	successfulOutcome_msg->value.present = SuccessfulOutcome__value_PR_HandoverCommand;
+
+
+    	HandoverCommandIEs_t val[5];
+    	memset(val, 0, 5 * (sizeof(HandoverCommandIEs_t)));
+    	val[0].id = ProtocolIE_ID_id_MME_UE_S1AP_ID;
+	val[0].criticality = 0;
+	val[0].value.present = 	HandoverCommandIEs__value_PR_MME_UE_S1AP_ID;
+	val[0].value.choice.MME_UE_S1AP_ID = s1apPDU->mme_s1ap_ue_id;
+
+    	val[1].id = ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+	val[1].criticality = 0;
+	val[1].value.present = 	HandoverCommandIEs__value_PR_ENB_UE_S1AP_ID;
+	val[1].value.choice.ENB_UE_S1AP_ID = s1apPDU->enb_s1ap_ue_id;
+
+	val[2].id = ProtocolIE_ID_id_HandoverType;
+	val[2].criticality = 0;
+	val[2].value.present = HandoverCommandIEs__value_PR_HandoverType;
+	val[2].value.choice.HandoverType = s1apPDU->msg.handover_command.handoverType;
+
+
+
+	val[3].id = ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList;
+	val[3].criticality = 0;
+	val[3].value.present = HandoverCommandIEs__value_PR_E_RABSubjecttoDataForwardingList;
+
+	E_RABDataForwardingItemIEs_t erab_todata_forwarding_item;
+	memset(&erab_todata_forwarding_item, 0, sizeof(E_RABDataForwardingItemIEs_t));
+	E_RABDataForwardingItem_t* erab_to_be_forwarding = &(erab_todata_forwarding_item.value.choice.E_RABDataForwardingItem);
+
+	erab_todata_forwarding_item.id = ProtocolIE_ID_id_E_RABDataForwardingItem;
+	erab_todata_forwarding_item.criticality = 0;
+	erab_todata_forwarding_item.value.present = E_RABDataForwardingItemIEs__value_PR_E_RABDataForwardingItem;
+
+	erab_to_be_forwarding->e_RAB_ID = 5;
+
+	ASN_SEQUENCE_ADD(&(val[3].value.choice.E_RABSubjecttoDataForwardingList.list), &erab_todata_forwarding_item);
+
+	val[4].id = ProtocolIE_ID_id_Target_ToSource_TransparentContainer;
+	val[4].criticality = 0;
+	val[4].value.present = HandoverCommandIEs__value_PR_Target_ToSource_TransparentContainer;
+	val[4].value.choice.Target_ToSource_TransparentContainer.size = TRANS_CONT_SIZE;
+	val[4].value.choice.Target_ToSource_TransparentContainer.buf = calloc(TRANS_CONT_SIZE, sizeof(uint8_t));
+	memcpy(&(val[4].value.choice.Target_ToSource_TransparentContainer.buf),
+	&s1apPDU->msg.handover_command.targetToSrcTranspContainer, sizeof(TRANS_CONT_SIZE));
+
+    	ASN_SEQUENCE_ADD(&successfulOutcome_msg->value.choice.HandoverCommand.protocolIEs.list, &val[0]);
+    	ASN_SEQUENCE_ADD(&successfulOutcome_msg->value.choice.HandoverCommand.protocolIEs.list, &val[1]);
+    	ASN_SEQUENCE_ADD(&successfulOutcome_msg->value.choice.HandoverCommand.protocolIEs.list, &val[2]);
+    	ASN_SEQUENCE_ADD(&successfulOutcome_msg->value.choice.HandoverCommand.protocolIEs.list, &val[3]);
+
+    	if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0)
+    	{
+        	log_msg(LOG_ERROR, "Encoding of handover Cmd failed\n");
+        	return -1;
+    	}
+
+    	log_msg(LOG_INFO, "free allocated msgs");
+    	free(pdu.choice.successfulOutcome);
+
+	
+    	*length = enc_ret;
+    	return enc_ret;
+}
+
+int s1ap_mme_encode_handover_mme_status_transfer(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+	S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+	InitiatingMessage_t *initiating_msg = NULL;
+	S1AP_PDU_t                             *pdu_p = &pdu;
+	int                                     enc_ret = -1;
+	memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+	pdu.present = S1AP_PDU_PR_initiatingMessage;
+	pdu.choice.initiatingMessage = calloc (sizeof(InitiatingMessage_t), sizeof(uint8_t)); ;
+	if(pdu.choice.initiatingMessage == NULL)
+	{
+		log_msg(LOG_ERROR,"calloc failed.\n");
+		return -1;
+	}
+	initiating_msg = pdu.choice.initiatingMessage;
+	initiating_msg->procedureCode = ProcedureCode_id_MMEStatusTransfer;
+	initiating_msg->criticality = 0;
+	initiating_msg->value.present = InitiatingMessage__value_PR_MMEStatusTransfer;
+
+	MMEStatusTransferIEs_t val[3];
+	memset(val, 0, 3 * (sizeof(MMEStatusTransferIEs_t)));
+	val[0].id = ProtocolIE_ID_id_MME_UE_S1AP_ID;
+	val[0].criticality = 0;
+	val[0].value.present = 	MMEStatusTransferIEs__value_PR_MME_UE_S1AP_ID;
+	val[0].value.choice.MME_UE_S1AP_ID = s1apPDU->mme_s1ap_ue_id;
+
+	val[1].id = ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+	val[1].criticality = 0;
+	val[1].value.present = 	MMEStatusTransferIEs__value_PR_ENB_UE_S1AP_ID;
+	val[1].value.choice.ENB_UE_S1AP_ID = s1apPDU->enb_s1ap_ue_id;
+
+	val[2].id = ProtocolIE_ID_id_eNB_StatusTransfer_TransparentContainer;
+	val[2].criticality = 0;
+	val[2].value.present = MMEStatusTransferIEs__value_PR_ENB_StatusTransfer_TransparentContainer;
+	memcpy(&val[2].value.choice.ENB_StatusTransfer_TransparentContainer.bearers_SubjectToStatusTransferList.list.array,
+	&s1apPDU->msg.mme_status_transfer.enB_status_transfer_transparent_containerlist.enB_status_transfer_transparent_container,
+	sizeof(Bearers_SubjectToStatusTransferList_t));
+	log_msg(LOG_INFO,"Add values to list.\n");
+	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.MMEStatusTransfer.protocolIEs.list, &val[0]);
+    	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.MMEStatusTransfer.protocolIEs.list, &val[1]);
+    	ASN_SEQUENCE_ADD(&initiating_msg->value.choice.MMEStatusTransfer.protocolIEs.list, &val[2]);
+
+
+    	if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0)
+	{
+    		log_msg(LOG_ERROR, "Encoding of mme status transfer failed\n");
+        	return -1;
+    	}	
+
+    	log_msg(LOG_INFO, "free allocated msgs");
+    	free(pdu.choice.initiatingMessage);
+
+
+    	*length = enc_ret;
+    	return enc_ret;
+}
+
+
+
