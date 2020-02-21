@@ -171,14 +171,11 @@ parse_ula_subscription_data(struct avp *avp_ptr, struct ula_Q_msg *ula)
 							log_msg(LOG_INFO, "APN length recvd from hss - %lu\n",
 									apn_cfg_element->avp_value->os.len);
 
-							// TODO will push another patch to extend
-							// message Q to use the code blow
-							/*
-							memcpy(ula->apn.val,
+							memcpy(ula->selected_apn.val,
 									apn_cfg_element->avp_value->os.data,
 									apn_cfg_element->avp_value->os.len);
-							ula->apn.len = apn_cfg_element->avp_value->os.len;
-							*/
+							ula->selected_apn.len =
+									apn_cfg_element->avp_value->os.len;
 						}
 
 						apn_cfg_prof_itr = apn_cfg_itr;
