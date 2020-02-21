@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -55,7 +46,7 @@ ipc_handle ipcHndl_attachomplete;
 ipc_handle ipcHndl_detach;
 ipc_handle ipcHndl_service_req;
 ipc_handle ipcHndl_ctx_release_complete;
-ipc_handle ipcHndl_s1ap_attach_reject;
+ipc_handle ipcHndl_s1ap_reject;
 ipc_handle ipcHndl_identityresp;
 ipc_handle ipcHndl_s1ap_msgs;
 ipc_handle ipcHndl_taureq;
@@ -434,7 +425,7 @@ start_mme_resp_handlers()
 	pthread_create(&esmReq_t, &attr, &esmreq_handler, NULL);
 	pthread_create(&icsReq_t, &attr, &icsreq_handler, NULL);
 	pthread_create(&detachAcpt_t, &attr, &detach_accept_handler, NULL);
-	pthread_create(&attachRej_t, &attr, &s1ap_attach_reject_handler, NULL);
+	pthread_create(&attachRej_t, &attr, &s1ap_reject_handler, NULL);
 	pthread_create(&attachIdReq_t, &attr, &s1ap_attach_id_req_handler, NULL);
 	pthread_create(&paging_t, &attr, &paging_handler, NULL);
 	pthread_create(&mme_to_s1ap_msg_t, &attr, &mme_to_s1ap_msg_handler, NULL);

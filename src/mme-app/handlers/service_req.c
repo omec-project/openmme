@@ -19,13 +19,14 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
-
 #include "mme_app.h"
 #include "ue_table.h"
 #include "err_codes.h"
 #include "message_queues.h"
 #include "ipc_api.h"
 #include "stage6_info.h"
+#include "stage1_info.h"
+#include "stage2_info.h"
 #include "servicereq_info.h"
 #include "common_proc_info.h"
 
@@ -39,9 +40,12 @@ Service Request-->service_request_handler-> init ctxt setup [Service Accept]
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
+extern int g_tmsi_allocation_array[];
+static int g_Q_s1ap_service_reject;
 
 static int g_Q_servicereq_fd;
-extern int g_Q_mme_to_s1ap_fd;
+static int g_Q_authreq_fd;
+extern int g_Q_s1ap_common_reject;
 /*Making global just to avoid stack passing*/
 static char buf[S1AP_SERVICEREQ_BUF_SIZE];
 
@@ -63,8 +67,26 @@ init_stage()
 		log_msg(LOG_ERROR, "Error in opening reader for S1AP Service Request IPC channel.\n");
 		pthread_exit(NULL);
 	}
-	log_msg(LOG_INFO, "Service Request reader - s1ap service request complete: Connected\n");
+    
+    log_msg(LOG_INFO, "Service Request reader - s1ap service request complete: Connected\n");
 
+    /*Open destination queue for writing s1ap service req failure */
+	g_Q_s1ap_service_reject = open_ipc_channel(S1AP_REQ_REJECT_QUEUE, IPC_WRITE);
+	if (g_Q_s1ap_service_reject == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel: S1AP Reject Queue \n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "Stage1 writer - S1AP reject Pipe : Connected\n");
+ 
+	
+    log_msg(LOG_INFO, "Stage 2 writer  - s1ap Auth request: waiting\n");
+	g_Q_authreq_fd = open_ipc_channel(S1AP_AUTHREQ_STAGE2_QUEUE, IPC_WRITE);
+
+	if (g_Q_authreq_fd == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel: s1ap Auth req\n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "Stage2 writer - s1ap Auth request: Connected\n");
 	return;
 }
 
@@ -98,9 +120,23 @@ read_next_msg()
 static int
 service_request_processing()
 {
-	struct service_req_Q_msg *service_req =
-			(struct service_req_Q_msg *) buf;
-	struct UE_info *ue_entry = GET_UE_ENTRY(service_req->ue_idx);
+    struct service_req_Q_msg *service_req =
+        (struct service_req_Q_msg *) buf;
+    if(service_req->ue_idx >= 10000)
+    {
+        log_msg(LOG_INFO, "TMSI out of range %d ", service_req->ue_idx); 
+        return E_MAPPING_FAILED;
+    }
+    
+    unsigned int ue_index = g_tmsi_allocation_array[service_req->ue_idx];
+    if(ue_index == -1 )
+    {
+        log_msg(LOG_INFO, "TMSI not found %d ", service_req->ue_idx); 
+        return E_MAPPING_FAILED;
+    }
+
+    service_req->ue_idx = ue_index;
+    struct UE_info *ue_entry = GET_UE_ENTRY(service_req->ue_idx);
 
     if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
     {
@@ -112,6 +148,7 @@ service_request_processing()
 			service_req->ue_idx);
 
 	ue_entry->ue_state = SVC_REQ_WF_INIT_CTXT_RESP;
+    ue_entry->ue_curr_proc = SERVICE_REQ_PROC;
 	ue_entry->s1ap_enb_ue_id = service_req->s1ap_enb_ue_id;
 
 	// TODO: KSI, SeqNum, MAC code val?
@@ -127,8 +164,8 @@ service_request_processing()
 static int
 post_to_next()
 {
-	struct s1ap_common_req_Q_msg icr_msg;
-
+    log_msg(LOG_DEBUG, "Authentication for Service Req");
+    struct authreq_info authreq;
 	struct service_req_Q_msg *service_req =
 				(struct service_req_Q_msg *) buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(service_req->ue_idx);
@@ -139,28 +176,44 @@ post_to_next()
 					      service_req->ue_idx);
 		return -1;
 	}
+    create_integrity_key(ue_entry->aia_sec_info->kasme.val,
+                         ue_entry->ue_sec_info.int_key);
 
-	log_msg(LOG_INFO, "Post for s1ap processing - service_req_wf_initctxt_resp.\n");
+    ue_entry->dl_seq_no = 0;
 
-	/* create KeNB key */
-	/* TODO: Generate nas_count from ul_seq_no */
-	uint32_t nas_count = 0;
-	create_kenb_key(ue_entry->aia_sec_info->kasme.val, ue_entry->ue_sec_info.kenb_key, nas_count);
-	icr_msg.IE_type = S1AP_INIT_CTXT_SETUP_REQ;
-	icr_msg.ue_idx = service_req->ue_idx;
-	icr_msg.enb_fd = ue_entry->enb_fd;
-	icr_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
-	icr_msg.mme_s1ap_ue_id = service_req->ue_idx;
-	icr_msg.ueag_max_dl_bitrate = ue_entry->ambr.max_requested_bw_dl;
-	icr_msg.ueag_max_ul_bitrate = ue_entry->ambr.max_requested_bw_ul;
-	icr_msg.bearer_id = ue_entry->bearer_id;
-	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
-	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key), KENB_SIZE);
+    log_msg(LOG_INFO, "UE index  %d\n", service_req->ue_idx);
 
-	//opened for write by s1 rel thread
-	write_ipc_channel(g_Q_mme_to_s1ap_fd, (char *)&(icr_msg), S1AP_COMMON_REQ_BUF_SIZE);
 
-	log_msg(LOG_INFO, "Post for service_req_wf_initctxt_resp processing. SUCCESS\n");
+    /*Create message to send to S1ap*/
+    authreq.enb_fd = ue_entry->enb_fd;
+    authreq.ue_idx = service_req->ue_idx;
+    authreq.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+    memcpy(&(authreq.rand), &(ue_entry->aia_sec_info->rand.val),
+           NAS_RAND_SIZE);
+    memcpy(&(authreq.autn), &(ue_entry->aia_sec_info->autn.val),
+           NAS_AUTN_SIZE);
+
+    /*post message to next stage i.e. s1ap auth req*/
+    write_ipc_channel(g_Q_authreq_fd, (char *)&(authreq),
+                      S1AP_AUTHREQ_STAGE2_BUF_SIZE);
+    log_msg(LOG_INFO, "Stage 2. Posted message to s1ap - Auth req\n");
+    return SUCCESS;
+}
+
+/*
+* Post message to s1ap handler about the failure of this stage 
+*/
+static int
+post_service_reject()
+{
+    struct commonRej_info s1ap_rej;
+	log_msg(LOG_INFO, "Sending Service Rej \n");
+	struct service_req_Q_msg *service_req =
+				(struct service_req_Q_msg *) buf;
+    s1ap_rej.IE_type = S1AP_SERVICE_REJECT;
+    s1ap_rej.enb_fd = service_req->enb_fd;
+    s1ap_rej.s1ap_enb_ue_id = service_req->s1ap_enb_ue_id;
+	write_ipc_channel(g_Q_s1ap_service_reject, (char *)(&s1ap_rej), S1AP_REQ_REJECT_BUF_SIZE );
 	return SUCCESS;
 }
 
@@ -171,6 +224,7 @@ void
 shutdown_servicereq_stage()
 {
 	close_ipc_channel(g_Q_servicereq_fd);
+	close_ipc_channel(g_Q_s1ap_service_reject);
 	log_msg(LOG_INFO, "Shutdown Service Request handler \n");
 	pthread_exit(NULL);
 	return;
@@ -191,9 +245,15 @@ service_request_handler(void *data)
 	while(1){
 		read_next_msg();
 		
-		service_request_processing();
+		if(SUCCESS == service_request_processing())
+        {
 		
-		post_to_next();
+		    post_to_next();
+        }
+        else
+        {
+            post_service_reject();
+        }
 		
 	}
 

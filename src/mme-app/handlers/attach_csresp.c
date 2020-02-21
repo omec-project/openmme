@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -134,6 +125,15 @@ stage6_processing()
 
 	memcpy(&(ue_entry->pdn_addr), &(csr_info->pdn_addr),
 		sizeof(struct PAA));
+        memcpy(&(ue_entry->pdn_addr), &(csr_info->pdn_addr),
+                sizeof(struct PAA));
+
+    char imsi[16] = {0};
+    struct in_addr paa=ue_entry->pdn_addr.ip_type.ipv4;
+    paa.s_addr = ntohl(paa.s_addr);
+    imsi_bin_to_str(ue_entry->IMSI, imsi);
+    log_msg(LOG_DEBUG, "IMSI %s - IP address assigned %s", 
+             imsi, inet_ntoa(paa));
 
 	/*post to next processing*/
 	return SUCCESS;
@@ -157,10 +157,6 @@ post_to_next()
 	log_msg(LOG_INFO, "Post for s1ap processing - stage 6.\n");
 
     uint32_t nas_count = 0;
-    if(ue_entry->ul_seq_no)
-    {
-        uint32_t nas_count = ue_entry->ul_seq_no--;
-    }
     create_kenb_key(ue_entry->aia_sec_info->kasme.val,
                         ue_entry->ue_sec_info.kenb_key, nas_count);
 #if 0
@@ -193,6 +189,8 @@ post_to_next()
 
 	/*s1ap handler to use apn name and tai to generate mcc, mcn appended name*/
 	memcpy(&(icr_msg.apn), &(ue_entry->apn), sizeof(struct apn_name));
+	memcpy(&(icr_msg.selected_apn), &(ue_entry->selected_apn),
+			sizeof(struct apn_name));
 	memcpy(&(icr_msg.pdn_addr), &(ue_entry->pdn_addr), sizeof(struct PAA));
 	memcpy(&(icr_msg.int_key), &(ue_entry->ue_sec_info.int_key),
 			NAS_INT_KEY_SIZE);

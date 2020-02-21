@@ -23,6 +23,6 @@ SRC_DIR=$(ROOT)/src
 
 TARGET_DIR=$(ROOT)/target
 
-CFLAGS += -D_FORTIFY_SOURCE=2 -fasynchronous-unwind-tables -fexceptions
+CFLAGS += -g -D_FORTIFY_SOURCE=2 -fasynchronous-unwind-tables -fexceptions
 CFLAGS += -fstack-protector-all -fstack-protector-strong -Wall
 CFLAGS += -Werror=format-security -Werror=implicit-function-declaration

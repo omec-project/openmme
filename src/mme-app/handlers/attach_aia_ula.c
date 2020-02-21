@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -29,6 +20,7 @@
 #include "stage1_s6a_msg.h"
 #include "stage2_info.h"
 #include "sec.h"
+#include "common_proc_info.h"
 
 /************************************************************************
 Current file : Stage 2 handler.
@@ -46,10 +38,14 @@ ATTACH stages :
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
+extern int g_tmsi_allocation_array[];
 
 static int g_Q_aia_fd;
 static int g_Q_ula_fd;
 static int g_Q_authreq_fd;
+extern int g_Q_s1ap_common_reject;
+extern pthread_mutex_t s1ap_reject_queue_mutex;
+extern uint32_t attach_reject_counter;
 
 /*Making global just to avoid stack passing*/
 static char aia[S6A_AIA_STAGE2_BUF_SIZE];
@@ -110,6 +106,13 @@ process_aia_resp()
 		}
 	}
 
+    if(S6A_AIA_FAILED == aia_msg->res)
+    {
+        /* send attach reject and release UE */
+		ue_entry->ue_state = STAGE1_AIA_FAIL;
+        return aia_msg->ue_idx;
+    }
+
 	memcpy(ue_entry->aia_sec_info,
 		&(aia_msg->sec),
 		sizeof(struct E_UTRAN_sec_vector));
@@ -154,6 +157,14 @@ process_ula_resp()
     ue_entry->apn.len = 5;
 
     memcpy(&(ue_entry->apn.val), apn_enc, 5);
+
+	ue_entry->selected_apn.len = ula_msg->selected_apn.len;
+	log_msg(LOG_INFO, "APN length from ula msg is - %d\n",
+			ula_msg->selected_apn.len);
+	memcpy(ue_entry->selected_apn.val, ula_msg->selected_apn.val,
+			ula_msg->selected_apn.len);
+	log_msg(LOG_INFO, "APN name from ula msg is - %s\n",
+			ula_msg->selected_apn.val);
 
 	if(STAGE1_AIA_DONE == ue_entry->ue_state) {
 		ue_entry->ue_state = ATTACH_STAGE2;
@@ -290,7 +301,40 @@ post_to_next(int ue_index)
 
 		/*TODO free g_UE_list[][].aia_sec_info??*/
 	}
-	return SUCCESS;
+    else if (STAGE1_AIA_FAIL == ue_entry->ue_state)
+    {
+        log_msg(LOG_ERROR, "Error AIA from HSS\n");
+        log_msg(LOG_INFO, "Releasing UE session\n");
+        ue_entry->ue_state = UNASSIGNED_ENTRY;
+        ue_entry->magic = UE_INFO_INVALID_MAGIC;
+        g_tmsi_allocation_array[ue_entry->m_tmsi] = -1;
+        int ret = insert_index_into_list(ue_index);
+        if (ret == -1) {
+            log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");
+        } else {
+            log_msg(LOG_INFO, "Index with %d is added to list\n",ue_index);
+        }
+#if 0
+        log_msg(LOG_INFO, "Sending Attach Reject\n");
+	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+        s1ap_rej.IE_type = S1AP_ATTACH_REJ;
+        s1ap_rej.ue_idx = ue_index;
+        s1ap_rej.mme_s1ap_ue_id = ue_index;
+        s1ap_rej.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+        s1ap_rej.enb_fd = ue_entry->enb_fd;
+        s1ap_rej.cause.present = s1apCause_PR_misc;
+        s1ap_rej.cause.choice.misc = s1apCauseMisc_unknown_PLMN;
+		
+        pthread_mutex_lock(&s1ap_reject_queue_mutex);
+        write_ipc_channel(g_Q_s1ap_common_reject, 
+                          (char *)&(s1ap_rej),
+				          S1AP_COMMON_REQ_BUF_SIZE);
+        pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+        post_ctx_rel_and_clr_uectx(ue_index);
+#endif
+    }
+	
+    return SUCCESS;
 }
 
 /**

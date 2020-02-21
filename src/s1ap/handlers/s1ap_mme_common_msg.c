@@ -36,10 +36,13 @@
 /*Making global just to avoid stack passing*/
 static char s1ap_common_req[S1AP_COMMON_REQ_BUF_SIZE];
 
-struct s1ap_common_req_Q_msg *g_mmeS1apInfo;
+static struct s1ap_common_req_Q_msg *g_mmeS1apInfo;
 
 static Buffer g_ctxrel_buffer;
 static Buffer g_icsreq_buffer;
+static Buffer g_attach_rej_buffer;
+static Buffer g_svc_rej_buffer;
+static Buffer g_paging_buffer;
 
 extern int g_enb_fd;
 
@@ -87,10 +90,72 @@ read_next_msg()
 }
 
 /**
-* message processing for ue context release
+* message processing for Service Reject
 */
 static int
-process_ctx_rel_cmd()
+process_service_rej(unsigned int enb_fd)
+{
+    log_msg(LOG_DEBUG,"Process Service Reject.");
+	uint32_t length = 0;
+    uint8_t *buffer = NULL;
+
+    int ret = s1ap_mme_encode_initiating(g_mmeS1apInfo, &buffer, &length);
+    if(ret == -1)
+    {
+        log_msg(LOG_ERROR, "Encoding Service Reject failed.\n");
+        return E_FAIL;
+    }
+
+    send_sctp_msg(enb_fd, buffer, length, 1);
+	log_msg(LOG_INFO, "buffer size is %d\n", length);
+    if(buffer)
+    {
+        free(buffer);
+        buffer = NULL;
+        length = 0;
+    }
+
+	log_msg(LOG_INFO, "\n-----Message handlingcompleted.---\n");
+
+	return SUCCESS;
+}
+
+/**
+* message processing for Attach Reject
+*/
+static int
+process_attach_rej(unsigned int enb_fd)
+{
+    log_msg(LOG_DEBUG,"Process Attach Reject.");
+	uint32_t length = 0;
+    uint8_t *buffer = NULL;
+
+    int ret = s1ap_mme_encode_initiating(g_mmeS1apInfo, &buffer, &length);
+    if(ret == -1)
+    {
+        log_msg(LOG_ERROR, "Encoding Attach Reject failed.\n");
+        return E_FAIL;
+    }
+
+    send_sctp_msg(enb_fd, buffer, length, 1);
+	log_msg(LOG_INFO, "buffer size is %d\n", length);
+    if(buffer)
+    {
+        free(buffer);
+        buffer = NULL;
+        length = 0;
+    }
+
+	log_msg(LOG_INFO, "\n-----Message handlingcompleted.---\n");
+
+	return SUCCESS;
+}
+
+/**
+* message processing for ue context release
+*/
+int
+process_ctx_rel_cmd(unsigned int enb_fd)
 {
     log_msg(LOG_DEBUG,"Process Ctx rel cmd.");
 	uint32_t length = 0;
@@ -103,19 +168,48 @@ process_ctx_rel_cmd()
         return E_FAIL;
     }
 
-	buffer_copy(&g_ctxrel_buffer, buffer, length);
+    log_msg(LOG_DEBUG,"Ctx release command successful");
+	
+    send_sctp_msg(enb_fd, buffer, length, 1);
+	log_msg(LOG_INFO, "buffer size is %d\n", length);
+    if(buffer)
+    {
+        log_msg(LOG_INFO, "free buffer ctx release command\n");
+        free(buffer);
+        buffer = NULL;
+        length = 0;
+    }
 
+	log_msg(LOG_INFO, "\n-----Message handlingcompleted.---\n");
 	return SUCCESS;
 }
 
 /**
-* Post message to next handler of the stage
+* message processing for ue context release
 */
 static int
-post_ctx_rel_command()
+process_paging_req(unsigned int enb_fd)
 {
-	send_sctp_msg(g_mmeS1apInfo->enb_fd, g_ctxrel_buffer.buf, g_ctxrel_buffer.pos, 1);
-	log_msg(LOG_INFO, "buffer size is %d\n", g_ctxrel_buffer.pos);
+    log_msg(LOG_DEBUG,"Process paging Request.");
+	uint32_t length = 0;
+    uint8_t *buffer = NULL;
+
+    int ret = s1ap_mme_encode_initiating(g_mmeS1apInfo, &buffer, &length);
+    if(ret == -1)
+    {
+        log_msg(LOG_ERROR, "Encoding Paging Req failed.\n");
+        return E_FAIL;
+    }
+
+    send_sctp_msg(enb_fd, buffer, length, 1);
+	log_msg(LOG_INFO, "buffer size is %d\n", length);
+    if(buffer)
+    {
+        free(buffer);
+        buffer = NULL;
+        length = 0;
+    }
+
 	log_msg(LOG_INFO, "\n-----Message handlingcompleted.---\n");
 	return SUCCESS;
 }
@@ -135,7 +229,7 @@ shutdown_mme_to_s1ap_msg_stage()
 * message processing for ue context release
 */
 static int
-process_ics_req()
+process_ics_req(unsigned int enb_fd)
 {
     log_msg(LOG_DEBUG,"Process Initial ctx setup req.");
 	uint32_t length = 0;
@@ -148,19 +242,15 @@ process_ics_req()
         return E_FAIL;
     }
 
-	buffer_copy(&g_icsreq_buffer, buffer, length);
+    send_sctp_msg(enb_fd, buffer, length, 1);
+	log_msg(LOG_INFO, "buffer size is %d\n", length);
+    if(buffer)
+    {
+        free(buffer);
+        buffer = NULL;
+        length = 0;
+    }
 
-	return SUCCESS;
-}
-
-/**
-* Post message to next handler of the stage
-*/
-static int
-post_ics_req()
-{
-	send_sctp_msg(g_mmeS1apInfo->enb_fd, g_icsreq_buffer.buf, g_icsreq_buffer.pos, 1);
-	log_msg(LOG_INFO, "buffer size is %d\n", g_icsreq_buffer.pos);
 	log_msg(LOG_INFO, "\n-----Message handlingcompleted.---\n");
 	return SUCCESS;
 }
@@ -185,14 +275,27 @@ mme_to_s1ap_msg_handler(void *data)
             case S1AP_CTX_REL_CMD:
                 {
                     log_msg(LOG_DEBUG, "S1AP Ctx Release Cmd Start");
-                    process_ctx_rel_cmd();
-                    post_ctx_rel_command();
+                    process_ctx_rel_cmd(g_mmeS1apInfo->enb_fd);
                 }break;
             case S1AP_INIT_CTXT_SETUP_REQ:
                 {
                     log_msg(LOG_DEBUG, "S1AP Init Context Setup Request\n");
-                    process_ics_req();
-                    post_ics_req();
+                    process_ics_req(g_mmeS1apInfo->enb_fd);
+                }break;
+            case S1AP_ATTACH_REJ:
+                {
+                    log_msg(LOG_DEBUG, "S1AP Attach reject");
+                    process_attach_rej(g_mmeS1apInfo->enb_fd);
+                }break;
+            case S1AP_SERVICE_REJ:
+                {
+                    log_msg(LOG_DEBUG, "S1AP Service Reject\n");
+                    process_service_rej(g_mmeS1apInfo->enb_fd);
+                }break;
+            case S1AP_PAGING_REQ:
+                {
+                    log_msg(LOG_DEBUG, "S1AP Paging Request\n");
+                    process_paging_req(g_mmeS1apInfo->enb_fd);
                 }break;
             default:
                     log_msg(LOG_DEBUG, "Unknown msg %d\n", g_mmeS1apInfo->IE_type);

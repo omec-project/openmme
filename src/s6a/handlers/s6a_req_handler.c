@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *		http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -242,7 +233,7 @@ send_FD_AIR(struct s6a_Q_msg *aia_msg, char imsi[])
 
 	/*AVP: Visited-PLMN-Id*/
 	val.os.data = (unsigned char*)aia_msg->tai.plmn_id.idx;
-    aia_msg->tai.plmn_id.idx[2] = 0x10;
+    //aia_msg->tai.plmn_id.idx[2] = 0x10;
 	val.os.len = 3;
 	val.os.len = 3;
 	add_fd_msg(&val, g_fd_dict_objs.visited_PLMN_id, &fd_msg);
