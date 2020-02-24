@@ -506,8 +506,32 @@ parse_nas_pdu(char *msg,  int nas_msg_len, struct nasPDU *nas,
             nas->elements = calloc(sizeof(nas_pdu_elements), 1);
 
             /*EPS mobility identity*/
-            memcpy(&(nas->elements[0].pduElement.mi_guti), msg + 1, sizeof(guti));
-            log_msg(LOG_INFO, "M-TMSI - %d\n", nas->elements[0].pduElement.mi_guti.m_TMSI);
+            uint8_t msg_len = msg[1];
+            unsigned char eps_identity = msg[2] & 0x07;
+            log_msg(LOG_INFO, "NAS Detach Request Rcvd :  %d %d %d %d, eps id %d\n", msg[0],msg[1],msg[2],msg[4],eps_identity); 
+            if(eps_identity == 0x06)
+            {
+                log_msg(LOG_INFO, "Mobile identity GUTI Rcvd \n");
+                // Mobile Identity contains GUTI
+                // MCC+MNC offset = 3
+                // MME Group Id   = 2
+                // MME Code       = 1
+                // MTMSI offset from start of this AVP = 3 + 2 + 1
+                nas->elements[0].msgType = NAS_IE_TYPE_EPS_MOBILE_ID_IMSI;
+                memcpy(&nas->elements[0].pduElement.mi_guti.plmn_id.idx, &msg[3], 3);
+                nas->elements[0].pduElement.mi_guti.mme_grp_id = ntohs(*(short int *)(&msg[6]));
+                nas->elements[0].pduElement.mi_guti.mme_code = msg[8];
+                nas->elements[0].pduElement.mi_guti.m_TMSI = ntohl(*((unsigned int *)(&msg[9])));
+                log_msg(LOG_INFO, "NAS Detach Request Rcvd ID: GUTI. PLMN id %d %d %d \n", nas->elements[0].pduElement.mi_guti.plmn_id.idx[0], 
+                        nas->elements[0].pduElement.mi_guti.plmn_id.idx[1], 
+                        nas->elements[0].pduElement.mi_guti.plmn_id.idx[2] );
+                log_msg(LOG_INFO, "NAS Detach Request Rcvd ID: GUTI. mme group id = %d, MME code %d  mtmsi = %d\n", 
+                        nas->elements[0].pduElement.mi_guti.mme_grp_id, 
+                        nas->elements[0].pduElement.mi_guti.mme_code,
+                        nas->elements[0].pduElement.mi_guti.m_TMSI);
+                nas->flags |= NAS_MSG_UE_IE_GUTI;
+            }
+            
             break;
         }
 

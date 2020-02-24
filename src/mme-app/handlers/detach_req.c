@@ -133,16 +133,18 @@ detach_stage1_processing()
 {
 	struct detach_req_Q_msg *detach_req =
 			(struct detach_req_Q_msg *) detachreq;
-	struct UE_info *ue_entry = NULL; 
-
+	struct UE_info *ue_entry = NULL;
+    unsigned int ue_index = -1;
     if(detach_req->ue_idx != -1)
     {
 	    ue_entry = GET_UE_ENTRY(detach_req->ue_idx);
+        ue_index = detach_req->ue_idx;
     }
     else if (detach_req->ue_m_tmsi != -1)
     {
-        unsigned int ue_index = g_tmsi_allocation_array[detach_req->ue_idx]; 
+        ue_index = g_tmsi_allocation_array[detach_req->ue_m_tmsi]; 
 	    ue_entry = GET_UE_ENTRY(ue_index);
+
     }
     else
         return E_FAIL;
@@ -152,12 +154,12 @@ detach_stage1_processing()
        (UNASSIGNED_ENTRY == ue_entry->ue_state) || 
        (!IS_VALID_UE_INFO(ue_entry)))
     {
-        log_msg(LOG_ERROR, "UE Entry invalid. Drop the packet. UE index %d", detach_req->ue_idx);
-        return SUCCESS;
+        log_msg(LOG_ERROR, "UE Entry invalid. Drop the packet. UE index %d , TMSI : %d\n", 
+                 detach_req->ue_idx, detach_req->ue_m_tmsi);
+        return E_FAIL;
     }
 
-	log_msg(LOG_INFO, "Detach request received for ue %d\n",
-			detach_req->ue_idx);
+	log_msg(LOG_INFO, "Detach request received for ue %d\n", ue_index);
 	ue_entry->ul_seq_no++;
 	ue_entry->s1ap_enb_ue_id = detach_req->s1ap_enb_ue_id;
 
@@ -169,7 +171,7 @@ detach_stage1_processing()
 	memcpy(&(g_ds_msg.s11_sgw_c_fteid),
 			&(ue_entry->s11_sgw_c_fteid),
 			sizeof(ue_entry->s11_sgw_c_fteid));
-	g_purge_msg.ue_idx = detach_req->ue_idx;
+	g_purge_msg.ue_idx = ue_index;
 	memcpy(g_purge_msg.IMSI, ue_entry->IMSI, BINARY_IMSI_LEN);
 
 	return SUCCESS;
