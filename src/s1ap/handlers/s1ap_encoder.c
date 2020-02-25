@@ -90,10 +90,10 @@ int s1ap_mme_encode_service_rej(
 
     log_msg(LOG_DEBUG, "Encode Serivce Rej");
     pdu.present = S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = (InitiatingMessage_t*)malloc(sizeof(InitiatingMessage_t));
+    pdu.choice.initiatingMessage = calloc(sizeof(InitiatingMessage_t), sizeof(uint8_t));
     if(pdu.choice.initiatingMessage == NULL)
     {
-        log_msg(LOG_ERROR,"malloc failed.\n");
+        log_msg(LOG_ERROR,"calloc failed.\n");
         return -1;
     }
     initiating_msg = pdu.choice.initiatingMessage;
@@ -137,8 +137,7 @@ int s1ap_mme_encode_service_rej(
 	buffer_copy(&g_nas_buffer, &value, sizeof(value));
 
     val[2].value.choice.NAS_PDU.size = g_nas_buffer.pos;
-    val[2].value.choice.NAS_PDU.buf = (uint8_t*)malloc(
-                                        sizeof(uint8_t)*(g_nas_buffer.pos));
+    val[2].value.choice.NAS_PDU.buf = calloc(g_nas_buffer.pos, sizeof(uint8_t));
 
     if(val[2].value.choice.NAS_PDU.buf != NULL)
     {
@@ -181,10 +180,10 @@ int s1ap_mme_encode_attach_rej(
 
     log_msg(LOG_DEBUG, "Encode Attach Reject");
     pdu.present = S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = (InitiatingMessage_t*)malloc(sizeof(InitiatingMessage_t));
+    pdu.choice.initiatingMessage = calloc(sizeof(InitiatingMessage_t), sizeof(uint8_t));
     if(pdu.choice.initiatingMessage == NULL)
     {
-        log_msg(LOG_ERROR,"malloc failed.\n");
+        log_msg(LOG_ERROR,"calloc failed.\n");
         return -1;
     }
     initiating_msg = pdu.choice.initiatingMessage;
@@ -228,8 +227,7 @@ int s1ap_mme_encode_attach_rej(
 	buffer_copy(&g_nas_buffer, &value, sizeof(value));
 
     val[2].value.choice.NAS_PDU.size = g_nas_buffer.pos;
-    val[2].value.choice.NAS_PDU.buf = (uint8_t*)malloc(
-                                        sizeof(uint8_t)*(g_nas_buffer.pos));
+    val[2].value.choice.NAS_PDU.buf = (uint8_t*)calloc(g_nas_buffer.pos, sizeof(uint8_t));
 
     if(val[2].value.choice.NAS_PDU.buf != NULL)
     {
@@ -264,6 +262,8 @@ int s1ap_mme_encode_ue_context_release_command(
   uint8_t **buffer,
   uint32_t *length)
 {
+	log_msg(LOG_DEBUG,"Inside s1ap_encoder\n");
+
 	S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
     InitiatingMessage_t *initiating_msg = NULL;
 	S1AP_PDU_t                             *pdu_p = &pdu;
@@ -271,10 +271,10 @@ int s1ap_mme_encode_ue_context_release_command(
 	memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
 
     pdu.present = S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = (InitiatingMessage_t*)malloc(sizeof(InitiatingMessage_t));
+    pdu.choice.initiatingMessage = calloc(sizeof(InitiatingMessage_t), sizeof(uint8_t));
     if(pdu.choice.initiatingMessage == NULL)
     {
-        log_msg(LOG_ERROR,"malloc failed.\n");
+        log_msg(LOG_ERROR,"calloc failed.\n");
         return -1;
     }
     initiating_msg = pdu.choice.initiatingMessage;
@@ -297,10 +297,10 @@ int s1ap_mme_encode_ue_context_release_command(
         ue_id_val.present = UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
         s1apId_pair.eNB_UE_S1AP_ID = s1apPDU->enb_s1ap_ue_id;
         s1apId_pair.mME_UE_S1AP_ID = s1apPDU->mme_s1ap_ue_id;
-        ue_id_val.choice.uE_S1AP_ID_pair = (struct UE_S1AP_ID_pair*)malloc(sizeof(struct UE_S1AP_ID_pair));
+        ue_id_val.choice.uE_S1AP_ID_pair = calloc(sizeof(struct UE_S1AP_ID_pair), sizeof(uint8_t));
         if(ue_id_val.choice.uE_S1AP_ID_pair == NULL)
         {
-            log_msg(LOG_ERROR,"malloc failed.\n");
+            log_msg(LOG_ERROR,"calloc failed.\n");
             free(pdu.choice.initiatingMessage);
             return -1;
         }
@@ -575,7 +575,7 @@ int s1ap_mme_encode_paging_request(
     pagingId.choice.s_TMSI = calloc(sizeof(struct S_TMSI), sizeof(uint8_t));
     if(pagingId.choice.s_TMSI == NULL)
     {
-        log_msg(LOG_ERROR,"malloc failed.\n");
+        log_msg(LOG_ERROR,"calloc failed.\n");
         free(pdu.choice.initiatingMessage);
         return -1;
     }
@@ -583,7 +583,7 @@ int s1ap_mme_encode_paging_request(
     pagingId.choice.s_TMSI->mMEC.buf = calloc(1, sizeof(uint8_t));
     if(NULL == pagingId.choice.s_TMSI->mMEC.buf)
     {
-        log_msg(LOG_ERROR,"malloc failed.\n");
+        log_msg(LOG_ERROR,"calloc failed.\n");
         free(pdu.choice.initiatingMessage);
         free(pagingId.choice.s_TMSI);
         return -1;
@@ -595,7 +595,7 @@ int s1ap_mme_encode_paging_request(
     pagingId.choice.s_TMSI->m_TMSI.buf = calloc(sizeof(uint32_t), sizeof(uint8_t));
     if(NULL == pagingId.choice.s_TMSI->m_TMSI.buf)
     {
-        log_msg(LOG_ERROR,"malloc failed.\n");
+        log_msg(LOG_ERROR,"calloc failed.\n");
         free(pdu.choice.initiatingMessage);
         free(pagingId.choice.s_TMSI);
         free(pagingId.choice.s_TMSI->mMEC.buf);

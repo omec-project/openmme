@@ -121,6 +121,7 @@ DDN_processing()
 	if (ue_entry == NULL || !IS_VALID_UE_INFO(ue_entry)) {
 		ddn_ack_msg.cause = GTPV2C_CAUSE_CONTEXT_NOT_FOUND;
         log_msg(LOG_ERROR, "Invalid UE. Send Context not found in DDN Ack ");
+        return -1;
 	} else {
 		ddn_ack_msg.cause = GTPV2C_CAUSE_REQUEST_ACCEPTED;
 		// populate page msg struct
