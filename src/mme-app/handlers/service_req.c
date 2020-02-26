@@ -223,15 +223,6 @@ post_service_reject()
                       (char *)&(s1ap_rej),
                       S1AP_COMMON_REQ_BUF_SIZE);
     pthread_mutex_unlock(&s1ap_reject_queue_mutex);
-#if 0
-    struct commonRej_info s1ap_rej;
-	struct service_req_Q_msg *service_req =
-				(struct service_req_Q_msg *) buf;
-    s1ap_rej.IE_type = S1AP_SERVICE_REJECT;
-    s1ap_rej.enb_fd = service_req->enb_fd;
-    s1ap_rej.s1ap_enb_ue_id = service_req->s1ap_enb_ue_id;
-	write_ipc_channel(g_Q_s1ap_service_reject, (char *)(&s1ap_rej), S1AP_REQ_REJECT_BUF_SIZE );
-#endif
     return SUCCESS;
 }
 

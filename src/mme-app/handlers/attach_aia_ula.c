@@ -304,19 +304,6 @@ post_to_next(int ue_index)
     else if (STAGE1_AIA_FAIL == ue_entry->ue_state)
     {
         log_msg(LOG_ERROR, "Error AIA from HSS\n");
-#if 0
-        log_msg(LOG_INFO, "Releasing UE session\n");
-        ue_entry->ue_state = UNASSIGNED_ENTRY;
-        ue_entry->magic = UE_INFO_INVALID_MAGIC;
-        g_tmsi_allocation_array[ue_entry->m_tmsi] = -1;
-        int ret = insert_index_into_list(ue_index);
-        if (ret == -1) {
-            log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");
-        } else {
-            log_msg(LOG_INFO, "Index with %d is added to list\n",ue_index);
-        }
-#endif
-#if 1
         log_msg(LOG_INFO, "Sending Attach Reject\n");
 	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
         s1ap_rej.IE_type = S1AP_ATTACH_REJ;
@@ -332,7 +319,6 @@ post_to_next(int ue_index)
                           (char *)&(s1ap_rej),
 				          S1AP_COMMON_REQ_BUF_SIZE);
         pthread_mutex_unlock(&s1ap_reject_queue_mutex);
-#endif
     }
 	
     return SUCCESS;
