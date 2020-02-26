@@ -172,6 +172,29 @@ post_to_next(char *buf)
                                   Send Initial Ctx setup request");
         return send_init_ctx_setup_req(secmode_resp->ue_idx);
     }
+    else if ((ATTACH_PROC == ue_entry->ue_curr_proc)
+             &&(STAGE4_FAIL == ue_entry->ue_state))
+    {
+        log_msg(LOG_DEBUG, "Sec mode cmd failed in attach req proc. \
+                                 Send attach reject and clear context");
+        log_msg(LOG_INFO, "Sending Attach Reject\n");
+	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+        s1ap_rej.IE_type = S1AP_ATTACH_REJ;
+        s1ap_rej.ue_idx = secmode_resp->ue_idx;
+        s1ap_rej.mme_s1ap_ue_id = secmode_resp->ue_idx;
+        s1ap_rej.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+        s1ap_rej.enb_fd = ue_entry->enb_fd;
+        s1ap_rej.cause.present = s1apCause_PR_misc;
+        s1ap_rej.cause.choice.misc = s1apCauseMisc_unknown_PLMN;
+		
+        pthread_mutex_lock(&s1ap_reject_queue_mutex);
+        write_ipc_channel(g_Q_s1ap_common_reject, 
+                          (char *)&(s1ap_rej),
+				          S1AP_COMMON_REQ_BUF_SIZE);
+        pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+        post_ctx_rel_and_clr_uectx(secmode_resp->ue_idx);
+		return SUCCESS;
+    }
 
 	if(ue_entry->esm_info_tx_required) {
 		esm_req.enb_fd = ue_entry->enb_fd;
@@ -252,6 +275,7 @@ int send_init_ctx_setup_req(int ue_index)
 	icr_msg.bearer_id = ue_entry->bearer_id;
 	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
 	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key), KENB_SIZE);
+	ue_entry->ue_state = SVC_REQ_WF_INIT_CTXT_RESP;
 
 	//opened for write by s1 rel thread
     pthread_mutex_lock(&s1ap_reject_queue_mutex);
@@ -268,6 +292,30 @@ int send_init_ctx_setup_req(int ue_index)
 int
 post_svc_reject(int ue_index)
 {
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
+    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+    
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      ue_index);
+		return -1;
+	}
+    
+    log_msg(LOG_INFO, "Sending Service Rej after Sec mod failure\n");
+    s1ap_rej.IE_type = S1AP_SERVICE_REJECT;
+    s1ap_rej.ue_idx = ue_index;
+    s1ap_rej.mme_s1ap_ue_id = ue_index;
+    s1ap_rej.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+    s1ap_rej.enb_fd = ue_entry->enb_fd;
+    s1ap_rej.emm_cause = emmCause_ue_id_not_derived_by_network;
+
+    pthread_mutex_lock(&s1ap_reject_queue_mutex);
+    write_ipc_channel(g_Q_s1ap_common_reject, 
+                      (char *)&(s1ap_rej),
+                      S1AP_COMMON_REQ_BUF_SIZE);
+    pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+#if 0
     struct commonRej_info s1ap_rej;
 	log_msg(LOG_INFO, "Sending Service Rej \n");
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
@@ -282,7 +330,8 @@ post_svc_reject(int ue_index)
     s1ap_rej.enb_fd = ue_entry->enb_fd;
     s1ap_rej.s1ap_enb_ue_id = ue_entry->s1ap_enb_ue_id;
 	write_ipc_channel(g_Q_s1ap_service_reject, (char *)(&s1ap_rej), S1AP_REQ_REJECT_BUF_SIZE );
-	return SUCCESS;
+#endif
+    return SUCCESS;
 }
 
 int
