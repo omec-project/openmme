@@ -31,7 +31,8 @@ enum s1ap_cn_domain
 };
 
 struct s1ap_common_req_Q_msg {
-    int             IE_type; 
+    int             IE_type;
+    e_emmCause      emm_cause;
 	int ue_idx;
 	int enb_fd;
 	int enb_s1ap_ue_id;

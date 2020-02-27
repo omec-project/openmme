@@ -610,6 +610,10 @@ typedef enum s1apCauseMisc {
     s1apCauseMisc_unknown_PLMN  = 5
 } e_s1apCauseMisc;
 
+typedef enum emmCause {
+    emmCause_ue_id_not_derived_by_network   = 9,
+} e_emmCause;
+
 /* s1apCauseMisc */
 typedef long     s1apCauseMisc_t;
 /* s1apCauseProtocol */

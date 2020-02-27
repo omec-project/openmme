@@ -98,7 +98,7 @@ int s1ap_mme_encode_service_rej(
     }
     initiating_msg = pdu.choice.initiatingMessage;
     initiating_msg->procedureCode = ProcedureCode_id_downlinkNASTransport;
-    initiating_msg->criticality = 0;
+    initiating_msg->criticality = 1;
     initiating_msg->value.present = InitiatingMessage__value_PR_DownlinkNASTransport;  
     //proto_c = &initiating_msg->value.choice.UEContextReleaseCommand.protocolIEs;
             
@@ -117,7 +117,7 @@ int s1ap_mme_encode_service_rej(
     log_msg(LOG_DEBUG, "ENB_UE_S1AP_ID : %d",s1apPDU->enb_s1ap_ue_id);
 
     val[2].id = ProtocolIE_ID_id_NAS_PDU;
-    val[2].criticality = 1;
+    val[2].criticality = 0;
     val[2].value.present = DownlinkNASTransport_IEs__value_PR_NAS_PDU;
     //memcpy(&val[1].value.choice.Cause, &s1apPDU->cause, sizeof(Cause_t));
 
@@ -133,7 +133,7 @@ int s1ap_mme_encode_service_rej(
 
 	buffer_copy(&g_nas_buffer, &message_type, sizeof(message_type));
 
-    value = 0x09; // UE identity can not be derived by the network
+    value = s1apPDU->emm_cause; // UE identity can not be derived by the network
 	buffer_copy(&g_nas_buffer, &value, sizeof(value));
 
     val[2].value.choice.NAS_PDU.size = g_nas_buffer.pos;
@@ -188,7 +188,7 @@ int s1ap_mme_encode_attach_rej(
     }
     initiating_msg = pdu.choice.initiatingMessage;
     initiating_msg->procedureCode = ProcedureCode_id_downlinkNASTransport;
-    initiating_msg->criticality = 0;
+    initiating_msg->criticality = 1;
     initiating_msg->value.present = InitiatingMessage__value_PR_DownlinkNASTransport;  
     //proto_c = &initiating_msg->value.choice.UEContextReleaseCommand.protocolIEs;
             
@@ -207,7 +207,7 @@ int s1ap_mme_encode_attach_rej(
     log_msg(LOG_DEBUG, "ENB_UE_S1AP_ID : %d",s1apPDU->enb_s1ap_ue_id);
 
     val[2].id = ProtocolIE_ID_id_NAS_PDU;
-    val[2].criticality = 1;
+    val[2].criticality = 0;
     val[2].value.present = DownlinkNASTransport_IEs__value_PR_NAS_PDU;
     //memcpy(&val[1].value.choice.Cause, &s1apPDU->cause, sizeof(Cause_t));
 
