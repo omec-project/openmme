@@ -175,9 +175,11 @@ post_to_next(char *buf)
     else if ((ATTACH_PROC == ue_entry->ue_curr_proc)
              &&(STAGE4_FAIL == ue_entry->ue_state))
     {
+        char imsiStr[16] = {0};
+        imsi_bin_to_str(ue_entry->IMSI, imsiStr);
         log_msg(LOG_DEBUG, "Sec mode cmd failed in attach req proc. \
-                                 Send attach reject and clear context");
-        log_msg(LOG_INFO, "Sending Attach Reject\n");
+                           Send attach reject and clear context. UE IMSI: %s", 
+                           imsiStr);
 	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
         s1ap_rej.IE_type = S1AP_ATTACH_REJ;
         s1ap_rej.ue_idx = secmode_resp->ue_idx;

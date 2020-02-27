@@ -207,9 +207,10 @@ post_to_next()
 static int
 post_service_reject()
 {
-    log_msg(LOG_INFO, "Sending Service Rej \n");
     struct service_req_Q_msg *service_req =
         (struct service_req_Q_msg *) buf;
+    log_msg(LOG_INFO, "Sending Service Rej for MTMSI %d\n",
+              service_req->ue_idx);
     struct s1ap_common_req_Q_msg s1ap_rej = {0};
     s1ap_rej.IE_type = S1AP_SERVICE_REJ;
     s1ap_rej.ue_idx = 0;
