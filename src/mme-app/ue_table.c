@@ -10,12 +10,20 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "pthread.h"
 
 #include "ue_table.h"
 #include "log.h"
 
 
+/*List of UEs attached to MME*/
+struct UE_info* g_UE_list[UE_POOL_SIZE];
 int g_index_list_queue[UE_POOL_CNT+1];
+int g_tmsi_allocation_array[10000];
+struct UE_info *ue_list_head = NULL;
+
+/* Mutex to lock ue_list */
+pthread_mutex_t ue_link_list_mutex;
 
 /*Counter UE list. Add each element sequentially when UE attaches*/
 int g_UE_cnt = 0;
@@ -41,7 +49,6 @@ int allocate_ue_index()
   	} else {
   		log_msg(LOG_ERROR, "Error: No Index found in the list \n");
   	}
-  
   }
   return index;
 }
@@ -106,3 +113,115 @@ imsi_bin_to_str(unsigned char *b_imsi, char *s_imsi)
 	s_imsi[(BINARY_IMSI_LEN*2)-1] = '\0';
 }
 
+void init_ue_tables()
+{
+    pthread_mutex_init(&ue_link_list_mutex, NULL);
+	/* init UEs arra to 65535 initially */
+	g_UE_list[0] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
+	if(NULL == g_UE_list[0]) {
+		log_msg(LOG_ERROR, "Allocation failed.\n");
+		exit(-1);
+	}
+    ue_list_head = g_UE_list[0];
+/*
+	g_UE_list[1] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
+	if(NULL == g_UE_list[1]) {
+		log_msg(LOG_ERROR, "Allocation failed.\n");
+		exit(-1);
+	}
+	g_UE_list[2] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
+	if(NULL == g_UE_list[2]) {
+		log_msg(LOG_ERROR, "Allocation failed.\n");
+		exit(-1);
+	}
+*/
+    for(int i=0;i<10000;i++)
+        g_tmsi_allocation_array[i] = -1;
+}
+
+void add_ue_entry(struct UE_info *ue_entry)
+{
+   pthread_mutex_lock(&ue_link_list_mutex);
+   ue_entry->next_ue = ue_list_head; 
+   ue_list_head = ue_entry;
+   char imsi[16] = {'\0'}; 
+   imsi_bin_to_str(ue_entry->IMSI, imsi);
+   log_msg(LOG_INFO, "Adding IMSI = %s \n", imsi);
+   pthread_mutex_unlock(&ue_link_list_mutex);
+   return; 
+}
+
+/* Mark UE invalid, release UE index and release TMSI assigned to UE */
+void release_ue_entry(struct UE_info *ue_entry)
+{
+    struct UE_info **indirect;
+
+    /* Critical Section to manage link list */
+    pthread_mutex_lock(&ue_link_list_mutex);
+
+    indirect = &ue_list_head;
+    while((*indirect) != ue_entry)
+    {
+        indirect = &(*indirect)->next_ue;
+    }
+    *indirect = ue_entry->next_ue;
+    pthread_mutex_unlock(&ue_link_list_mutex);
+
+    ue_entry->ue_state = UNASSIGNED_ENTRY;
+    ue_entry->magic = UE_INFO_INVALID_MAGIC;
+    ue_entry->next_ue = NULL;
+
+    /* Mark tmsi free */
+    g_tmsi_allocation_array[ue_entry->m_tmsi] = -1;
+
+    /* add UE to to Pool which can be used later */
+    int ret = insert_index_into_list(ue_entry->ue_index);
+    if (ret == -1) {
+        log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");
+    } else {
+        log_msg(LOG_INFO, "Index with %d is added to list\n",ue_entry->ue_index);
+    }
+}
+
+// on success return > 0 tmsi
+// on error return -1. Should never fail under fair reasonale UE load  
+// TODO : area of improvement 
+int allocate_tmsi(struct UE_info *ue_entry)
+{
+    int32_t tmsi;
+    while(1)
+    {
+      tmsi = rand() % 10000;
+      if(g_tmsi_allocation_array[tmsi] == -1)
+      {
+        g_tmsi_allocation_array[tmsi] = ue_entry->ue_index; 
+        ue_entry->ue_index = tmsi;
+        break; // Successfully allocated 
+      }
+      // continue..select new 
+    }
+    return tmsi;
+}
+
+inline int get_ue_index_from_tmsi(int tmsi)
+{
+  if(g_tmsi_allocation_array[tmsi] > 10000)
+    return -1; 
+
+  // content can be -1 at the given tmsi  
+  return g_tmsi_allocation_array[tmsi];
+ 
+}
+
+void print_current_active_ue_info()
+{
+    struct UE_info *temp;
+    int count=1;
+    for(temp = ue_list_head; temp != NULL && IS_VALID_UE_INFO(temp); temp = temp->next_ue, count++)
+    {
+      char imsi[16] = {'\0'}; 
+      imsi_bin_to_str(temp->IMSI, imsi);
+      log_msg(LOG_INFO, "(%d) - IMSI = %s \n", count, imsi);
+    } 
+    return;
+}

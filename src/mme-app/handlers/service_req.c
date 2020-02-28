@@ -40,7 +40,6 @@ Service Request-->service_request_handler-> init ctxt setup [Service Accept]
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
-extern int g_tmsi_allocation_array[];
 static int g_Q_s1ap_service_reject;
 
 static int g_Q_servicereq_fd;
@@ -128,7 +127,7 @@ service_request_processing()
         return E_MAPPING_FAILED;
     }
     
-    unsigned int ue_index = g_tmsi_allocation_array[service_req->ue_idx];
+    int ue_index = get_ue_index_from_tmsi(service_req->ue_idx);
     if(ue_index == -1 )
     {
         log_msg(LOG_INFO, "TMSI not found %d ", service_req->ue_idx); 
