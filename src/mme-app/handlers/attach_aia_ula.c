@@ -149,14 +149,6 @@ process_ula_resp()
 	ue_entry->access_restriction_data = ula_msg->access_restriction_data;
 	ue_entry->ambr.max_requested_bw_dl = ula_msg->max_requested_bw_dl;
 	ue_entry->ambr.max_requested_bw_ul = ula_msg->max_requested_bw_ul;
-    /*hardcoding apn for test*/
-    char apnn[] = "apn1";
-    char apn_enc[5] = {};
-    apn_enc[0] = strlen(apnn);
-    memcpy(&apn_enc[1], apnn, strlen(apnn));
-    ue_entry->apn.len = 5;
-
-    memcpy(&(ue_entry->apn.val), apn_enc, 5);
 
 	ue_entry->selected_apn.len = ula_msg->selected_apn.len;
 	log_msg(LOG_INFO, "APN length from ula msg is - %d\n",

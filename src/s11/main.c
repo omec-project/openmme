@@ -194,6 +194,7 @@ s11_reader()
 int
 main(int argc, char **argv)
 {
+    init_backtrace();
 	init_parser("conf/s11.json");
 	parse_s11_conf();
 

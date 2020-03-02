@@ -45,7 +45,6 @@ int g_tmsi_allocation_array[10000];
 pthread_t stage_tid[TOTAL_STAGES];
 
 int g_mme_hdlr_status;
-extern void init_backtrace();
 
 /*End globals and externs*/
 
