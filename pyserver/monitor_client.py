@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
- 
+
 from flask import Flask, Response
 import prometheus_client
 import sys
@@ -29,6 +29,7 @@ class AMBR(Structure):
 
 class IMSI_RSP(Structure):
     _fields_ = [("result", c_int),
+                ("state", c_int),
                 ("paa", c_int),
                 ("imsi", c_byte*16),
                 ("bearer_id", c_char),
@@ -65,8 +66,8 @@ def bytes_to_mnc(plmn):
         result = "" + str(a1) + str(a2) + str(a3)
     return result
 
-def tuple_to_str(tup): 
-    str =  b''.join(tup) 
+def tuple_to_str(tup):
+    str =  b''.join(tup)
     return str
 
 def getTacEdgeNames(loc):
@@ -77,6 +78,17 @@ def getTacEdgeNames(loc):
     for e in edges:
         tac = e['tac']
         results[tac] = e['edgeName']
+
+    return results
+
+def getPhoneTypes(loc):
+    results = {}
+    with open(loc) as f:
+        data = json.load(f)
+    phoneTypes = data["phoneTypes"]
+    for e in phoneTypes:
+        imsi = e['imsi']
+        results[imsi] = e['phoneType']
 
     return results
 
@@ -152,7 +164,7 @@ def getInfo(imsi):
             amount_received += len(buff)
             print ('received "%s"' % buff, file=sys.stderr)
 
-        payload_in = struct.unpack("II16sc3shII", buff)
+        payload_in = struct.unpack("III16sc3shII", buff)
         parsed_data = IMSI_RSP.from_buffer_copy(buff)
         print ("struct {}".format(payload_in))
         print ("struct {}".format(parsed_data))
@@ -164,10 +176,17 @@ def getInfo(imsi):
     sock.close()
 
     tacRef = getTacEdgeNames('./conf/mme_exporter.json')
+    phoneTypeRef = getPhoneTypes('./conf/mme_exporter.json')
 
     account = {'IMSI': imsi}
     account['Result'] = parsed_data.result
     account['PAA'] = str(ipaddress.ip_address(parsed_data.paa))
+    if parsed_data.state == 1:
+        account['State'] = "Idle"
+    elif parsed_data.state == 2:
+        account['State'] = "Active"
+    else:
+        account['State'] = "Unknown"
     account['BearerId'] = int.from_bytes(parsed_data.bearer_id, byteorder='big',signed=False)
     account['MaxDL'] = parsed_data.ambr.max_req_dl
     account['MaxUL'] = parsed_data.ambr.max_req_ul
@@ -178,6 +197,10 @@ def getInfo(imsi):
         account['EDGE'] = ""
     account['MCC'] = bytes_to_mcc(parsed_data.tai.plmn_id.idx)
     account['MNC'] = bytes_to_mnc(parsed_data.tai.plmn_id.idx)
+    if int(account['IMSI']) in phoneTypeRef:
+        account['PhoneType'] = phoneTypeRef[int(account['IMSI'])]
+    else:
+        account['PhoneType'] = "Unknown"
 
     return account
 
@@ -189,7 +212,7 @@ def exportMetrics():
     for imsi in imsis:
         # Get subscriber info from IMSI
         ueInfo = getInfo(imsi)
-        ueInfoPrint = "ue_info{IMSI=\"" + imsi + "\",PAA=\"" + ueInfo['PAA'] +  "\",EDGE=\"" + ueInfo['EDGE'] + "\",BearerId=\"" + str(ueInfo['BearerId']) + "\",MaxDL=\"" + str(ueInfo['MaxDL']) + "\",MaxUL=\"" + str(ueInfo['MaxUL']) + "\",TAC=\"" + str(ueInfo['TAC']) + "\",MCC=\"" + str(ueInfo['MCC']) + "\",MNC=\"" + str(ueInfo['MNC']) + "\"} " + imsi + "\n"
+        ueInfoPrint = "ue_info{IMSI=\"" + imsi + "\",State=\"" + ueInfo['State'] + "\",PhoneType=\"" + ueInfo['PhoneType'] + "\",PAA=\"" + ueInfo['PAA'] +  "\",EDGE=\"" + ueInfo['EDGE'] + "\",BearerId=\"" + str(ueInfo['BearerId']) + "\",MaxDL=\"" + str(ueInfo['MaxDL']) + "\",MaxUL=\"" + str(ueInfo['MaxUL']) + "\",TAC=\"" + str(ueInfo['TAC']) + "\",MCC=\"" + str(ueInfo['MCC']) + "\",MNC=\"" + str(ueInfo['MNC']) + "\"} " + imsi + "\n"
         results.append(ueInfoPrint)
     return Response(results, mimetype="text/plain")
 
