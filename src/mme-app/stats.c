@@ -41,9 +41,8 @@ uint32_t tau_response_reject_counter;
 
 void* stat_report(void *data)
 {
-	while(1)  {
+	while(0)  {
 
-#if 0
 		printf("\033[H\033[J");
 
 		printf("Atch_Stg1       Atch_Stg2       Atch_Stg3       Atch_Stg4       Atch_Stg5       Atch_Stg6       Atch_Stg7       Atch_Stg8\n\n");
@@ -59,8 +58,6 @@ void* stat_report(void *data)
 		printf("paging\n\n");
 		printf("%8u\n",paging_counter);
 		printf("Identification Request %u Identification Response %u Attach Reject %u\n\n", attach_identity_req_counter, attach_identity_rsp_counter, attach_reject_counter);
-#endif
-		print_current_active_ue_info();
 		sleep(3);
 	}
 
