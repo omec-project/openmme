@@ -52,6 +52,7 @@ struct ula_Q_msg {
 	int all_APN_cfg_included_ind;
 	char MSISDN[MSISDN_STR_LEN];
 	struct apn_name selected_apn;
+	uint32_t static_addr;
 };
 
 #define S6A_REQ_Q_MSG_SIZE sizeof(struct s6a_Q_msg)

@@ -247,7 +247,7 @@ create_session_processing()
 
 	msgData.pdnAddressAllocationIePresent = true;
 	msgData.pdnAddressAllocation.pdnType = 1;
-	msgData.pdnAddressAllocation.ipV4Address.ipValue = 0;
+	msgData.pdnAddressAllocation.ipV4Address.ipValue = g_csReqInfo->paa_v4_addr; /* host order - Get value from MME */
 
 	msgData.maximumApnRestrictionIePresent = true;
 	msgData.maximumApnRestriction.restrictionValue = 0;
