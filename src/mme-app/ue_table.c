@@ -27,6 +27,7 @@ pthread_mutex_t ue_link_list_mutex;
 
 /*Counter UE list. Add each element sequentially when UE attaches*/
 int g_UE_cnt = 0;
+int g_total_UE_count=0;
 int g_out_index= 0;
 int g_in_index = 1;
 
@@ -37,15 +38,17 @@ int g_in_index = 1;
 
 int allocate_ue_index()
 {
-  int index = ++g_UE_cnt;
+  int index =  ++g_UE_cnt;
+  g_total_UE_count++;
+
   if (index%UE_POOL_CNT == 0) {
   
   	log_msg(LOG_INFO, "UE Buffer Pool is full \n");
-  	g_UE_cnt--;
   	index = get_index_from_list();
-  
+    g_UE_cnt--; 
   	if (index != -1) {
   		log_msg(LOG_INFO, "Index is  received from the list\n");
+        g_total_UE_count--;
   	} else {
   		log_msg(LOG_ERROR, "Error: No Index found in the list \n");
   	}
@@ -81,9 +84,9 @@ int insert_index_into_list(int index)
 		return -1;
 	}
 	g_index_list_queue[g_in_index++] = index;
-  	if(g_UE_cnt)
+  	if(g_total_UE_count)
     {
-        g_UE_cnt--;
+        g_total_UE_count--;
     }
 	return 0;
 }
@@ -210,10 +213,10 @@ int allocate_tmsi(struct UE_info *ue_entry)
 
 inline int get_ue_index_from_tmsi(int tmsi)
 {
-  if(g_tmsi_allocation_array[tmsi] > TMSI_POOL_SIZE)
+  // if TMSI is out of range or if TMSI is unallocated ( -1) then return error 
+  if((tmsi > TMSI_POOL_SIZE) || (g_tmsi_allocation_array[tmsi] ==  -1))
     return -1; 
 
-  // content can be -1 at the given tmsi  
   return g_tmsi_allocation_array[tmsi];
  
 }
