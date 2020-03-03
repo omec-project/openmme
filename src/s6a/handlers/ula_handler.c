@@ -164,12 +164,6 @@ parse_ula_subscription_data(struct avp *avp_ptr, struct ula_Q_msg *ula)
 						// will finish this part in the following patch
 						// service_slection code is 493
 						// if(g_fd_dict_data.service_slection ==
-						if(apn_cfg_element != NULL)
-						{
-						  	log_msg(LOG_INFO, "Found AVP %d Len = %d \n", apn_cfg_element->avp_code, apn_cfg_element->avp_len);
-						}
-                 
-
 						if (493 == apn_cfg_element->avp_code){
 
 							log_msg(LOG_INFO, "APN name recvd from hss - %s\n",
