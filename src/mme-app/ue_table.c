@@ -19,7 +19,7 @@
 /*List of UEs attached to MME*/
 struct UE_info* g_UE_list[UE_POOL_SIZE];
 int g_index_list_queue[UE_POOL_CNT+1];
-int g_tmsi_allocation_array[10000];
+int g_tmsi_allocation_array[TMSI_POOL_SIZE];
 struct UE_info *ue_list_head = NULL;
 
 /* Mutex to lock ue_list */
@@ -135,7 +135,7 @@ void init_ue_tables()
 		exit(-1);
 	}
 */
-    for(int i=0;i<10000;i++)
+    for(int i=0;i<TMSI_POOL_SIZE;i++)
         g_tmsi_allocation_array[i] = -1;
 }
 
@@ -146,8 +146,8 @@ void add_ue_entry(struct UE_info *ue_entry)
    ue_list_head = ue_entry;
    char imsi[16] = {'\0'}; 
    imsi_bin_to_str(ue_entry->IMSI, imsi);
-   log_msg(LOG_INFO, "Adding IMSI = %s \n", imsi);
    pthread_mutex_unlock(&ue_link_list_mutex);
+   log_msg(LOG_INFO, "Adding IMSI = %s in the active UE list \n", imsi);
    return; 
 }
 
@@ -163,6 +163,11 @@ void release_ue_entry(struct UE_info *ue_entry)
     while((*indirect) != ue_entry)
     {
         indirect = &(*indirect)->next_ue;
+        if(*indirect == NULL)
+        {
+           pthread_mutex_unlock(&ue_link_list_mutex);
+           return;
+        }
     }
     *indirect = ue_entry->next_ue;
     pthread_mutex_unlock(&ue_link_list_mutex);
@@ -191,11 +196,11 @@ int allocate_tmsi(struct UE_info *ue_entry)
     int32_t tmsi;
     while(1)
     {
-      tmsi = rand() % 10000;
+      tmsi = rand() % TMSI_POOL_SIZE;
       if(g_tmsi_allocation_array[tmsi] == -1)
       {
         g_tmsi_allocation_array[tmsi] = ue_entry->ue_index; 
-        ue_entry->ue_index = tmsi;
+        ue_entry->m_tmsi = tmsi;
         break; // Successfully allocated 
       }
       // continue..select new 
@@ -205,7 +210,7 @@ int allocate_tmsi(struct UE_info *ue_entry)
 
 inline int get_ue_index_from_tmsi(int tmsi)
 {
-  if(g_tmsi_allocation_array[tmsi] > 10000)
+  if(g_tmsi_allocation_array[tmsi] > TMSI_POOL_SIZE)
     return -1; 
 
   // content can be -1 at the given tmsi  

@@ -25,6 +25,7 @@ allocate next pool */
 #define THREADPOOL_SIZE 10
 /*Each pool to have 65535 UEs*/
 #define UE_POOL_CNT 550000
+#define TMSI_POOL_SIZE 10000
 
 /*Macro to access UE element based on ue index*/
 #define GET_UE_ENTRY(index) ((index >= UE_POOL_CNT) ? (NULL) : (&(g_UE_list[index/UE_POOL_CNT][index%UE_POOL_CNT])))

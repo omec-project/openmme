@@ -103,7 +103,6 @@ process_MB_resp()
 	else
 		ue_entry->ue_state = STAGE8_MBR_DONE;
 
-    // add here to release UE   
 	return mbr_msg->ue_idx;
 }
 

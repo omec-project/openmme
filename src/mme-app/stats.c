@@ -12,7 +12,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <log.h>
-#include "ue_table.h"
 
 pthread_t thread_id;
 
