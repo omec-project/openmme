@@ -269,9 +269,9 @@ init_stage_handlers()
  * @param None
  * @return int as SUCCESS or FAIL
  */
-int main()
+int main(int argc, char *argv[])
 {
-    init_backtrace();
+    init_backtrace(argv[0]);
     srand(time(0));
     for(int i=0;i<10000;i++)
         g_tmsi_allocation_array[i] = -1;
