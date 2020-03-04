@@ -38,7 +38,6 @@ ATTACH stages :
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
-extern int g_tmsi_allocation_array[];
 
 static int g_Q_secmoderesp_fd;
 static int g_Q_esmreq_fd;
@@ -345,16 +344,7 @@ post_ctx_rel_and_clr_uectx(int ue_index)
                       S1AP_COMMON_REQ_BUF_SIZE );
     
     pthread_mutex_unlock(&s1ap_reject_queue_mutex);
-    log_msg(LOG_INFO, "Releasing UE session\n");
-    ue_entry->ue_state = UNASSIGNED_ENTRY;
-    ue_entry->magic = UE_INFO_INVALID_MAGIC;
-    g_tmsi_allocation_array[ue_entry->m_tmsi] = -1;
-    int ret = insert_index_into_list(ue_index);
-    if (ret == -1) {
-        log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");
-    } else {
-        log_msg(LOG_INFO, "Index with %d is added to list\n",ue_index);
-    }
+    release_ue_entry(ue_entry); 
 	return SUCCESS;
 }
 

@@ -14,6 +14,9 @@
 #include "s1ap_structs.h"
 #include "s11_structs.h"
 
+extern int g_tmsi_allocation_array[];
+extern struct UE_info* g_UE_list[]; 
+
 /*allocate UEs in pool to save memory. Only when pool size is crossed then
 allocate next pool */
 /*5 pools*/
@@ -22,6 +25,7 @@ allocate next pool */
 #define THREADPOOL_SIZE 10
 /*Each pool to have 65535 UEs*/
 #define UE_POOL_CNT 550000
+#define TMSI_POOL_SIZE 10000
 
 /*Macro to access UE element based on ue index*/
 #define GET_UE_ENTRY(index) ((index >= UE_POOL_CNT) ? (NULL) : (&(g_UE_list[index/UE_POOL_CNT][index%UE_POOL_CNT])))
@@ -163,11 +167,18 @@ struct UE_info{
   uint8_t arp;
   uint16_t pco_length;
   unsigned char pco_options[MAX_PCO_OPTION_SIZE];
+  struct UE_info *next_ue; 
 };
 
 int allocate_ue_index();
 int get_index_from_list();
 int insert_index_into_list(int ue_index);
 void imsi_bin_to_str(unsigned char *b_imsi, char *s_imsi);
+void add_ue_entry(struct UE_info *ue_entry);
+void release_ue_entry(struct UE_info *ue_entry);
+void init_ue_tables();
+int allocate_tmsi(struct UE_info *ue_entry);
+int get_ue_index_from_tmsi(int tmsi);
+void print_current_active_ue_info();
 
 #endif /*ue_table*/

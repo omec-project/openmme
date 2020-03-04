@@ -29,8 +29,9 @@
 #include "monitor_subscriber.h"
 #include "unix_conn.h"
 
-extern int g_UE_cnt;
+extern int g_total_UE_count;
 extern struct UE_info * g_UE_list[];
+extern struct UE_info *ue_list_head;
 
 /**
 * Monitor message Imsi Request processing.
@@ -91,13 +92,10 @@ handle_imsi_list_req(struct monitor_imsi_req *mir, int sock_fd)
     unsigned char buf[BUFFER_SIZE] = {0};
     uint32_t size = sizeof(uint32_t);
     char* bufPtr = (char*)buf + size;
-    log_msg(LOG_DEBUG, "imsi list request, ue count %d\n", g_UE_cnt);
-    for(int i = 0 ;i < UE_POOL_CNT;i++)
+    log_msg(LOG_DEBUG, "imsi list request, Available UE count %d\n", g_total_UE_count);
+    for(ue_entry = ue_list_head; ue_entry != NULL && IS_VALID_UE_INFO(ue_entry) ; ue_entry = ue_entry->next_ue)
     {
-        ue_entry = GET_UE_ENTRY(i);
-        if(ue_entry &&
-           (IS_VALID_UE_INFO(ue_entry)) &&
-           (ATTACH_DONE == ue_entry->ue_state))
+        if(ATTACH_DONE == ue_entry->ue_state)
         {
             char imsi[16] = {0};
             imsi_bin_to_str(ue_entry->IMSI, imsi);

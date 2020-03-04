@@ -38,7 +38,6 @@ ATTACH stages :
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
-extern int g_tmsi_allocation_array[];
 
 static int g_Q_aia_fd;
 static int g_Q_ula_fd;
@@ -303,9 +302,8 @@ post_to_next(int ue_index)
 	}
     else if (STAGE1_AIA_FAIL == ue_entry->ue_state)
     {
-        log_msg(LOG_ERROR, "Error AIA from HSS\n");
-        log_msg(LOG_INFO, "Sending Attach Reject\n");
-	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+        log_msg(LOG_ERROR, "Error AIA from HSS. Release UE session \n");
+   	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
         s1ap_rej.IE_type = S1AP_ATTACH_REJ;
         s1ap_rej.ue_idx = ue_index;
         s1ap_rej.mme_s1ap_ue_id = ue_index;
@@ -319,6 +317,7 @@ post_to_next(int ue_index)
                           (char *)&(s1ap_rej),
 				          S1AP_COMMON_REQ_BUF_SIZE);
         pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+        release_ue_entry(ue_entry); 
     }
 	
     return SUCCESS;
