@@ -147,9 +147,9 @@ void add_ue_entry(struct UE_info *ue_entry)
    pthread_mutex_lock(&ue_link_list_mutex);
    ue_entry->next_ue = ue_list_head; 
    ue_list_head = ue_entry;
+   pthread_mutex_unlock(&ue_link_list_mutex);
    char imsi[16] = {'\0'}; 
    imsi_bin_to_str(ue_entry->IMSI, imsi);
-   pthread_mutex_unlock(&ue_link_list_mutex);
    log_msg(LOG_INFO, "Adding IMSI = %s in the active UE list \n", imsi);
    return; 
 }
