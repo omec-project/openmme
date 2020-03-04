@@ -41,7 +41,7 @@ $(TARGET): $(OBJECTS)
 	@echo " Linking..."
 	@mkdir -p $(BUILDDIR)/handlers
 	#@echo " $(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface $(LIBS)";
-	$(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson $(LIBS)
+	$(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson -lmonitor_config $(LIBS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)/handlers

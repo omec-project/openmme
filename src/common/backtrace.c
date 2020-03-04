@@ -6,11 +6,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <err.h>
+#include "string.h"
  
 void cause_segfault();
 void cause_crash();
  
-static char const * _program_name = "mme_app";
+static char _program_name[128]; 
  
 
 #define MAX_STACK_FRAMES 64
@@ -198,8 +199,10 @@ void cause_segfault()
   *p = 0;
 }
 #else
-void init_backtrace()
+void init_backtrace(char *binary_name)
 {
+   strcpy(_program_name, binary_name);
+   printf("\n Program name set to %s \n", binary_name);
    set_signal_handler();
 }
 #endif

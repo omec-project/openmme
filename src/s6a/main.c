@@ -225,6 +225,7 @@ s6a_run()
 int
 main(int argc, char **argv)
 {
+    init_backtrace(argv[0]); 
 	/*Check cmd line arguments for config file path*/
 	check_args(argc, argv);
 

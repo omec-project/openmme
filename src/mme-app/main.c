@@ -40,7 +40,6 @@ pthread_t acceptUnix_t;
 pthread_t stage_tid[TOTAL_STAGES];
 
 int g_mme_hdlr_status;
-extern void init_backtrace();
 
 /*End globals and externs*/
 
@@ -248,9 +247,9 @@ init_stage_handlers()
  * @param None
  * @return int as SUCCESS or FAIL
  */
-int main()
+int main(int argc, char *argv[])
 {
-    init_backtrace();
+    init_backtrace(argv[0]);
     srand(time(0));
 
 	/*Read MME configurations*/
