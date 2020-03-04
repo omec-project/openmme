@@ -48,9 +48,9 @@ int allocate_ue_index()
     g_UE_cnt--; 
   	if (index != -1) {
   		log_msg(LOG_INFO, "Index is  received from the list\n");
-        g_total_UE_count--;
   	} else {
   		log_msg(LOG_ERROR, "Error: No Index found in the list \n");
+        g_total_UE_count--;
   	}
   }
   return index;
