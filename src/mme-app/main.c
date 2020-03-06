@@ -46,6 +46,7 @@ pthread_t stage_tid[TOTAL_STAGES];
 
 int g_mme_hdlr_status;
 extern void init_backtrace();
+extern void send_reset_s1ap_stage_init(void);
 
 /*End globals and externs*/
 
@@ -218,6 +219,10 @@ init_mme()
 	unlink(S1AP_TAURSP_QUEUE);
 	create_ipc_channel(S1AP_TAURSP_QUEUE);
 
+    //RESET S1AP
+    unlink(S1AP_GEN_RESET_QUEUE);
+    create_ipc_channel(S1AP_TAURSP_QUEUE);
+
 	return SUCCESS;
 }
 
@@ -254,6 +259,7 @@ init_stage_handlers()
 	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
 	pthread_create(&stage_tid[16], &attr, &tau_request_handler, NULL);
   
+    send_reset_s1ap_stage_init(); 
 	if ((g_Q_s1ap_common_reject  = open_ipc_channel(S1AP_MME_TO_S1AP_QUEUE,
 						IPC_WRITE)) == -1){
 		log_msg(LOG_ERROR, "Error in opening MME to S1AP write IPC channel.\n");

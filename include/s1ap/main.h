@@ -67,6 +67,8 @@ void
 void 
 *tau_response_handler (void *);
 
+void
+*gen_reset_request_handler(void *);
 
 void
 *paging_handler(void *);

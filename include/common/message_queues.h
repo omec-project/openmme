@@ -134,4 +134,7 @@ Message queues used across MME, S1ap, S11, S6a
 
 #define S1AP_TAUREQ_QUEUE  "/tmp/s1ap/s1ap_taureq_Q"
 #define S1AP_TAURSP_QUEUE  "/tmp/s1ap/s1ap_taursp_Q"
+
+#define S1AP_GEN_RESET_QUEUE "/tmp/s1ap/s1ap_gen_reset_Q"
+
 #endif /*__MESSAGE_QUEUES_H*/
