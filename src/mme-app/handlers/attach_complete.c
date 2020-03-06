@@ -103,6 +103,16 @@ process_MB_resp()
 	else
 		ue_entry->ue_state = STAGE8_MBR_DONE;
 
+    /* Generate EMM info message */
+    struct ue_emm_info temp = {0};
+    temp.enb_fd = ue_entry->enb_fd; 
+    temp.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+    temp.mme_s1ap_ue_id = ue_entry->ue_index;
+	temp.dl_seq_no = ue_entry->dl_seq_no++;
+	memcpy(&(temp.int_key), &(ue_entry->ue_sec_info.int_key), NAS_INT_KEY_SIZE);
+    send_emm_info_s1ap_channel_req(&temp); 
+	log_msg(LOG_ERROR, "=====Generate EMM info enb_fd = %d %d \n", temp.enb_fd, ue_entry->enb_fd);
+    
 	return mbr_msg->ue_idx;
 }
 

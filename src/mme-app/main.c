@@ -46,6 +46,7 @@ pthread_t stage_tid[TOTAL_STAGES];
 
 int g_mme_hdlr_status;
 extern void init_backtrace();
+extern void open_emm_info_s1ap_stage_init();
 
 /*End globals and externs*/
 
@@ -218,6 +219,10 @@ init_mme()
 	unlink(S1AP_TAURSP_QUEUE);
 	create_ipc_channel(S1AP_TAURSP_QUEUE);
 
+    //EMM INFO S1AP
+    unlink(EMM_INFOREQ_QUEUE);
+    create_ipc_channel(EMM_INFOREQ_QUEUE);
+
 	return SUCCESS;
 }
 
@@ -253,6 +258,7 @@ init_stage_handlers()
 	pthread_create(&stage_tid[14], &attr, &service_request_handler, NULL);
 	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
 	pthread_create(&stage_tid[16], &attr, &tau_request_handler, NULL);
+    open_emm_info_s1ap_stage_init();
   
 	if ((g_Q_s1ap_common_reject  = open_ipc_channel(S1AP_MME_TO_S1AP_QUEUE,
 						IPC_WRITE)) == -1){
