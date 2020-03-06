@@ -40,7 +40,7 @@ Service Request-->service_request_handler-> init ctxt setup [Service Accept]
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
-extern int g_tmsi_allocation_array[];
+extern pthread_mutex_t s1ap_reject_queue_mutex;
 static int g_Q_s1ap_service_reject;
 
 static int g_Q_servicereq_fd;
@@ -128,7 +128,7 @@ service_request_processing()
         return E_MAPPING_FAILED;
     }
     
-    unsigned int ue_index = g_tmsi_allocation_array[service_req->ue_idx];
+    int ue_index = get_ue_index_from_tmsi(service_req->ue_idx);
     if(ue_index == -1 )
     {
         log_msg(LOG_INFO, "TMSI not found %d ", service_req->ue_idx); 
@@ -206,15 +206,24 @@ post_to_next()
 static int
 post_service_reject()
 {
-    struct commonRej_info s1ap_rej;
-	log_msg(LOG_INFO, "Sending Service Rej \n");
-	struct service_req_Q_msg *service_req =
-				(struct service_req_Q_msg *) buf;
-    s1ap_rej.IE_type = S1AP_SERVICE_REJECT;
+    struct service_req_Q_msg *service_req =
+        (struct service_req_Q_msg *) buf;
+    log_msg(LOG_INFO, "Sending Service Rej for MTMSI %d\n",
+              service_req->ue_idx);
+    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+    s1ap_rej.IE_type = S1AP_SERVICE_REJ;
+    s1ap_rej.ue_idx = 0;
+    s1ap_rej.mme_s1ap_ue_id = 0;
+    s1ap_rej.enb_s1ap_ue_id = service_req->s1ap_enb_ue_id;
     s1ap_rej.enb_fd = service_req->enb_fd;
-    s1ap_rej.s1ap_enb_ue_id = service_req->s1ap_enb_ue_id;
-	write_ipc_channel(g_Q_s1ap_service_reject, (char *)(&s1ap_rej), S1AP_REQ_REJECT_BUF_SIZE );
-	return SUCCESS;
+    s1ap_rej.emm_cause = emmCause_ue_id_not_derived_by_network;
+
+    pthread_mutex_lock(&s1ap_reject_queue_mutex);
+    write_ipc_channel(g_Q_s1ap_common_reject, 
+                      (char *)&(s1ap_rej),
+                      S1AP_COMMON_REQ_BUF_SIZE);
+    pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+    return SUCCESS;
 }
 
 /**

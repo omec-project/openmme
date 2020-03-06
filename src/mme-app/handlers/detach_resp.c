@@ -19,7 +19,6 @@
 #include "stage1_s6a_msg.h"
 #include "stage2_info.h"
 #include "detach_stage2_info.h"
-extern int g_tmsi_allocation_array[];
 
 /************************************************************************
 Current file : detach stage 2 handler.
@@ -234,16 +233,7 @@ post_to_next(int ue_index)
 				S1AP_DTCHACCEPT_STAGE2_BUF_SIZE);
 		log_msg(LOG_INFO, "Detach Stage 2. Posted message to s1ap - Detach accept\n");
 
-        ue_entry->ue_state = UNASSIGNED_ENTRY;
-        ue_entry->magic = UE_INFO_INVALID_MAGIC;
-        g_tmsi_allocation_array[ue_entry->m_tmsi] = -1;
-		int ret = insert_index_into_list(ue_index);
-		if (ret == -1) {
-			log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");
-		} else {
-			log_msg(LOG_INFO, "Index with %d is added to list\n",ue_index);
-		}
-
+        release_ue_entry(ue_entry); 
 	}
 	return SUCCESS;
 }
