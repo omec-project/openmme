@@ -8,9 +8,9 @@
 struct ue_emm_info {
 	uint32_t enb_fd;
 	uint32_t enb_s1ap_ue_id;
-    uint32_t mme_s1ap_ue_id;
-    char     short_network_name[16];
-    char     full_network_name[128];
+	uint32_t mme_s1ap_ue_id;
+	char     short_network_name[16];
+	char     full_network_name[128];
 	uint8_t int_key[NAS_INT_KEY_SIZE];
 	unsigned short dl_seq_no;
 };

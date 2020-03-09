@@ -109,6 +109,12 @@ process_MB_resp()
     temp.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
     temp.mme_s1ap_ue_id = ue_entry->ue_index;
 	temp.dl_seq_no = ue_entry->dl_seq_no++;
+    /*Logically MME should have TAC database. and based on TAC 
+     * MME can send different name. For now we are sending Aether for
+     * all TACs
+     */
+    strcpy(temp.short_network_name, "Aether");
+    strcpy(temp.full_network_name, "Aether");
 	memcpy(&(temp.int_key), &(ue_entry->ue_sec_info.int_key), NAS_INT_KEY_SIZE);
     send_emm_info_s1ap_channel_req(&temp); 
 	log_msg(LOG_ERROR, "=====Generate EMM info enb_fd = %d %d \n", temp.enb_fd, ue_entry->enb_fd);

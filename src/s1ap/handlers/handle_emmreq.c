@@ -153,16 +153,14 @@ emm_info_request_processing()
     char nas_plain_hdr[2] = { 0x07, 0x61}; 
 	buffer_copy(&g_nas_buffer, nas_plain_hdr, 2);
 
-    char *fullname = "Aether"; 
     char bufBig[128] = {'\0'};
     bufBig[0] = 0x43;
-    encode_network_name_ie(fullname, &bufBig[1]);
+    encode_network_name_ie(g_ueEmmInfoMsg->full_network_name, &bufBig[1]);
 	buffer_copy(&g_nas_buffer, bufBig, bufBig[1] + 2);
 
-    char *shortName = "Aether";
-    char bufShort[128] = {'\0'};
+    char bufShort[20] = {'\0'};
     bufShort[0] = 0x45;
-    encode_network_name_ie(shortName, &bufShort[1]);
+    encode_network_name_ie(g_ueEmmInfoMsg->short_network_name, &bufShort[1]);
 	buffer_copy(&g_nas_buffer, bufShort, bufShort[1] + 2);
 
 	/* Calculate mac */
