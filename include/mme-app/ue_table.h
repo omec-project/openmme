@@ -66,6 +66,7 @@ enum ue_stages{
   DETACH_STAGE2_DS_DONE,
   DETACH_STAGE2,
   DETACH_DONE,
+  CTX_RELEASE_STAGE,
   S1AP_HANDLE_MESSAGE_STAGE,
   PAGING_START,
   PAGING_WF_SVC_REQ,
@@ -85,6 +86,7 @@ enum ue_proc{
 };
 
 enum ecm_states{
+ ECM_UNKNOWN=0,
  ECM_IDLE,
  ECM_CONNECTED
 };

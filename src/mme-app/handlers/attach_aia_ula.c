@@ -294,7 +294,7 @@ post_to_next(int ue_index)
 	}
     else if (STAGE1_AIA_FAIL == ue_entry->ue_state)
     {
-        log_msg(LOG_ERROR, "Error AIA from HSS. Release UE session \n");
+        log_msg(LOG_ERROR, "Error AIA from HSS. Send Attach Reject & Release UE session \n");
    	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
         s1ap_rej.IE_type = S1AP_ATTACH_REJ;
         s1ap_rej.ue_idx = ue_index;

@@ -41,6 +41,7 @@ struct monitor_imsi_req {
 /*Monitor IMSI Response*/
 struct monitor_imsi_rsp {
     uint32_t             result;
+    uint32_t             ue_state;
     uint32_t             paa;
 	unsigned char   imsi[IMSI_STR_LEN];
 	unsigned char   bearer_id;

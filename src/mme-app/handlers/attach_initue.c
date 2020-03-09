@@ -280,6 +280,7 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
     ue_entry->next_ue = NULL; // newly allocated  
 	ue_entry->magic = UE_INFO_VALID_MAGIC;  
 	ue_entry->ue_index = index;
+    ue_entry->ue_curr_proc = ATTACH_PROC;
     ue_entry->flags = ue_info->flags; 
 	ue_entry->ue_state = ATTACH_STAGE1;
 	ue_entry->s1ap_enb_ue_id = ue_info->s1ap_enb_ue_id;

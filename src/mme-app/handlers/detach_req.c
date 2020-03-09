@@ -167,7 +167,8 @@ detach_stage1_processing()
     }
 
 	log_msg(LOG_INFO, "Detach request received for ue %d\n", ue_index);
-	ue_entry->ul_seq_no++;
+    ue_entry->ue_state = DETACH_STAGE1;
+    ue_entry->ul_seq_no++;
 	ue_entry->s1ap_enb_ue_id = detach_req->s1ap_enb_ue_id;
 
 	g_ds_msg.bearer_id = ue_entry->bearer_id;

@@ -268,7 +268,7 @@ ue_ctx_release_processing()
 	uint8_t u8value = 0;
 
 	s1apPDU.procedurecode = id_UEContexRelease;
-	s1apPDU.criticality = CRITICALITY_IGNORE;
+	s1apPDU.criticality = CRITICALITY_REJECT;
 
 	g_ctxrel_buffer.pos = 0;
 
