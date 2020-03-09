@@ -30,7 +30,6 @@ DETACH stages :
 
 extern struct UE_info * g_UE_list[];
 extern int g_mme_hdlr_status;
-extern int g_tmsi_allocation_array[];
 
 static int g_Q_detachread_fd;
 static int g_Q_S11_detach_fd;
@@ -142,12 +141,20 @@ detach_stage1_processing()
     }
     else if (detach_req->ue_m_tmsi != -1)
     {
-        ue_index = g_tmsi_allocation_array[detach_req->ue_m_tmsi]; 
+        ue_index = get_ue_index_from_tmsi(detach_req->ue_m_tmsi); 
+        if(ue_index == -1)
+        {
+          log_msg(LOG_ERROR, "Invalid TMSI entry received = %d \n",detach_req->ue_m_tmsi);
+          return E_FAIL;
+        }
 	    ue_entry = GET_UE_ENTRY(ue_index);
 
     }
     else
+    {
+        log_msg(LOG_ERROR, "detach message received without any valid identifier \n");
         return E_FAIL;
+    }
 
 
 	if((ue_entry == NULL) || 

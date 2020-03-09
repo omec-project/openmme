@@ -55,7 +55,7 @@ $(TARGET): $(OBJECTS)
 	@mkdir -p $(BUILDDIR)/handlers
 	@mkdir -p $(BUILDDIR)/message_handlers
 	#@echo " $(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface $(LIBS)";
-	g++ $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson $(LIBS)
+	g++ $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson -lmonitor_config $(LIBS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)/handlers

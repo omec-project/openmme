@@ -33,19 +33,13 @@ mme_config g_mme_cfg;
 int g_Q_s1ap_common_reject; 
 pthread_mutex_t s1ap_reject_queue_mutex;
 
-/*List of UEs attached to MME*/
-struct UE_info* g_UE_list[UE_POOL_SIZE];
 int g_unix_fd = 0;
 struct thread_pool *g_tpool;
 pthread_t acceptUnix_t;
 
-int g_tmsi_allocation_array[10000];
-
-
 pthread_t stage_tid[TOTAL_STAGES];
 
 int g_mme_hdlr_status;
-extern void init_backtrace();
 
 /*End globals and externs*/
 
@@ -71,25 +65,7 @@ check_mme_hdlr_status()
 static int
 init_mme()
 {
-	/*init UEs arra to 65535 initially*/
-	g_UE_list[0] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
-	if(NULL == g_UE_list[0]) {
-		log_msg(LOG_ERROR, "Allocation failed.\n");
-		exit(-1);
-	}
-/*
-	g_UE_list[1] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
-	if(NULL == g_UE_list[1]) {
-		log_msg(LOG_ERROR, "Allocation failed.\n");
-		exit(-1);
-	}
-	g_UE_list[2] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
-	if(NULL == g_UE_list[2]) {
-		log_msg(LOG_ERROR, "Allocation failed.\n");
-		exit(-1);
-	}
-*/
-	/*Check system requirements*/
+    init_ue_tables();
 
 	/*Create all required IPC files*/
 	log_msg(LOG_INFO, "Creating IPC Queues...\n");
@@ -260,6 +236,7 @@ init_stage_handlers()
 		pthread_exit(NULL);
 	}
 
+    pthread_mutex_init(&s1ap_reject_queue_mutex, NULL);
 	pthread_attr_destroy(&attr);
 	return SUCCESS;
 }
@@ -270,12 +247,11 @@ init_stage_handlers()
  * @param None
  * @return int as SUCCESS or FAIL
  */
-int main()
+int main(int argc, char *argv[])
 {
-    init_backtrace();
+    init_backtrace(argv[0]);
     srand(time(0));
-    for(int i=0;i<10000;i++)
-        g_tmsi_allocation_array[i] = -1;
+
 	/*Read MME configurations*/
     mme_parse_config(&g_mme_cfg); 
 
@@ -325,4 +301,5 @@ void mme_parse_config(mme_config *config)
     /* Lets apply logging setting */
     set_logging_level(config->logging);
 }
+
 
