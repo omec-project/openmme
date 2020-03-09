@@ -17,6 +17,7 @@
 #include "message_queues.h"
 #include "sctp_conn.h"
 #include "s1ap_emm_message.h"
+#include "assert.h"
 
 /*Making global just to avoid stack passing*/
 static char buf[UE_EMM_INFO_BUF_SIZE];
@@ -27,6 +28,49 @@ static struct Buffer g_buffer;
 static struct Buffer g_s1ap_buffer;
 static struct Buffer g_nas_buffer;
 
+int 
+encode_network_name_ie(char* network_name, char* enc_str)
+{
+  uint32_t          i;
+  uint32_t          bit_offset;
+  uint32_t          byte_offset;
+  uint32_t          name_length = strlen(network_name);
+
+  // We put limit on the number if characters in the network name.
+  assert(name_length <= 10);
+
+  bit_offset  = 0;
+  byte_offset = 2; // Min length; length  1 byte and 1 byte mandatory header field. 
+
+  unsigned char mask_1[8] = {0xff ,0xff, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0,  0x80};
+  unsigned char mask_2[8] = {0xff, 0xff, 0x01, 0x03, 0x07, 0x0f, 0x1f,  0x3f};
+
+  for (i = 0; i < name_length; i++) {
+    // check if printable character. Except some special charaters are not allowed    
+    if (network_name[i] == 0x0A || network_name[i] == 0x0D || 
+       (network_name[i] >= 0x20 && network_name[i] <= 0x3F) ||
+       (network_name[i] >= 0x41 && network_name[i] <= 0x5A) || 
+       (network_name[i] >= 0x61 && network_name[i] <= 0x7A)) {
+      enc_str[byte_offset] |= ((network_name[i] << bit_offset) & mask_1[bit_offset]);
+      if(bit_offset >=1) {
+        byte_offset ++;
+        enc_str[byte_offset] |= ((network_name[i] >>(8-bit_offset)) & mask_2[bit_offset]);
+      }
+      bit_offset = (bit_offset+7) % 8; 
+    }
+    else {
+      return E_FAIL; //unsupported charater 
+    }
+  }
+  if (0 == bit_offset) {
+    enc_str[0] = byte_offset - 1;
+    enc_str[1] = 0x80 ; // ci not supported 
+  } else {
+    enc_str[0] = byte_offset;
+    enc_str[1] = 0x80 | ((8 - bit_offset) & 0x07);
+  }
+  return SUCCESS;
+}
 /**
 * Stage specific message processing.
 */
@@ -109,12 +153,17 @@ emm_info_request_processing()
     char nas_plain_hdr[2] = { 0x07, 0x61}; 
 	buffer_copy(&g_nas_buffer, nas_plain_hdr, 2);
 
-    /* Add encoding to encode any random alphanumeric string. Current value Aether */
-    char fullname[9] = {0x43, 0x07, 0x80, 0xc1, 0x32, 0x1d, 0x5d, 0x96, 0x03};
-	buffer_copy(&g_nas_buffer, fullname, 9);
+    char *fullname = "Aether"; 
+    char bufBig[128] = {'\0'};
+    bufBig[0] = 0x43;
+    encode_network_name_ie(fullname, &bufBig[1]);
+	buffer_copy(&g_nas_buffer, bufBig, bufBig[1] + 2);
 
-    char shortname[9] = {0x45, 0x07, 0x80, 0xc1, 0x32, 0x1d, 0x5f, 0x96, 0x03 };
-	buffer_copy(&g_nas_buffer, shortname, 9);
+    char *shortName = "Aether";
+    char bufShort[128] = {'\0'};
+    bufShort[0] = 0x45;
+    encode_network_name_ie(shortName, &bufShort[1]);
+	buffer_copy(&g_nas_buffer, bufShort, bufShort[1] + 2);
 
 	/* Calculate mac */
 	uint8_t direction = 1;
@@ -230,3 +279,5 @@ emm_info_req_handler(void *data)
 
 	return NULL;
 }
+
+
