@@ -488,6 +488,8 @@ start_sctp_threads()
 int
 main(int argc, char **argv)
 {
+    init_backtrace(argv[0]); 
+
 	parse_args(argc, argv);
 
 	init_parser("conf/s1ap.json");

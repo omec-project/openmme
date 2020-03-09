@@ -42,6 +42,7 @@ LIBS := -lpthread	\
 	-lthreadpool \
 	-lasncodec \
 	-ljson \
+    -lmonitor_config \
 	-lsecutil
 
 $(TARGET): $(OBJECTS)
