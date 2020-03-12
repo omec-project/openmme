@@ -52,6 +52,7 @@ ipc_handle ipcHndl_s1ap_msgs;
 ipc_handle ipcHndl_taureq;
 ipc_handle ipcHndl_taursp;
 ipc_handle ipcHndl_emm_inforeq;
+ipc_handle ipcHndl_reset_message;
 
 
 ipc_handle ipcHndl_auth;
@@ -78,6 +79,7 @@ pthread_t paging_t;
 pthread_t mme_to_s1ap_msg_t;
 pthread_t tau_rsp_msg_t;
 pthread_t emm_info_req_msg_t;
+pthread_t send_reset_eNB_msg_t;
 
 struct time_stat g_attach_stats[65535];
 /**End: global and externs**/
@@ -433,6 +435,7 @@ start_mme_resp_handlers()
 	pthread_create(&mme_to_s1ap_msg_t, &attr, &mme_to_s1ap_msg_handler, NULL);
 	pthread_create(&tau_rsp_msg_t, &attr, &tau_response_handler, NULL);
 	pthread_create(&emm_info_req_msg_t, &attr, &emm_info_req_handler, NULL);
+  pthread_create(&send_reset_eNB_msg_t, &attr, &gen_reset_request_handler, NULL);
 
 	pthread_attr_destroy(&attr);
 	return SUCCESS;
