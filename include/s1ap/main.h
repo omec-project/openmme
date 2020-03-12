@@ -67,6 +67,8 @@ void
 void 
 *tau_response_handler (void *);
 
+void
+*emm_info_req_handler(void *);
 
 void
 *paging_handler(void *);
