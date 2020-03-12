@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019-present Open Networking Foundation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef __S1AP_EMM_MESSAGE_H_ 
 #define __S1AP_EMM_MESSAGE_H_
 
