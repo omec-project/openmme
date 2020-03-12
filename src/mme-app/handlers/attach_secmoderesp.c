@@ -169,6 +169,7 @@ post_to_next(char *buf)
         }
         log_msg(LOG_DEBUG, "Security Done after Service Request. \
                                   Send Initial Ctx setup request");
+		ue_entry->ue_curr_proc =  UNKNOWN_PROC;
         return send_init_ctx_setup_req(secmode_resp->ue_idx);
     }
     else if ((ATTACH_PROC == ue_entry->ue_curr_proc)
@@ -194,6 +195,7 @@ post_to_next(char *buf)
 				          S1AP_COMMON_REQ_BUF_SIZE);
         pthread_mutex_unlock(&s1ap_reject_queue_mutex);
         post_ctx_rel_and_clr_uectx(secmode_resp->ue_idx);
+		ue_entry->ue_curr_proc =  UNKNOWN_PROC;
 		return SUCCESS;
     }
 

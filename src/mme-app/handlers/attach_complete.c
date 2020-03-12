@@ -91,12 +91,14 @@ process_MB_resp()
 	{
 		ue_entry->ue_state = ATTACH_DONE;
 		ue_entry->ecm_state =  ECM_CONNECTED;
+		ue_entry->ue_curr_proc =  UNKNOWN_PROC;
 		log_msg(LOG_ERROR, "=====SERVICE_REQ COMPLETE UE - %d======\n", mbr_msg->ue_idx);
 
 	} else if(STAGE8_NAS_ATCH_DONE == ue_entry->ue_state)
 	{
 		ue_entry->ue_state = ATTACH_DONE;
 		ue_entry->ecm_state =  ECM_CONNECTED;
+		ue_entry->ue_curr_proc =  UNKNOWN_PROC;
 		attach_stage8_counter++;
 		log_msg(LOG_ERROR, "=====ATTACH COMPLETE UE - %d======\n", mbr_msg->ue_idx);
 	}

@@ -61,11 +61,12 @@ enum ue_stages{
   STAGE8_MBR_DONE,
   ATTACH_DONE,
   DETACH_START=100,
-  DETACH_STAGE1,
-  DETACH_STAGE2_PURGE_DONE,
-  DETACH_STAGE2_DS_DONE,
-  DETACH_STAGE2,
+  DETACH_STAGE1, /*Detach Received. Purge Req and DSR sent.*/
+  DETACH_STAGE2_PURGE_DONE, /*Purge response received after detach.*/
+  DETACH_STAGE2_DS_DONE,/*DSR response received after detach.*/
+  DETACH_STAGE2,/*Purge and DSR response received after detach.*/
   DETACH_DONE,
+  CTX_RELEASE_STAGE, /*Received Ctx release from ENB.*/
   S1AP_HANDLE_MESSAGE_STAGE,
   PAGING_START,
   PAGING_WF_SVC_REQ,
@@ -84,7 +85,11 @@ enum ue_proc{
   DETACH_PROC
 };
 
+/*After Ctx release handling UE will move to ECM idle state.
+  After handling Attach or service request and establishing connection
+  with ENB the UE state will be ECM Connected.*/
 enum ecm_states{
+ ECM_UNKNOWN=0,
  ECM_IDLE,
  ECM_CONNECTED
 };
