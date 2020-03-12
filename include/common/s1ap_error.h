@@ -1,3 +1,10 @@
+/*
+ * Copyright 2019-present Open Networking Foundation
+ * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
+ * Copyright (c) 2017 Intel Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #ifndef __S1AP_ERROR_H_
 #define __S1AP_ERROR_H_
 
@@ -12,8 +19,8 @@ struct ue_reset_info {
     uint16_t failure_layer;
     uint16_t cause;
     uint32_t reset_type; 
-	uint32_t s1ap_enb_ue_id;
-    uint32_t s1ap_mme_ue_id;
+	uint32_t enb_s1ap_ue_id;
+    uint32_t mme_s1ap_ue_id;
 };
 
 #define UE_RESET_INFO_BUF_SIZE sizeof(struct ue_reset_info)

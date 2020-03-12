@@ -45,7 +45,7 @@ extern void init_backtrace();
 
 extern void open_emm_info_s1ap_stage_init();
 
-extern void send_reset_s1ap_stage_init(void);
+extern void open_reset_s1ap_stage_init(void);
 
 /*End globals and externs*/
 
@@ -243,9 +243,13 @@ init_stage_handlers()
 	pthread_create(&stage_tid[14], &attr, &service_request_handler, NULL);
 	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
 	pthread_create(&stage_tid[16], &attr, &tau_request_handler, NULL);
-  open_emm_info_s1ap_stage_init();
+
+	/* Just open a pipe. Just one way message, there is no response for this message */
+	open_emm_info_s1ap_stage_init();
   
-    send_reset_s1ap_stage_init(); 
+    /* Just open a pipe. Just one way message we dont want to handle response */
+    open_reset_s1ap_stage_init();
+
 	if ((g_Q_s1ap_common_reject  = open_ipc_channel(S1AP_MME_TO_S1AP_QUEUE,
 						IPC_WRITE)) == -1){
 		log_msg(LOG_ERROR, "Error in opening MME to S1AP write IPC channel.\n");

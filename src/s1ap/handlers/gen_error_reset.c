@@ -3,18 +3,6 @@
 *
 * SPDX-License-Identifier: Apache-2.0
 *
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +40,7 @@ reset_request_processing()
 
 	/* Assigning values to s1apPDU */
 	s1apPDU.procedurecode = id_reset;
-	s1apPDU.criticality = CRITICALITY_IGNORE;
+	s1apPDU.criticality = CRITICALITY_REJECT;
 
 	/* Copy values to buffer from s1apPDU */
 
@@ -82,7 +70,7 @@ reset_request_processing()
         buffer_copy(&g_value_buffer, tmpStr,
                         sizeof(protocolIe_Id));
         
-        uint8_t protocolIe_criticality = CRITICALITY_REJECT;
+        uint8_t protocolIe_criticality = CRITICALITY_IGNORE;
         buffer_copy(&g_value_buffer, &protocolIe_criticality,
                         sizeof(protocolIe_criticality));
         
@@ -122,7 +110,7 @@ reset_request_processing()
           g_ue_associations_buf.pos = 0;
           {
             uint8_t enb_mme; 
-            uint16_t mmeid = g_errorResetS1apInfo->s1ap_mme_ue_id;
+            uint16_t mmeid = g_errorResetS1apInfo->mme_s1ap_ue_id;
             if(mmeid <= 255) 
             {
               enb_mme = 0x60; // eNB & mme s1ap id present and length 1 byte 
@@ -141,8 +129,7 @@ reset_request_processing()
             } 
           }
           {
-            uint8_t enb_mme; 
-            uint16_t enb_id = g_errorResetS1apInfo->s1ap_enb_ue_id;
+            uint16_t enb_id = g_errorResetS1apInfo->enb_s1ap_ue_id;
             if(enb_id <= 255) 
             {
               uint8_t len=0;
