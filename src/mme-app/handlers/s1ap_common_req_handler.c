@@ -138,7 +138,7 @@ ctx_rel_req_processing()
         case DETACH_STAGE2_PURGE_DONE:
         case DETACH_STAGE2:
             log_msg(LOG_DEBUG, "Ctx Release during Detach for IMSI. Skip RABR: %s\n", imsiStr);
-            return E_FAIL;
+            return E_SKIP;
         default:
             log_msg(LOG_DEBUG, "Ctx Release Req for IMSI : %s\n", imsiStr);
     }
