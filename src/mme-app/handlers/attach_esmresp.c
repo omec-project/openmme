@@ -124,8 +124,7 @@ stage5_processing()
 	}
 
 	memcpy(&(ue_entry->apn), &(esm_resp->apn), sizeof(struct apn_name));
-
-	log_msg(LOG_INFO, "APN name recvd - %s\n", ue_entry->apn.val);
+	log_msg(LOG_INFO, "ESM information  response has APN - %s\n", ue_entry->apn.val);
 
 	return SUCCESS;
 }

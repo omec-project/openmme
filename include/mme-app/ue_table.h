@@ -14,6 +14,9 @@
 #include "s1ap_structs.h"
 #include "s11_structs.h"
 
+extern int g_tmsi_allocation_array[];
+extern struct UE_info* g_UE_list[]; 
+
 /*allocate UEs in pool to save memory. Only when pool size is crossed then
 allocate next pool */
 /*5 pools*/
@@ -22,6 +25,7 @@ allocate next pool */
 #define THREADPOOL_SIZE 10
 /*Each pool to have 65535 UEs*/
 #define UE_POOL_CNT 550000
+#define TMSI_POOL_SIZE 10000
 
 /*Macro to access UE element based on ue index*/
 #define GET_UE_ENTRY(index) ((index >= UE_POOL_CNT) ? (NULL) : (&(g_UE_list[index/UE_POOL_CNT][index%UE_POOL_CNT])))
@@ -57,11 +61,12 @@ enum ue_stages{
   STAGE8_MBR_DONE,
   ATTACH_DONE,
   DETACH_START=100,
-  DETACH_STAGE1,
-  DETACH_STAGE2_PURGE_DONE,
-  DETACH_STAGE2_DS_DONE,
-  DETACH_STAGE2,
+  DETACH_STAGE1, /*Detach Received. Purge Req and DSR sent.*/
+  DETACH_STAGE2_PURGE_DONE, /*Purge response received after detach.*/
+  DETACH_STAGE2_DS_DONE,/*DSR response received after detach.*/
+  DETACH_STAGE2,/*Purge and DSR response received after detach.*/
   DETACH_DONE,
+  CTX_RELEASE_STAGE, /*Received Ctx release from ENB.*/
   S1AP_HANDLE_MESSAGE_STAGE,
   PAGING_START,
   PAGING_WF_SVC_REQ,
@@ -80,7 +85,11 @@ enum ue_proc{
   DETACH_PROC
 };
 
+/*After Ctx release handling UE will move to ECM idle state.
+  After handling Attach or service request and establishing connection
+  with ENB the UE state will be ECM Connected.*/
 enum ecm_states{
+ ECM_UNKNOWN=0,
  ECM_IDLE,
  ECM_CONNECTED
 };
@@ -163,11 +172,18 @@ struct UE_info{
   uint8_t arp;
   uint16_t pco_length;
   unsigned char pco_options[MAX_PCO_OPTION_SIZE];
+  struct UE_info *next_ue; 
 };
 
 int allocate_ue_index();
 int get_index_from_list();
 int insert_index_into_list(int ue_index);
 void imsi_bin_to_str(unsigned char *b_imsi, char *s_imsi);
+void add_ue_entry(struct UE_info *ue_entry);
+void release_ue_entry(struct UE_info *ue_entry);
+void init_ue_tables();
+int allocate_tmsi(struct UE_info *ue_entry);
+int get_ue_index_from_tmsi(int tmsi);
+void print_current_active_ue_info();
 
 #endif /*ue_table*/

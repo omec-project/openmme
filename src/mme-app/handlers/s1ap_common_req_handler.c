@@ -129,7 +129,22 @@ ctx_rel_req_processing()
         return E_FAIL;
     }
 
+    char imsiStr[16] = {0};
+    imsi_bin_to_str(ue_entry->IMSI, imsiStr);
+    switch(ue_entry->ue_state)
+    {
+        case DETACH_STAGE1:
+        case DETACH_STAGE2_DS_DONE:
+        case DETACH_STAGE2_PURGE_DONE:
+        case DETACH_STAGE2:
+            log_msg(LOG_DEBUG, "Ctx Release during Detach for IMSI. Skip RABR: %s\n", imsiStr);
+            return E_SKIP;
+        default:
+            log_msg(LOG_DEBUG, "Ctx Release Req for IMSI : %s\n", imsiStr);
+    }
     ue_entry->ul_seq_no++;
+    ue_entry->ue_state = CTX_RELEASE_STAGE;
+	ue_entry->ecm_state =  ECM_IDLE;
 
     g_rabr_msg.IE_type = S11_RABR_REQ;
 	memcpy(&(g_rabr_msg.s11_sgw_c_fteid),

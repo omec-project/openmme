@@ -35,9 +35,6 @@ ATTACH stages :
 
 /****Globals and externs ***/
 
-extern struct UE_info * g_UE_list[];
-extern int g_tmsi_allocation_array[];
-extern int g_UE_cnt;
 extern int g_mme_hdlr_status;
 
 /*source Q : Read feom*/
@@ -207,20 +204,12 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
         }
 
         /* Group id and mme code matches with our groupid and mme code.
+         * check for invalid tmsi 
          */ 
-        if(ue_info->mi_guti.m_TMSI >= 10000)
-        {
-          log_msg(LOG_INFO, "TMSI out of range %d ", ue_info->mi_guti.m_TMSI); 
-          s1ap_id_req->enb_fd  = ue_info->enb_fd;
-          s1ap_id_req->s1ap_enb_ue_id = ue_info->s1ap_enb_ue_id;
-          s1ap_id_req->ue_type = ID_IMSI ;
-          ret = E_MAPPING_FAILED;
-          break;
-        }
-        unsigned int ue_index = g_tmsi_allocation_array[ue_info->mi_guti.m_TMSI]; 
+        int ue_index = get_ue_index_from_tmsi(ue_info->mi_guti.m_TMSI); 
         if(ue_index == -1 )
         {
-          log_msg(LOG_INFO, "TMSI out of range %d ", ue_info->mi_guti.m_TMSI); 
+          log_msg(LOG_INFO, "TMSI out of range or invalid  %d ", ue_info->mi_guti.m_TMSI); 
           s1ap_id_req->enb_fd  = ue_info->enb_fd;
           s1ap_id_req->s1ap_enb_ue_id = ue_info->s1ap_enb_ue_id;
           s1ap_id_req->ue_type = ID_IMSI ;
@@ -288,13 +277,16 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
 	/*Allocate new UE entry in the hash*/
 	/*Copy UE information*/
 	ue_entry = GET_UE_ENTRY(index);
+    ue_entry->next_ue = NULL; // newly allocated  
 	ue_entry->magic = UE_INFO_VALID_MAGIC;  
 	ue_entry->ue_index = index;
+    ue_entry->ue_curr_proc = ATTACH_PROC;
     ue_entry->flags = ue_info->flags; 
 	ue_entry->ue_state = ATTACH_STAGE1;
 	ue_entry->s1ap_enb_ue_id = ue_info->s1ap_enb_ue_id;
 	ue_entry->enb_fd = ue_info->enb_fd;
 	ue_entry->esm_info_tx_required = ue_info->esm_info_tx_required;
+    add_ue_entry(ue_entry);  
 
     if(UE_ID_IMSI(ue_info->flags))
     {
@@ -308,7 +300,6 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
 		sizeof(struct TAI));
 	memcpy(&(ue_entry->utran_cgi), &(ue_info->utran_cgi),
 		sizeof(struct CGI));
-	//g_UE_list[0][index].rrc_cause = info->ue_info.rrc_cause;
 	memcpy(&(ue_entry->ue_net_capab), &(ue_info->ue_net_capab),
 		sizeof(struct UE_net_capab));
 	memcpy(&(ue_entry->ms_net_capab), &(ue_info->ms_net_capab),
@@ -316,19 +307,7 @@ stage1_processing(struct s6a_Q_msg *s6a_req, struct commonRej_info *s1ap_rej, st
     log_msg(LOG_DEBUG, "attach initue : %d", ue_info->ms_net_capab.len);
 	memcpy(&(ue_entry->pti), &(ue_info->pti), 1);
     log_msg(LOG_INFO, "UE record created Pti - %d .  ", ue_info->pti);
-    while(1)
-    {
-      unsigned int tmsi = rand() % 10000;
-      if(g_tmsi_allocation_array[tmsi] == -1)
-      {
-        g_tmsi_allocation_array[tmsi] = index; 
-        ue_entry->m_tmsi = tmsi;
-        break; // Successfully allocated 
-      }
-      // continue..select new 
-    }
-
-
+    allocate_tmsi(ue_entry);
     ue_entry->pco_length = ue_info->pco_length;
     memcpy(&ue_entry->pco_options[0], &ue_info->pco_options[0], sizeof(ue_info->pco_options)); 
 	ue_entry->bearer_id = 5; /* Bearer Management */

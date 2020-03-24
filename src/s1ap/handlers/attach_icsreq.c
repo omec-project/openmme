@@ -208,11 +208,6 @@ get_icsreq_protoie_value(struct proto_IE *value)
 			ESM_MSG_ACTV_DEF_BEAR__CTX_REQ;
 	nasIEs[nasIeCnt].pduElement.esm_msg.eps_qos = 9;
 
-	/* TODO: Remove hardcoded value */
-	/*char apnname[4] = "apn1";
-	memcpy(&(nasIEs[nasIeCnt].esm_msg.apn.val), apnname, 4);
-	nasIEs[nasIeCnt].esm_msg.apn.len =  4;
-	*/
 	nasIEs[nasIeCnt].pduElement.esm_msg.apn.len = g_icsReqInfo->apn.len;
 	memcpy(nasIEs[nasIeCnt].pduElement.esm_msg.apn.val,
 			g_icsReqInfo->apn.val, g_icsReqInfo->apn.len);

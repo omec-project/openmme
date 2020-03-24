@@ -13,6 +13,7 @@
 
 #include "s1ap_structs.h"
 #include "log.h"
+#include "s1ap_emm_message.h"
 
 /**
  * MME main application configuration parameters structures.
@@ -90,5 +91,7 @@ void stat_init();
 /* Register for config change trigger */
 void register_config_updates(void);
 void mme_parse_config(mme_config *);
+
+int send_emm_info_s1ap_channel_req(struct ue_emm_info *req);
 
 #endif /*__MME_APP_H_*/

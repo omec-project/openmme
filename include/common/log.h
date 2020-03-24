@@ -28,6 +28,7 @@ void log_message(int l, const char *file, int line, const char *fmt, ...);
 void enable_logs();
 void disable_logs();
 void set_logging_level(char *level);
+void init_backtrace(char *binary);
 
 #ifdef __cplusplus
 }
