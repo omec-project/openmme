@@ -160,6 +160,7 @@ post_to_next()
 
 	cs_msg.max_requested_bw_dl = ue_entry->ambr.max_requested_bw_dl;
 	cs_msg.max_requested_bw_ul = ue_entry->ambr.max_requested_bw_ul;
+	cs_msg.paa_v4_addr = ue_entry->pdn_addr.ip_type.ipv4.s_addr; /* host order */
 
 	memset(cs_msg.MSISDN, 0, 10);
 	memcpy(cs_msg.MSISDN,ue_entry->MSISDN,10);
