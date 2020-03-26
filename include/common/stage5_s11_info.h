@@ -24,6 +24,7 @@ struct CS_Q_msg {
 	unsigned int max_requested_bw_ul;
 	unsigned char pco_length;
 	unsigned char pco_options[MAX_PCO_OPTION_SIZE];
+	unsigned int  paa_v4_addr;
 };
 
 #define S11_CSREQ_STAGE5_BUF_SIZE sizeof(struct CS_Q_msg)
