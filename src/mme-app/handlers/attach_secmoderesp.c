@@ -214,7 +214,7 @@ post_to_next(char *buf)
 		log_msg(LOG_INFO, "ESM msg posted to s1ap Q UE-%d.\n", esm_req.ue_idx);
 		attach_stage4_counter++;
 	} else {
-		struct CS_Q_msg cs_msg;
+		struct CS_Q_msg cs_msg = {0} ;
 
 		cs_msg.ue_idx = secmode_resp->ue_idx;
 		memcpy(cs_msg.IMSI, ue_entry->IMSI, BINARY_IMSI_LEN);
@@ -232,6 +232,8 @@ post_to_next(char *buf)
 
 		cs_msg.max_requested_bw_dl = ue_entry->ambr.max_requested_bw_dl;
 		cs_msg.max_requested_bw_ul = ue_entry->ambr.max_requested_bw_ul;
+		cs_msg.paa_v4_addr = ue_entry->pdn_addr.ip_type.ipv4.s_addr; /* host order */
+		log_msg(LOG_INFO, "Posted Create Session message with PAA %x ", cs_msg.paa_v4_addr);
 
 		memset(cs_msg.MSISDN, 0, 10);
 		memcpy(cs_msg.MSISDN,ue_entry->MSISDN,10);

@@ -148,6 +148,9 @@ process_ula_resp()
 	ue_entry->access_restriction_data = ula_msg->access_restriction_data;
 	ue_entry->ambr.max_requested_bw_dl = ula_msg->max_requested_bw_dl;
 	ue_entry->ambr.max_requested_bw_ul = ula_msg->max_requested_bw_ul;
+	ue_entry->pdn_addr.pdn_type =  1;
+	ue_entry->pdn_addr.ip_type.ipv4.s_addr = ntohl(ula_msg->static_addr); // network byte order 
+	log_msg(LOG_INFO, "PAA address - %s\n", inet_ntoa(ue_entry->pdn_addr.ip_type.ipv4));
 
 	ue_entry->selected_apn.len = ula_msg->selected_apn.len;
 	log_msg(LOG_INFO, "APN length from ula msg is - %d\n",
