@@ -17,6 +17,7 @@
 #include "message_queues.h"
 #include "ipc_api.h"
 #include "stage8_info.h"
+#include "s1ap_error.h"
 
 /************************************************************************
 Current file : Stage 7 handler.
@@ -120,7 +121,12 @@ process_MB_resp()
 	memcpy(&(temp.int_key), &(ue_entry->ue_sec_info.int_key), NAS_INT_KEY_SIZE);
     send_emm_info_s1ap_channel_req(&temp); 
 	log_msg(LOG_ERROR, "=====Generate EMM info enb_fd = %d %d \n", temp.enb_fd, ue_entry->enb_fd);
-    
+
+#ifdef DEBUG_RESET
+    // added just for testing 
+    send_reset(ue_entry, 15, 0); 
+#endif
+
 	return mbr_msg->ue_idx;
 }
 

@@ -14,6 +14,8 @@
 #include "s1ap_structs.h"
 #include "log.h"
 #include "s1ap_emm_message.h"
+#include "s1ap_error.h"
+#include "ue_table.h"
 
 /**
  * MME main application configuration parameters structures.
@@ -93,5 +95,9 @@ void register_config_updates(void);
 void mme_parse_config(mme_config *);
 
 int send_emm_info_s1ap_channel_req(struct ue_emm_info *req);
+
+int send_reset_s1ap_channel_req(struct ue_reset_info *req);
+
+int send_reset (struct UE_info *ue_entry, uint32_t cause, uint32_t reset_type);
 
 #endif /*__MME_APP_H_*/

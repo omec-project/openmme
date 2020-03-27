@@ -668,6 +668,7 @@ struct proto_IE {
     uint8_t     ie_cgi_index;
 };
 
+// refer 36.413 . Section 9.3.6 
 enum protocolie_id {
 	id_MME_UE_S1AP_ID = 0,
 	id_Cause = 2,
@@ -677,6 +678,8 @@ enum protocolie_id {
 	id_ERABToBeSetupItemCtxtSUReq = 52,
 	id_uEaggregatedMaximumBitrate = 66,
 	id_SecurityKey = 73,
+    id_ueAssociatedLogicalS1Conn = 91,
+    id_ResetType = 92, 
 	id_UE_S1AP_IDs = 99,
 	id_UESecurityCapabilities = 107,
 };
@@ -706,9 +709,11 @@ enum eps_nas_mesage_type {
 	ESMInformationRequest = 0xd9,
 };
 
+/* Refer 36.413 section - 9.3.6 */
 enum procedure_code {
 	id_InitialContextSetup = 9,
 	id_downlinkNASTransport = 11,
+    id_reset           = 14,
 	id_errorIndication = 15,
 	id_UEContexRelease = 23,
 };
@@ -760,7 +765,7 @@ typedef enum security_integrity_algo {
 }security_integrity_algo;
 
 
-#define BUFFER_SIZE 255
+#define BUFFER_SIZE 1000 /* S1AP packet max size */
 
 typedef struct Buffer {
 	unsigned char buf[BUFFER_SIZE];
