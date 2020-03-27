@@ -37,6 +37,8 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp)
 	unsigned char tmp_str[4];
 	uint8_t criticality;
 
+	proto_ies.pos = 0;
+	gummies.pos = 0;
 	/*Leave a byte to fill length*/
 	resp_buf.pos = 0;
 	/*Only in case of s1setup resp, first byte is 0x20, not for any other
