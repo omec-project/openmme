@@ -765,7 +765,7 @@ typedef enum security_integrity_algo {
 }security_integrity_algo;
 
 
-#define BUFFER_SIZE 255
+#define BUFFER_SIZE 1000 /* S1AP packet max size */
 
 typedef struct Buffer {
 	unsigned char buf[BUFFER_SIZE];

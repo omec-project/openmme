@@ -531,9 +531,11 @@ icsreq_processing()
 	// In this case, the apn length from esm will be 0.
 	// Then MME will use the selected apn name from HSS-DB.
 	if (ies[3].pduElement.esm_msg.apn.len == 0 ) {
-		datalen = g_icsReqInfo->selected_apn.len + 1;
+		datalen = g_icsReqInfo->selected_apn.len+1;
 		buffer_copy(&g_nas_buffer, &datalen, sizeof(datalen));
-		buffer_copy(&g_nas_buffer + 1, g_icsReqInfo->selected_apn.val,
+		datalen = g_icsReqInfo->selected_apn.len;
+		buffer_copy(&g_nas_buffer, &datalen, sizeof(datalen)); 
+		buffer_copy(&g_nas_buffer, g_icsReqInfo->selected_apn.val,
 				g_icsReqInfo->selected_apn.len);
 
 	}else {
@@ -648,6 +650,7 @@ icsreq_processing()
 	/* Copy nas length to nas length field */
     //uint16_t nas_pay_len = g_nas_buffer.pos - nas_len_pos - 1;
 	log_msg(LOG_INFO, "NAS payload length %d\n", g_nas_buffer.pos);
+	log_msg(LOG_INFO, "RAB2 payload length before appending NAS %d\n", g_rab2_buffer.pos);
 
     /* start: RAB2 + NAS start */
     /* Now lets append NAS buffer to rab2....so rab2 = rab2_buf + nas_length + nas_buf  */
@@ -656,6 +659,7 @@ icsreq_processing()
 	  /* datalen = g_nas_buffer.pos - nas_len_pos - 1; */
         datalen = g_nas_buffer.pos;
 	    buffer_copy(&g_rab2_buffer, &datalen, sizeof(datalen));
+	    log_msg(LOG_INFO, "RAB2 payload length after adding NAS length  %d\n", g_rab2_buffer.pos);
     }
     else
     {
@@ -664,16 +668,20 @@ icsreq_processing()
         lenStr[0] = nas_pay_len >> 8;
         lenStr[1] = nas_pay_len & 0xff;
 	    buffer_copy(&g_rab2_buffer, lenStr, sizeof(lenStr));
+	    log_msg(LOG_INFO, "RAB2 payload length after adding NAS length  %d\n", g_rab2_buffer.pos);
     }
 	buffer_copy(&g_rab2_buffer, &g_nas_buffer.buf[0], g_nas_buffer.pos);
     /* end : RAB2 + NAS done */
 
 	log_msg(LOG_INFO, "RAB2 payload length %d\n", g_rab2_buffer.pos);
+	log_msg(LOG_INFO, "RAB1 payload length before appending RAB2  %d\n", g_rab1_buffer.pos);
     /* Now lets append rab2 to rab1 */ 
     if(g_rab2_buffer.pos <= 127)
     {
         datalen = g_rab2_buffer.pos;
 	    buffer_copy(&g_rab1_buffer, &datalen, sizeof(datalen));
+	    log_msg(LOG_INFO, "RAB1 payload length after adding rab2 lengh  %d\n", g_rab1_buffer.pos);
+    /* Now lets append rab2 to rab1 */ 
     }
     else
     {
@@ -682,6 +690,7 @@ icsreq_processing()
         lenStr[0] = rab2_pay_len >> 8;
         lenStr[1] = rab2_pay_len & 0xff;
 	    buffer_copy(&g_rab1_buffer, lenStr, sizeof(lenStr));
+	    log_msg(LOG_INFO, "RAB1 payload length after adding rab2 lengh  %d\n", g_rab1_buffer.pos);
     }
 	buffer_copy(&g_rab1_buffer, &g_rab2_buffer.buf[0], g_rab2_buffer.pos);
     /* rab1 + rab2 is appended */ 
@@ -690,10 +699,12 @@ icsreq_processing()
     /*g_s1ap_buffer is having rab appended to it.. */
 
 	log_msg(LOG_INFO, "RAB1 payload length %d\n", g_rab1_buffer.pos);
+	log_msg(LOG_INFO, "s1ap buffer payload length before appending RAB1 %d\n", g_s1ap_buffer.pos);
     if(g_rab1_buffer.pos <= 127)
     {
         datalen = g_rab1_buffer.pos;
 	    buffer_copy(&(g_s1ap_buffer), &datalen, sizeof(datalen));
+	    log_msg(LOG_INFO, "s1ap buffer payload length after adding rab1 header %d\n", g_s1ap_buffer.pos);
     }
     else
     {
@@ -702,8 +713,10 @@ icsreq_processing()
         lenStr[0] = rab1_pay_len >> 8;
         lenStr[1] = rab1_pay_len & 0xff;
 	    buffer_copy(&g_s1ap_buffer, lenStr, sizeof(lenStr));
+	    log_msg(LOG_INFO, "s1ap buffer payload length after adding rab1 header %d\n", g_s1ap_buffer.pos);
     }
 	buffer_copy(&g_s1ap_buffer, &g_rab1_buffer.buf[0], g_rab1_buffer.pos);
+	log_msg(LOG_INFO, "s1ap buffer payload length after appending RAB1 %d\n", g_s1ap_buffer.pos);
     /* RAB is appended to s1ap payload now */ 
 
 	/* id-UESecurityCapabilities */
