@@ -217,6 +217,11 @@ struct PLMN {
 	unsigned char  idx[3];
 };
 
+struct PLMN_C {
+	uint16_t mcc;
+	uint16_t mnc; 
+};
+
 struct TAI {
 	struct PLMN plmn_id;
 	short tac; /*2 bytes. 36.413: 9.2.3.7*/

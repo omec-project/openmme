@@ -145,7 +145,7 @@ stage6_processing()
 static int
 post_to_next()
 {
-	struct init_ctx_req_Q_msg icr_msg;
+	struct init_ctx_req_Q_msg icr_msg = {0};
 	struct csr_Q_msg *csr_info = (struct csr_Q_msg *)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(csr_info->ue_idx);
     if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
