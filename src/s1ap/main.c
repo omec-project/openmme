@@ -30,7 +30,7 @@
 
 
 /*Global and externs **/
-extern s1ap_config g_s1ap_cfg;
+void s1ap_parse_config(s1ap_config *config);
 pthread_t s1ap_iam_t;
 
 int g_enb_fd = 0;
@@ -80,6 +80,8 @@ pthread_t mme_to_s1ap_msg_t;
 pthread_t tau_rsp_msg_t;
 pthread_t emm_info_req_msg_t;
 pthread_t send_reset_eNB_msg_t;
+
+s1ap_config g_s1ap_cfg;
 
 struct time_stat g_attach_stats[65535];
 /**End: global and externs**/
@@ -495,8 +497,7 @@ main(int argc, char **argv)
 
 	parse_args(argc, argv);
 
-	init_parser("conf/s1ap.json");
-	parse_s1ap_conf();
+	s1ap_parse_config(&g_s1ap_cfg);
 
 	if (init_writer_ipc() != SUCCESS) {
 		log_msg(LOG_ERROR, "Error in initializing writer ipc.\n");
@@ -537,4 +538,13 @@ main(int argc, char **argv)
 	}
 
 	return SUCCESS;
+}
+
+void s1ap_parse_config(s1ap_config *config)
+{
+	/*Read MME configurations*/
+	init_parser("conf/s1ap.json");
+	parse_s1ap_conf(config);
+	/* Lets apply logging setting */
+	set_logging_level(config->logging);
 }

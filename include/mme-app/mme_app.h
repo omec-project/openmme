@@ -16,6 +16,7 @@
 #include "s1ap_emm_message.h"
 #include "s1ap_error.h"
 #include "ue_table.h"
+#include "defines.h"
 
 /**
  * MME main application configuration parameters structures.
@@ -44,6 +45,9 @@ typedef struct mme_config
 	unsigned int mme_egtp_ip;
 	unsigned short mme_group_id;
 	unsigned char mme_code;
+	uint16_t num_plmns;
+	struct PLMN plmns[MAX_PLMN];
+	struct PLMN_C plmn_mcc_mnc[MAX_PLMN];
 } mme_config;
 
 
