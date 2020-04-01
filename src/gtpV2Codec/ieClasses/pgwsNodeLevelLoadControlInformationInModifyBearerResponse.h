@@ -1,9 +1,10 @@
 /*
- * .h
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #ifndef PGWSNODELEVELLOADCONTROLINFORMATIONINMODIFYBEARERRESPONSE_H_
 #define PGWSNODELEVELLOADCONTROLINFORMATIONINMODIFYBEARERRESPONSE_H_
 

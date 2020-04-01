@@ -1,3 +1,9 @@
+#
+# Copyright 2019-present Infosys Ltd.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
 include ../../Makefile.common
 
 OUTPUTOBJDIR := $(OBJDIR)/cmn/
@@ -19,11 +25,12 @@ $(OUTPUTLIB) : $(OBJECTS)
 
 $(OBJECTS) : $(OBJDIR)/cmn/%.o : %.cpp
 	mkdir -p $(OUTPUTOBJDIR)
-	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+	$(CC) $(CFLAGS) $(INC_DIRS) -fPIC -c $< -o $@
 
 install:
 	mkdir -p $(TOPDIR)/target/lib
 	cp -rf $(OUTPUTLIB) $(TOPDIR)/target/lib
+
 
 clean :
 	rm -rf $(OUTPUTLIB)

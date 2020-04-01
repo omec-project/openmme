@@ -1,9 +1,10 @@
 /*
- * remoteUeIpInformationIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "remoteUeIpInformationIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool RemoteUeIpInformationIe::encodeRemoteUeIpInformationIe(MsgBuffer &buffer, R
 {
     if (!(buffer.writeUint64(data.remoteUeIpInformation)))
     {
-        errorStream.add("Encoding of remoteUeIpInformation failed\n");
+        errorStream.add((char *)"Encoding of remoteUeIpInformation failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool RemoteUeIpInformationIe::encodeRemoteUeIpInformationIe(MsgBuffer &buffer, R
 }
 
 bool RemoteUeIpInformationIe::decodeRemoteUeIpInformationIe(MsgBuffer &buffer, RemoteUeIpInformationIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint64(data.remoteUeIpInformation);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: remoteUeIpInformation\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: remoteUeIpInformation\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool RemoteUeIpInformationIe::decodeRemoteUeIpInformationIe(MsgBuffer &buffer, R
     }
     else
     {
-        errorStream.add("Unable to decode IE RemoteUeIpInformationIe\n");
+        errorStream.add((char *)"Unable to decode IE RemoteUeIpInformationIe\n");
         return false;
     }
 }
 void RemoteUeIpInformationIe::displayRemoteUeIpInformationIe_v(RemoteUeIpInformationIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("RemoteUeIpInformationIeData:");
+    stream.add((char *)"RemoteUeIpInformationIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("remoteUeIpInformation: ");
+    stream.add((char *)"remoteUeIpInformation: ");
     stream.add(data.remoteUeIpInformation);
     stream.endOfLine();
     stream.decrIndent();

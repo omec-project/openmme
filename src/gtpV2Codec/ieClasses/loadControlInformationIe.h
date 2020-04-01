@@ -1,9 +1,9 @@
 /*
- * loadControlInformationIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef LOADCONTROLINFORMATIONIE_H_
 #define LOADCONTROLINFORMATIONIE_H_

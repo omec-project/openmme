@@ -1,9 +1,10 @@
 /*
- * bearerContextsInCreateBearerResponse.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #include "bearerContextsInCreateBearerResponse.h"
 #include "manual/gtpV2Ie.h"
 #include "gtpV2IeFactory.h"
@@ -75,7 +76,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: epsBearerId\n");
+        errorStream.add((char *)"Failed to encode IE: epsBearerId\n");
         return false;
     }
 
@@ -100,7 +101,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: cause\n");
+        errorStream.add((char *)"Failed to encode IE: cause\n");
         return false;
     }
 
@@ -127,7 +128,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s1UEnodebFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s1UEnodebFTeid\n");
           return false;
         }
     }
@@ -155,7 +156,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s1USgwFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s1USgwFTeid\n");
           return false;
         }
     }
@@ -183,7 +184,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s58USgwFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s58USgwFTeid\n");
           return false;
         }
     }
@@ -211,7 +212,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s58UPgwFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s58UPgwFTeid\n");
           return false;
         }
     }
@@ -239,7 +240,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s12RncFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s12RncFTeid\n");
           return false;
         }
     }
@@ -267,7 +268,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s12SgwFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s12SgwFTeid\n");
           return false;
         }
     }
@@ -295,7 +296,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s4USgsnFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s4USgsnFTeid\n");
           return false;
         }
     }
@@ -323,7 +324,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s4USgwFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s4USgwFTeid\n");
           return false;
         }
     }
@@ -351,7 +352,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s2bUEpdgFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s2bUEpdgFTeid\n");
           return false;
         }
     }
@@ -379,7 +380,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s2bUPgwFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s2bUPgwFTeid\n");
           return false;
         }
     }
@@ -407,7 +408,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s2aUTwanFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s2aUTwanFTeid\n");
           return false;
         }
     }
@@ -435,7 +436,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: s2aUPgwFTeid\n");
+          errorStream.add((char *)"Failed to encode IE: s2aUPgwFTeid\n");
           return false;
         }
     }
@@ -463,7 +464,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: protocolConfigurationOptions\n");
+          errorStream.add((char *)"Failed to encode IE: protocolConfigurationOptions\n");
           return false;
         }
     }
@@ -491,7 +492,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: ranNasCause\n");
+          errorStream.add((char *)"Failed to encode IE: ranNasCause\n");
           return false;
         }
     }
@@ -519,7 +520,7 @@ encodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: extendedProtocolConfigurationOptions\n");
+          errorStream.add((char *)"Failed to encode IE: extendedProtocolConfigurationOptions\n");
           return false;
         }
     }
@@ -541,12 +542,12 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -568,7 +569,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: epsBearerId\n");
+                        errorStream.add((char *)"Failed to decode IE: epsBearerId\n");
                         return false;
                     }
                     Uint16 mandIe = EbiIeType;
@@ -578,7 +579,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -600,7 +601,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: cause\n");
+                        errorStream.add((char *)"Failed to decode IE: cause\n");
                         return false;
                     }
                     Uint16 mandIe = CauseIeType;
@@ -610,7 +611,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -633,7 +634,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s1UEnodebFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s1UEnodebFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s1UEnodebFTeid\n");
                         return false;
                     }
                 }
@@ -646,7 +647,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s1USgwFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s1USgwFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s1USgwFTeid\n");
                         return false;
                     }
                 }
@@ -659,7 +660,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s58USgwFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s58USgwFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s58USgwFTeid\n");
                         return false;
                     }
                 }
@@ -672,7 +673,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s58UPgwFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s58UPgwFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s58UPgwFTeid\n");
                         return false;
                     }
                 }
@@ -685,7 +686,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s12RncFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s12RncFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s12RncFTeid\n");
                         return false;
                     }
                 }
@@ -698,7 +699,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s12SgwFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s12SgwFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s12SgwFTeid\n");
                         return false;
                     }
                 }
@@ -711,7 +712,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s4USgsnFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s4USgsnFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s4USgsnFTeid\n");
                         return false;
                     }
                 }
@@ -724,7 +725,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s4USgwFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s4USgwFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s4USgwFTeid\n");
                         return false;
                     }
                 }
@@ -737,7 +738,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s2bUEpdgFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s2bUEpdgFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s2bUEpdgFTeid\n");
                         return false;
                     }
                 }
@@ -750,7 +751,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s2bUPgwFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s2bUPgwFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s2bUPgwFTeid\n");
                         return false;
                     }
                 }
@@ -763,7 +764,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s2aUTwanFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s2aUTwanFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s2aUTwanFTeid\n");
                         return false;
                     }
                 }
@@ -776,14 +777,14 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.s2aUPgwFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: s2aUPgwFTeid\n");
+                        errorStream.add((char *)"Failed to decode IE: s2aUPgwFTeid\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -806,14 +807,14 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.protocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: protocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: protocolConfigurationOptions\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -836,14 +837,14 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.ranNasCauseIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: ranNasCause\n");
+                        errorStream.add((char *)"Failed to decode IE: ranNasCause\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -866,14 +867,14 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
                     data.extendedProtocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: extendedProtocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: extendedProtocolConfigurationOptions\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -883,7 +884,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
             default:
             {
             // Unknown IE print error
-            errorStream.add("Unknown IE Type: ");
+            errorStream.add((char *)"Unknown IE Type: ");
             errorStream.add(ieHeader.ieType);
             errorStream.endOfLine();
             buffer.skipBytes(ieHeader.length);
@@ -893,7 +894,7 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
     if (!mandatoryIeLocalList.empty())
     {
         // some mandatory IEs are missing
-        errorStream.add("Missing Mandatory IEs:");
+        errorStream.add((char *)"Missing Mandatory IEs:");
         errorStream.endOfLine();
         while (!mandatoryIeLocalList.empty())
         {
@@ -901,9 +902,9 @@ decodeBearerContextsInCreateBearerResponse(MsgBuffer &buffer,
             mandatoryIeLocalList.erase (mandatoryIeLocalList.begin ());
             Uint16 missingInstance = missingMandIe & 0x00FF;
             Uint16 missingIeType = (missingMandIe >> 8);
-            errorStream.add ("Missing Ie type: ");
+            errorStream.add ((char *)"Missing Ie type: ");
             errorStream.add (missingIeType);
-            errorStream.add ("  Instance: ");
+            errorStream.add ((char *)"  Instance: ");
             errorStream.add (missingInstance);
             errorStream.endOfLine();
         }
@@ -918,7 +919,7 @@ displayBearerContextsInCreateBearerResponseData_v
 (BearerContextsInCreateBearerResponseData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("BearerContextsInCreateBearerResponse:");
+    stream.add((char *)"BearerContextsInCreateBearerResponse:");
     stream.endOfLine();
     stream.incrIndent();
 
@@ -927,7 +928,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s1UEnodebFTeidIePresent)
     {
 
-        stream.add("s1UEnodebFTeid:");
+        stream.add((char *)"s1UEnodebFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -939,7 +940,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s1USgwFTeidIePresent)
     {
 
-        stream.add("s1USgwFTeid:");
+        stream.add((char *)"s1USgwFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -951,7 +952,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s58USgwFTeidIePresent)
     {
 
-        stream.add("s58USgwFTeid:");
+        stream.add((char *)"s58USgwFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -963,7 +964,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s58UPgwFTeidIePresent)
     {
 
-        stream.add("s58UPgwFTeid:");
+        stream.add((char *)"s58UPgwFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -975,7 +976,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s12RncFTeidIePresent)
     {
 
-        stream.add("s12RncFTeid:");
+        stream.add((char *)"s12RncFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -987,7 +988,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s12SgwFTeidIePresent)
     {
 
-        stream.add("s12SgwFTeid:");
+        stream.add((char *)"s12SgwFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -999,7 +1000,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s4USgsnFTeidIePresent)
     {
 
-        stream.add("s4USgsnFTeid:");
+        stream.add((char *)"s4USgsnFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -1011,7 +1012,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s4USgwFTeidIePresent)
     {
 
-        stream.add("s4USgwFTeid:");
+        stream.add((char *)"s4USgwFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -1023,7 +1024,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s2bUEpdgFTeidIePresent)
     {
 
-        stream.add("s2bUEpdgFTeid:");
+        stream.add((char *)"s2bUEpdgFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -1035,7 +1036,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s2bUPgwFTeidIePresent)
     {
 
-        stream.add("s2bUPgwFTeid:");
+        stream.add((char *)"s2bUPgwFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -1047,7 +1048,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s2aUTwanFTeidIePresent)
     {
 
-        stream.add("s2aUTwanFTeid:");
+        stream.add((char *)"s2aUTwanFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -1059,7 +1060,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.s2aUPgwFTeidIePresent)
     {
 
-        stream.add("s2aUPgwFTeid:");
+        stream.add((char *)"s2aUPgwFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -1071,7 +1072,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.protocolConfigurationOptionsIePresent)
     {
 
-        stream.add("protocolConfigurationOptions:");
+        stream.add((char *)"protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
         dynamic_cast<
@@ -1083,7 +1084,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.ranNasCauseIePresent)
     {
 
-        stream.add("ranNasCause:");
+        stream.add((char *)"ranNasCause:");
         stream.endOfLine();
         RanNasCauseIe ranNasCause=
         dynamic_cast<
@@ -1095,7 +1096,7 @@ displayBearerContextsInCreateBearerResponseData_v
     if (data.extendedProtocolConfigurationOptionsIePresent)
     {
 
-        stream.add("extendedProtocolConfigurationOptions:");
+        stream.add((char *)"extendedProtocolConfigurationOptions:");
         stream.endOfLine();
         EpcoIe epco=
         dynamic_cast<

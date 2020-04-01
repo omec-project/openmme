@@ -1,9 +1,10 @@
 /*
- * apnAndRelativeCapacityIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "apnAndRelativeCapacityIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,22 +24,22 @@ bool ApnAndRelativeCapacityIe::encodeApnAndRelativeCapacityIe(MsgBuffer &buffer,
 {
     if (!(data.relativeCapacity>= 1 && data.relativeCapacity<= 100))
     {
-        errorStream.add("Data validation failure: relativeCapacity\n");
+        errorStream.add((char *)"Data validation failure: relativeCapacity\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.relativeCapacity)))
     {
-        errorStream.add("Encoding of relativeCapacity failed\n");
+        errorStream.add((char *)"Encoding of relativeCapacity failed\n");
         return false;
     }
     if (!(buffer.writeUint8(data.apnLength)))
     {
-        errorStream.add("Encoding of apnLength failed\n");
+        errorStream.add((char *)"Encoding of apnLength failed\n");
         return false;
     }
     if (!(DataTypeCodecUtils::encodeUint8Array32(buffer, data.apn)))
     {
-    errorStream.add("Encoding of apn failed\n");
+    errorStream.add((char *)"Encoding of apn failed\n");
     return false;
     }
 
@@ -46,33 +47,35 @@ bool ApnAndRelativeCapacityIe::encodeApnAndRelativeCapacityIe(MsgBuffer &buffer,
 }
 
 bool ApnAndRelativeCapacityIe::decodeApnAndRelativeCapacityIe(MsgBuffer &buffer, ApnAndRelativeCapacityIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.relativeCapacity);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: relativeCapacity\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: relativeCapacity\n");
         return false;
     }
     if (!(data.relativeCapacity>= 1 && data.relativeCapacity<= 100))
     {
-        errorStream.add("Data validation failure : relativeCapacity\n");
+        errorStream.add((char *)"Data validation failure : relativeCapacity\n");
         return false; //TODO need to add validations
     }
 
     buffer.readUint8(data.apnLength);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: apnLength\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: apnLength\n");
         return false;
     }
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array32(buffer, data.apn, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: apn\n");
+        errorStream.add((char *)"Failed to decode: apn\n");
         return false;
     }
 
@@ -85,26 +88,26 @@ bool ApnAndRelativeCapacityIe::decodeApnAndRelativeCapacityIe(MsgBuffer &buffer,
     }
     else
     {
-        errorStream.add("Unable to decode IE ApnAndRelativeCapacityIe\n");
+        errorStream.add((char *)"Unable to decode IE ApnAndRelativeCapacityIe\n");
         return false;
     }
 }
 void ApnAndRelativeCapacityIe::displayApnAndRelativeCapacityIe_v(ApnAndRelativeCapacityIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ApnAndRelativeCapacityIeData:");
+    stream.add((char *)"ApnAndRelativeCapacityIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("relativeCapacity: ");
+    stream.add((char *)"relativeCapacity: ");
     stream.add(data.relativeCapacity);
     stream.endOfLine();
   
-    stream.add("apnLength: ");
+    stream.add((char *)"apnLength: ");
     stream.add(data.apnLength);
     stream.endOfLine();
   
-    stream.add("apn:");
+    stream.add((char *)"apn:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array32_v(data.apn, stream);
     stream.decrIndent();

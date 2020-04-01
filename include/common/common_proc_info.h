@@ -22,7 +22,7 @@
 #include "s1ap_structs.h"
 #include "s1ap_ie.h"
 #include "s11_structs.h"
-
+#include "s1handover_info.h"
 enum s1ap_cn_domain
 {
     CN_DOMAIN_PS,
@@ -47,6 +47,12 @@ struct s1ap_common_req_Q_msg {
 	struct fteid gtp_teid;
 	unsigned char sec_key[32];
 	unsigned char bearer_id;
+	union msg{
+		struct handover_request_Q_msg handover_request;
+		struct handover_command_Q_msg handover_command;
+		struct mme_status_transfer_Q_msg mme_status_transfer;
+
+	}msg;
 };
 
 struct s11_req_Q_msg {
@@ -65,6 +71,9 @@ enum s1ap_common_req_type
     S1AP_CTX_REL_CMD,
     S1AP_INIT_CTXT_SETUP_REQ,
     S1AP_PAGING_REQ,
+    S1AP_HANDOVER_REQ,
+    S1AP_HANDOVER_COMMAND,
+    S1AP_MME_STATUS_TRANSFER,
     S1AP_ATTACH_REJ,
     S1AP_SERVICE_REJ,
     S1AP_REQ_UNKNOWN

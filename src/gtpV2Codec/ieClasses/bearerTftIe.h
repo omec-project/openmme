@@ -1,9 +1,9 @@
 /*
- * bearerTftIe.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef BEARERTFTIE_H_
 #define BEARERTFTIE_H_

@@ -1,9 +1,9 @@
 /*
- * selectionModeIe.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef SELECTIONMODEIE_H_
 #define SELECTIONMODEIE_H_

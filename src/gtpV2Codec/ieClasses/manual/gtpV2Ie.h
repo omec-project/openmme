@@ -1,9 +1,11 @@
-/*
- * GtpV2Ie.h
- *
- *  Created on: Jul 4, 2014
- *      Author: hariharanb
- */
+ /*
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
+
 
 #ifndef GTPV2IE_H_
 #define GTPV2IE_H_

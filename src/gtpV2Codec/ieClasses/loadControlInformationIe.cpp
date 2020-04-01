@@ -1,9 +1,9 @@
 /*
- * loadControlInformationIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "loadControlInformationIe.h"
 #include "gtpV2GrpIeDataTypes.h"
@@ -24,7 +24,6 @@
 #include "sgwsNodeLevelLoadControlInformationInCreateBearerRequest.h"
 #include "pgwsNodeLevelLoadControlInformationInDeleteBearerRequest.h"
 #include "pgwsApnLevelLoadControlInformationInDeleteBearerRequest.h"
-#include "sgwsApnLevelLoadControlInformationInDeleteBearerRequest.h"
 #include "sgwsNodeLevelLoadControlInformationInDeleteBearerRequest.h"
 #include "sgwsNodeLevelLoadControlInformationInDownlinkDataNotification.h"
 
@@ -62,10 +61,8 @@ LoadControlInformationIe::LoadControlInformationIe()
     insertGroupedIeObject(DeleteBearerRequestMsgType, 0, pgwsNodeLevelLoadControlInformationInDeleteBearerRequest_p);
     PgwsApnLevelLoadControlInformationInDeleteBearerRequest* pgwsApnLevelLoadControlInformationInDeleteBearerRequest_p = new (PgwsApnLevelLoadControlInformationInDeleteBearerRequest);
     insertGroupedIeObject(DeleteBearerRequestMsgType, 1, pgwsApnLevelLoadControlInformationInDeleteBearerRequest_p);
-    SgwsApnLevelLoadControlInformationInDeleteBearerRequest* sgwsApnLevelLoadControlInformationInDeleteBearerRequest_p = new (SgwsApnLevelLoadControlInformationInDeleteBearerRequest);
-    insertGroupedIeObject(DeleteBearerRequestMsgType, 2, sgwsApnLevelLoadControlInformationInDeleteBearerRequest_p);
     SgwsNodeLevelLoadControlInformationInDeleteBearerRequest* sgwsNodeLevelLoadControlInformationInDeleteBearerRequest_p = new (SgwsNodeLevelLoadControlInformationInDeleteBearerRequest);
-    insertGroupedIeObject(DeleteBearerRequestMsgType, 3, sgwsNodeLevelLoadControlInformationInDeleteBearerRequest_p);
+    insertGroupedIeObject(DeleteBearerRequestMsgType, 2, sgwsNodeLevelLoadControlInformationInDeleteBearerRequest_p);
     SgwsNodeLevelLoadControlInformationInDownlinkDataNotification* sgwsNodeLevelLoadControlInformationInDownlinkDataNotification_p = new (SgwsNodeLevelLoadControlInformationInDownlinkDataNotification);
     insertGroupedIeObject(DownlinkDataNotificationMsgType, 0, sgwsNodeLevelLoadControlInformationInDownlinkDataNotification_p);
 }

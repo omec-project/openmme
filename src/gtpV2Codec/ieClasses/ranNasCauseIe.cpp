@@ -1,9 +1,10 @@
 /*
- * ranNasCauseIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "ranNasCauseIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,22 +24,22 @@ bool RanNasCauseIe::encodeRanNasCauseIe(MsgBuffer &buffer, RanNasCauseIeData con
 {
     if (!(data.protocolType>= 1 && data.protocolType<=5))
     {
-        errorStream.add("Data validation failure: protocolType\n");
+        errorStream.add((char *)"Data validation failure: protocolType\n");
         return false; 
     }
     if(!(buffer.writeBits(data.protocolType, 4)))
     {
-        errorStream.add("Encoding of protocolType failed\n");
+        errorStream.add((char *)"Encoding of protocolType failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.causeType, 4)))
     {
-        errorStream.add("Encoding of causeType failed\n");
+        errorStream.add((char *)"Encoding of causeType failed\n");
         return false;
     }
     if (!(buffer.writeUint8(data.causeValue)))
     {
-        errorStream.add("Encoding of causeValue failed\n");
+        errorStream.add((char *)"Encoding of causeValue failed\n");
         return false;
     }
 
@@ -46,34 +47,34 @@ bool RanNasCauseIe::encodeRanNasCauseIe(MsgBuffer &buffer, RanNasCauseIeData con
 }
 
 bool RanNasCauseIe::decodeRanNasCauseIe(MsgBuffer &buffer, RanNasCauseIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     data.protocolType = buffer.readBits(4);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: protocolType\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: protocolType\n");
         return false;
     }
     if (!(data.protocolType>= 1 && data.protocolType<=5))
     {
-        errorStream.add("Data validation failure : protocolType\n");
+        errorStream.add((char *)"Data validation failure : protocolType\n");
         return false; //TODO need to add validations
     }
     data.causeType = buffer.readBits(4);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: causeType\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: causeType\n");
         return false;
     }
 
     buffer.readUint8(data.causeValue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: causeValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: causeValue\n");
         return false;
     }
 
@@ -86,26 +87,26 @@ bool RanNasCauseIe::decodeRanNasCauseIe(MsgBuffer &buffer, RanNasCauseIeData &da
     }
     else
     {
-        errorStream.add("Unable to decode IE RanNasCauseIe\n");
+        errorStream.add((char *)"Unable to decode IE RanNasCauseIe\n");
         return false;
     }
 }
 void RanNasCauseIe::displayRanNasCauseIe_v(RanNasCauseIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("RanNasCauseIeData:");
+    stream.add((char *)"RanNasCauseIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "protocolType: "); 
+    stream.add( (char *)"protocolType: "); 
     stream.add((Uint8)data.protocolType);
     stream.endOfLine();
   
-    stream.add( "causeType: "); 
+    stream.add( (char *)"causeType: "); 
     stream.add((Uint8)data.causeType);
     stream.endOfLine();
   
-    stream.add("causeValue: ");
+    stream.add((char *)"causeValue: ");
     stream.add(data.causeValue);
     stream.endOfLine();
     stream.decrIndent();

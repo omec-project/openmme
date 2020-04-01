@@ -1,9 +1,10 @@
 /*
- * servingPlmnRateControlIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "servingPlmnRateControlIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool ServingPlmnRateControlIe::encodeServingPlmnRateControlIe(MsgBuffer &buffer,
 {
     if (!(buffer.writeUint16(data.uplinkRateLimit)))
     {
-        errorStream.add("Encoding of uplinkRateLimit failed\n");
+        errorStream.add((char *)"Encoding of uplinkRateLimit failed\n");
         return false;
     }
     if (!(buffer.writeUint16(data.downlinkRateLimit)))
     {
-        errorStream.add("Encoding of downlinkRateLimit failed\n");
+        errorStream.add((char *)"Encoding of downlinkRateLimit failed\n");
         return false;
     }
 
@@ -36,22 +37,22 @@ bool ServingPlmnRateControlIe::encodeServingPlmnRateControlIe(MsgBuffer &buffer,
 }
 
 bool ServingPlmnRateControlIe::decodeServingPlmnRateControlIe(MsgBuffer &buffer, ServingPlmnRateControlIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint16(data.uplinkRateLimit);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: uplinkRateLimit\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: uplinkRateLimit\n");
         return false;
     }
 
     buffer.readUint16(data.downlinkRateLimit);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: downlinkRateLimit\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: downlinkRateLimit\n");
         return false;
     }
 
@@ -64,22 +65,22 @@ bool ServingPlmnRateControlIe::decodeServingPlmnRateControlIe(MsgBuffer &buffer,
     }
     else
     {
-        errorStream.add("Unable to decode IE ServingPlmnRateControlIe\n");
+        errorStream.add((char *)"Unable to decode IE ServingPlmnRateControlIe\n");
         return false;
     }
 }
 void ServingPlmnRateControlIe::displayServingPlmnRateControlIe_v(ServingPlmnRateControlIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ServingPlmnRateControlIeData:");
+    stream.add((char *)"ServingPlmnRateControlIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("uplinkRateLimit: ");
+    stream.add((char *)"uplinkRateLimit: ");
     stream.add(data.uplinkRateLimit);
     stream.endOfLine();
   
-    stream.add("downlinkRateLimit: ");
+    stream.add((char *)"downlinkRateLimit: ");
     stream.add(data.downlinkRateLimit);
     stream.endOfLine();
     stream.decrIndent();

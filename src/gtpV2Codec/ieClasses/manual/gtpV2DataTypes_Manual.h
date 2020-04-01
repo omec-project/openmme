@@ -1,9 +1,11 @@
-/*
- * gtpV2DataTypes_Manual.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+ /*
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
+
 
 
 #ifndef GTPV2DATATYPES_MANUAL_H_

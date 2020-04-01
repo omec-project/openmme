@@ -1,9 +1,10 @@
 /*
- * epcTimerIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "epcTimerIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool EpcTimerIe::encodeEpcTimerIe(MsgBuffer &buffer, EpcTimerIeData const &data)
 {
     if(!(buffer.writeBits(data.timerUnit, 3)))
     {
-        errorStream.add("Encoding of timerUnit failed\n");
+        errorStream.add((char *)"Encoding of timerUnit failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.timerValue, 5)))
     {
-        errorStream.add("Encoding of timerValue failed\n");
+        errorStream.add((char *)"Encoding of timerValue failed\n");
         return false;
     }
 
@@ -36,22 +37,22 @@ bool EpcTimerIe::encodeEpcTimerIe(MsgBuffer &buffer, EpcTimerIeData const &data)
 }
 
 bool EpcTimerIe::decodeEpcTimerIe(MsgBuffer &buffer, EpcTimerIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     data.timerUnit = buffer.readBits(3);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: timerUnit\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: timerUnit\n");
         return false;
     }
     data.timerValue = buffer.readBits(5);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: timerValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: timerValue\n");
         return false;
     }
 
@@ -64,22 +65,22 @@ bool EpcTimerIe::decodeEpcTimerIe(MsgBuffer &buffer, EpcTimerIeData &data, Uint1
     }
     else
     {
-        errorStream.add("Unable to decode IE EpcTimerIe\n");
+        errorStream.add((char *)"Unable to decode IE EpcTimerIe\n");
         return false;
     }
 }
 void EpcTimerIe::displayEpcTimerIe_v(EpcTimerIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("EpcTimerIeData:");
+    stream.add((char *)"EpcTimerIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "timerUnit: "); 
+    stream.add( (char *)"timerUnit: "); 
     stream.add((Uint8)data.timerUnit);
     stream.endOfLine();
   
-    stream.add( "timerValue: "); 
+    stream.add( (char *)"timerValue: "); 
     stream.add((Uint8)data.timerValue);
     stream.endOfLine();
     stream.decrIndent();

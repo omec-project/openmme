@@ -1,9 +1,9 @@
 /*
- * throttlingIe.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef THROTTLINGIE_H_
 #define THROTTLINGIE_H_

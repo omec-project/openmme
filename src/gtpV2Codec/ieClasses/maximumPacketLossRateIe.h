@@ -1,9 +1,9 @@
 /*
- * maximumPacketLossRateIe.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef MAXIMUMPACKETLOSSRATEIE_H_
 #define MAXIMUMPACKETLOSSRATEIE_H_

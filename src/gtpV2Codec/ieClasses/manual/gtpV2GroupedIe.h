@@ -1,9 +1,10 @@
-/*
- * gtpV2GroupedIe.h
- *
- *  Created on: Jul 14, 2014
- *      Author: hariharanb
- */
+ /*
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #ifndef GTPV2GROUPEDIE_H_
 #define GTPV2GROUPEDIE_H_

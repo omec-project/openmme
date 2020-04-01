@@ -1,9 +1,9 @@
 /*
- * gtpV2IeFactory.cpp
- *
- *  Created on: Jul 10, 2014
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include <map>
 #include "gtpV2IeFactory.h"
@@ -78,6 +78,9 @@
 #include "throttlingIe.h"
 #include "pagingAndServiceInformationIe.h"
 #include "bearerContextIe.h"
+#include "overloadControlInformationIe.h"
+#include "loadControlInformationIe.h"
+#include "remoteUeContextIe.h"
 
 GtpV2IeFactory::GtpV2IeFactory() 
 {
@@ -288,6 +291,15 @@ GtpV2IeFactory::GtpV2IeFactory()
 
     BearerContextIe* bearerContextIe_p = new (BearerContextIe);
     ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(BearerContextIeType, bearerContextIe_p));
+
+    OverloadControlInformationIe* overloadControlInformationIe_p = new (OverloadControlInformationIe);
+    ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(OverloadControlInformationIeType, overloadControlInformationIe_p));
+
+    LoadControlInformationIe* loadControlInformationIe_p = new (LoadControlInformationIe);
+    ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(LoadControlInformationIeType, loadControlInformationIe_p));
+
+    RemoteUeContextIe* remoteUeContextIe_p = new (RemoteUeContextIe);
+    ieObjectContainer.insert(std::pair<Uint8, GtpV2Ie*>(RemoteUeContextIeType, remoteUeContextIe_p));
 
 
 }

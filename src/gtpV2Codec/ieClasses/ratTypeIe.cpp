@@ -1,9 +1,10 @@
 /*
- * ratTypeIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "ratTypeIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool RatTypeIe::encodeRatTypeIe(MsgBuffer &buffer, RatTypeIeData const &data)
 {
     if (!(buffer.writeUint8(data.ratType)))
     {
-        errorStream.add("Encoding of ratType failed\n");
+        errorStream.add((char *)"Encoding of ratType failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool RatTypeIe::encodeRatTypeIe(MsgBuffer &buffer, RatTypeIeData const &data)
 }
 
 bool RatTypeIe::decodeRatTypeIe(MsgBuffer &buffer, RatTypeIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.ratType);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: ratType\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: ratType\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool RatTypeIe::decodeRatTypeIe(MsgBuffer &buffer, RatTypeIeData &data, Uint16 l
     }
     else
     {
-        errorStream.add("Unable to decode IE RatTypeIe\n");
+        errorStream.add((char *)"Unable to decode IE RatTypeIe\n");
         return false;
     }
 }
 void RatTypeIe::displayRatTypeIe_v(RatTypeIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("RatTypeIeData:");
+    stream.add((char *)"RatTypeIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("ratType: ");
+    stream.add((char *)"ratType: ");
     stream.add(data.ratType);
     stream.endOfLine();
     stream.decrIndent();

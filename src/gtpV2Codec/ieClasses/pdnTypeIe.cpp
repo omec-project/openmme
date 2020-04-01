@@ -1,9 +1,10 @@
 /*
- * pdnTypeIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "pdnTypeIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,12 +26,12 @@ bool PdnTypeIe::encodePdnTypeIe(MsgBuffer &buffer, PdnTypeIeData const &data)
 
     if (!(data.pdnType<= 3))
     {
-        errorStream.add("Data validation failure: pdnType\n");
+        errorStream.add((char *)"Data validation failure: pdnType\n");
         return false; 
     }
     if(!(buffer.writeBits(data.pdnType, 3)))
     {
-        errorStream.add("Encoding of pdnType failed\n");
+        errorStream.add((char *)"Encoding of pdnType failed\n");
         return false;
     }
 
@@ -38,14 +39,14 @@ bool PdnTypeIe::encodePdnTypeIe(MsgBuffer &buffer, PdnTypeIeData const &data)
 }
 
 bool PdnTypeIe::decodePdnTypeIe(MsgBuffer &buffer, PdnTypeIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(5);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -53,12 +54,12 @@ bool PdnTypeIe::decodePdnTypeIe(MsgBuffer &buffer, PdnTypeIeData &data, Uint16 l
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: pdnType\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: pdnType\n");
         return false;
     }
     if (!(data.pdnType<= 3))
     {
-        errorStream.add("Data validation failure : pdnType\n");
+        errorStream.add((char *)"Data validation failure : pdnType\n");
         return false; //TODO need to add validations
     }
 
@@ -71,18 +72,18 @@ bool PdnTypeIe::decodePdnTypeIe(MsgBuffer &buffer, PdnTypeIeData &data, Uint16 l
     }
     else
     {
-        errorStream.add("Unable to decode IE PdnTypeIe\n");
+        errorStream.add((char *)"Unable to decode IE PdnTypeIe\n");
         return false;
     }
 }
 void PdnTypeIe::displayPdnTypeIe_v(PdnTypeIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("PdnTypeIeData:");
+    stream.add((char *)"PdnTypeIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "pdnType: "); 
+    stream.add( (char *)"pdnType: "); 
     stream.add((Uint8)data.pdnType);
     stream.endOfLine();
     stream.decrIndent();

@@ -1,10 +1,10 @@
 /*
- * basicTypes.h
- *
- *  Created on: Jul 2, 2014
- *      Author: hariharanb
- */
-
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+#include <stdbool.h>
 typedef unsigned char Uint8;
 typedef unsigned short Uint16;
 typedef unsigned int Uint32;

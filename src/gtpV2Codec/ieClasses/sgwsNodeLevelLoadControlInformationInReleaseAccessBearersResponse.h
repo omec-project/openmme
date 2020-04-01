@@ -1,9 +1,10 @@
 /*
- * .h
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #ifndef SGWSNODELEVELLOADCONTROLINFORMATIONINRELEASEACCESSBEARERSRESPONSE_H_
 #define SGWSNODELEVELLOADCONTROLINFORMATIONINRELEASEACCESSBEARERSRESPONSE_H_
 

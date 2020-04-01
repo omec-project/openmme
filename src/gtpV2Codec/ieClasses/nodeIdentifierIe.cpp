@@ -1,9 +1,10 @@
 /*
- * nodeIdentifierIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "nodeIdentifierIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,32 +24,32 @@ bool NodeIdentifierIe::encodeNodeIdentifierIe(MsgBuffer &buffer, NodeIdentifierI
 {
     if (!(data.lengthOfNodeName!=0))
     {
-        errorStream.add("Data validation failure: lengthOfNodeName\n");
+        errorStream.add((char *)"Data validation failure: lengthOfNodeName\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.lengthOfNodeName)))
     {
-        errorStream.add("Encoding of lengthOfNodeName failed\n");
+        errorStream.add((char *)"Encoding of lengthOfNodeName failed\n");
         return false;
     }
     if (!(buffer.writeUint8(data.nodeName)))
     {
-        errorStream.add("Encoding of nodeName failed\n");
+        errorStream.add((char *)"Encoding of nodeName failed\n");
         return false;
     }
     if (!(data.lengthOfNodeRealm!=0))
     {
-        errorStream.add("Data validation failure: lengthOfNodeRealm\n");
+        errorStream.add((char *)"Data validation failure: lengthOfNodeRealm\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.lengthOfNodeRealm)))
     {
-        errorStream.add("Encoding of lengthOfNodeRealm failed\n");
+        errorStream.add((char *)"Encoding of lengthOfNodeRealm failed\n");
         return false;
     }
     if (!(buffer.writeUint8(data.nodeRealm)))
     {
-        errorStream.add("Encoding of nodeRealm failed\n");
+        errorStream.add((char *)"Encoding of nodeRealm failed\n");
         return false;
     }
 
@@ -56,46 +57,46 @@ bool NodeIdentifierIe::encodeNodeIdentifierIe(MsgBuffer &buffer, NodeIdentifierI
 }
 
 bool NodeIdentifierIe::decodeNodeIdentifierIe(MsgBuffer &buffer, NodeIdentifierIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.lengthOfNodeName);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: lengthOfNodeName\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: lengthOfNodeName\n");
         return false;
     }
     if (!(data.lengthOfNodeName!=0))
     {
-        errorStream.add("Data validation failure : lengthOfNodeName\n");
+        errorStream.add((char *)"Data validation failure : lengthOfNodeName\n");
         return false; //TODO need to add validations
     }
 
     buffer.readUint8(data.nodeName);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: nodeName\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: nodeName\n");
         return false;
     }
 
     buffer.readUint8(data.lengthOfNodeRealm);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: lengthOfNodeRealm\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: lengthOfNodeRealm\n");
         return false;
     }
     if (!(data.lengthOfNodeRealm!=0))
     {
-        errorStream.add("Data validation failure : lengthOfNodeRealm\n");
+        errorStream.add((char *)"Data validation failure : lengthOfNodeRealm\n");
         return false; //TODO need to add validations
     }
 
     buffer.readUint8(data.nodeRealm);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: nodeRealm\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: nodeRealm\n");
         return false;
     }
 
@@ -108,30 +109,30 @@ bool NodeIdentifierIe::decodeNodeIdentifierIe(MsgBuffer &buffer, NodeIdentifierI
     }
     else
     {
-        errorStream.add("Unable to decode IE NodeIdentifierIe\n");
+        errorStream.add((char *)"Unable to decode IE NodeIdentifierIe\n");
         return false;
     }
 }
 void NodeIdentifierIe::displayNodeIdentifierIe_v(NodeIdentifierIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("NodeIdentifierIeData:");
+    stream.add((char *)"NodeIdentifierIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("lengthOfNodeName: ");
+    stream.add((char *)"lengthOfNodeName: ");
     stream.add(data.lengthOfNodeName);
     stream.endOfLine();
   
-    stream.add("nodeName: ");
+    stream.add((char *)"nodeName: ");
     stream.add(data.nodeName);
     stream.endOfLine();
   
-    stream.add("lengthOfNodeRealm: ");
+    stream.add((char *)"lengthOfNodeRealm: ");
     stream.add(data.lengthOfNodeRealm);
     stream.endOfLine();
   
-    stream.add("nodeRealm: ");
+    stream.add((char *)"nodeRealm: ");
     stream.add(data.nodeRealm);
     stream.endOfLine();
     stream.decrIndent();

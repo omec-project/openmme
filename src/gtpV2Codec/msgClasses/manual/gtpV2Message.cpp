@@ -1,9 +1,11 @@
-/*
- * gtpV2Message.cpp
- *
- *  Created on: Jul 11, 2014
- *      Author: hariharanb
- */
+ /*
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+ 
+
 
 #include "gtpV2Message.h"
 
@@ -32,6 +34,7 @@ void GtpV2Message::encodeHeader(MsgBuffer& buffer, GtpV2MessageHeader& msgHeader
   }
   
   Uint32 seqNumber = msgHeader.sequenceNumber << 8;
+  std::cout << "current seq num indx is " << buffer.getCurrentIndex() << std::endl;
   buffer.writeUint32(seqNumber);
   
 }

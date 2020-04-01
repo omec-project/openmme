@@ -1,9 +1,10 @@
 /*
- * downlinkDataNotificationAcknowledgeMsg.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #include "downlinkDataNotificationAcknowledgeMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
 #include "../ieClasses/gtpV2IeFactory.h"
@@ -39,6 +40,30 @@ bool DownlinkDataNotificationAcknowledgeMsg::encodeDownlinkDataNotificationAckno
     Uint16 endIndex = 0;
     Uint16 length = 0;
 
+    
+    // Encode the Ie Header
+    header.ieType = CauseIeType;
+    header.instance = 0;
+    header.length = 0; // We will encode the IE first and then update the length
+    GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+    startIndex = buffer.getCurrentIndex(); 
+    CauseIe cause=
+    dynamic_cast<
+    CauseIe&>(GtpV2IeFactory::getInstance().getIeObject(CauseIeType));
+    rc = cause.encodeCauseIe(buffer, data.cause);
+    endIndex = buffer.getCurrentIndex();
+    length = endIndex - startIndex;
+
+    // encode the length value now
+    buffer.goToIndex(startIndex - 3);
+    buffer.writeUint16(length, false);
+    buffer.goToIndex(endIndex);
+
+    if (!(rc))
+    { 
+        errorStream.add((char *)"Failed to encode IE: cause\n");
+        return false;
+    }
 
     if (data.dataNotificationDelayIePresent)
     {
@@ -63,7 +88,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::encodeDownlinkDataNotificationAckno
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: dataNotificationDelay\n");
+            errorStream.add((char *)"Failed to encode IE: dataNotificationDelay\n");
             return false;
         }
     }
@@ -91,7 +116,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::encodeDownlinkDataNotificationAckno
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: recovery\n");
+            errorStream.add((char *)"Failed to encode IE: recovery\n");
             return false;
         }
     }
@@ -119,7 +144,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::encodeDownlinkDataNotificationAckno
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: dlLowPriorityTrafficThrottling\n");
+            errorStream.add((char *)"Failed to encode IE: dlLowPriorityTrafficThrottling\n");
             return false;
         }
     }
@@ -147,7 +172,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::encodeDownlinkDataNotificationAckno
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: imsi\n");
+            errorStream.add((char *)"Failed to encode IE: imsi\n");
             return false;
         }
     }
@@ -175,7 +200,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::encodeDownlinkDataNotificationAckno
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: dlBufferingDuration\n");
+            errorStream.add((char *)"Failed to encode IE: dlBufferingDuration\n");
             return false;
         }
     }
@@ -203,7 +228,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::encodeDownlinkDataNotificationAckno
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: dlBufferingSuggestedPacketCount\n");
+            errorStream.add((char *)"Failed to encode IE: dlBufferingSuggestedPacketCount\n");
             return false;
         }
     }
@@ -226,12 +251,12 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -251,7 +276,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: cause\n");
+                        errorStream.add((char *)"Failed to decode IE: cause\n");
                         return false;
                     }
                 }
@@ -259,7 +284,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -280,7 +305,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                     data.dataNotificationDelayIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: dataNotificationDelay\n");
+                        errorStream.add((char *)"Failed to decode IE: dataNotificationDelay\n");
                         return false;
                     }
                 }
@@ -288,7 +313,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -309,7 +334,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                     data.recoveryIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: recovery\n");
+                        errorStream.add((char *)"Failed to decode IE: recovery\n");
                         return false;
                     }
                 }
@@ -317,7 +342,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -338,7 +363,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                     data.dlLowPriorityTrafficThrottlingIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: dlLowPriorityTrafficThrottling\n");
+                        errorStream.add((char *)"Failed to decode IE: dlLowPriorityTrafficThrottling\n");
                         return false;
                     }
                 }
@@ -346,7 +371,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -367,7 +392,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                     data.imsiIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: imsi\n");
+                        errorStream.add((char *)"Failed to decode IE: imsi\n");
                         return false;
                     }
                 }
@@ -375,7 +400,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -396,7 +421,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                     data.dlBufferingDurationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: dlBufferingDuration\n");
+                        errorStream.add((char *)"Failed to decode IE: dlBufferingDuration\n");
                         return false;
                     }
                 }
@@ -404,7 +429,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -425,7 +450,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                     data.dlBufferingSuggestedPacketCountIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: dlBufferingSuggestedPacketCount\n");
+                        errorStream.add((char *)"Failed to decode IE: dlBufferingSuggestedPacketCount\n");
                         return false;
                     }
                 }
@@ -433,7 +458,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -444,7 +469,7 @@ bool DownlinkDataNotificationAcknowledgeMsg::decodeDownlinkDataNotificationAckno
             default:
             {
                 // Unknown IE print error
-                errorStream.add("Unknown IE Type: ");
+                errorStream.add((char *)"Unknown IE Type: ");
                 errorStream.add(ieHeader.ieType);
                 errorStream.endOfLine();
                 buffer.skipBytes(ieHeader.length);
@@ -458,13 +483,23 @@ void DownlinkDataNotificationAcknowledgeMsg::
 displayDownlinkDataNotificationAcknowledgeMsgData_v(DownlinkDataNotificationAcknowledgeMsgData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("DownlinkDataNotificationAcknowledgeMsg:");
+    stream.add((char *)"DownlinkDataNotificationAcknowledgeMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
+        stream.add((char *)"IE - cause:");
+        stream.endOfLine();
+        CauseIe cause=
+        dynamic_cast<
+        CauseIe&>(GtpV2IeFactory::getInstance().getIeObject(CauseIeType));
+        cause.displayCauseIe_v(data.cause, stream);
+
     if (data.dataNotificationDelayIePresent)
     {
-        stream.add("IE - dataNotificationDelay:");
+
+
+        stream.add((char *)"IE - dataNotificationDelay:");
         stream.endOfLine();
         DelayValueIe delayValue=
         dynamic_cast<
@@ -474,7 +509,9 @@ displayDownlinkDataNotificationAcknowledgeMsgData_v(DownlinkDataNotificationAckn
     }
     if (data.recoveryIePresent)
     {
-        stream.add("IE - recovery:");
+
+
+        stream.add((char *)"IE - recovery:");
         stream.endOfLine();
         RecoveryIe recovery=
         dynamic_cast<
@@ -484,7 +521,9 @@ displayDownlinkDataNotificationAcknowledgeMsgData_v(DownlinkDataNotificationAckn
     }
     if (data.dlLowPriorityTrafficThrottlingIePresent)
     {
-        stream.add("IE - dlLowPriorityTrafficThrottling:");
+
+
+        stream.add((char *)"IE - dlLowPriorityTrafficThrottling:");
         stream.endOfLine();
         ThrottlingIe throttling=
         dynamic_cast<
@@ -494,7 +533,9 @@ displayDownlinkDataNotificationAcknowledgeMsgData_v(DownlinkDataNotificationAckn
     }
     if (data.imsiIePresent)
     {
-        stream.add("IE - imsi:");
+
+
+        stream.add((char *)"IE - imsi:");
         stream.endOfLine();
         ImsiIe imsi=
         dynamic_cast<
@@ -504,7 +545,9 @@ displayDownlinkDataNotificationAcknowledgeMsgData_v(DownlinkDataNotificationAckn
     }
     if (data.dlBufferingDurationIePresent)
     {
-        stream.add("IE - dlBufferingDuration:");
+
+
+        stream.add((char *)"IE - dlBufferingDuration:");
         stream.endOfLine();
         EpcTimerIe epcTimer=
         dynamic_cast<
@@ -514,7 +557,9 @@ displayDownlinkDataNotificationAcknowledgeMsgData_v(DownlinkDataNotificationAckn
     }
     if (data.dlBufferingSuggestedPacketCountIePresent)
     {
-        stream.add("IE - dlBufferingSuggestedPacketCount:");
+
+
+        stream.add((char *)"IE - dlBufferingSuggestedPacketCount:");
         stream.endOfLine();
         IntegerNumberIe integerNumber=
         dynamic_cast<
@@ -522,6 +567,7 @@ displayDownlinkDataNotificationAcknowledgeMsgData_v(DownlinkDataNotificationAckn
         integerNumber.displayIntegerNumberIe_v(data.dlBufferingSuggestedPacketCount, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

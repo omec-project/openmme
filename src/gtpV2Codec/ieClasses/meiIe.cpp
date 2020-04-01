@@ -1,9 +1,10 @@
 /*
- * meiIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "meiIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool MeiIe::encodeMeiIe(MsgBuffer &buffer, MeiIeData const &data)
 {
     if (!(data.imeiSvValue.length ==15 || data.imeiSvValue.length == 16))
     {
-        errorStream.add("Data validation failure: imeiSvValue\n");
+        errorStream.add((char *)"Data validation failure: imeiSvValue\n");
         return false; 
     }
     if (!(DataTypeCodecUtils::encodeDigitRegister(buffer, data.imeiSvValue)))
     {
-    errorStream.add("Encoding of imeiSvValue failed\n");
+    errorStream.add((char *)"Encoding of imeiSvValue failed\n");
     return false;
     }
 
@@ -36,19 +37,21 @@ bool MeiIe::encodeMeiIe(MsgBuffer &buffer, MeiIeData const &data)
 }
 
 bool MeiIe::decodeMeiIe(MsgBuffer &buffer, MeiIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeDigitRegister(buffer, data.imeiSvValue, lengthLeft)))
     {
-        errorStream.add("Failed to decode: imeiSvValue\n");
+        errorStream.add((char *)"Failed to decode: imeiSvValue\n");
         return false;
     }
     if (!(data.imeiSvValue.length ==15 || data.imeiSvValue.length == 16))
     {
-        errorStream.add("Data validation failure : imeiSvValue\n");
+        errorStream.add((char *)"Data validation failure : imeiSvValue\n");
         return false; //TODO need to add validations
     }
 
@@ -61,18 +64,18 @@ bool MeiIe::decodeMeiIe(MsgBuffer &buffer, MeiIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE MeiIe\n");
+        errorStream.add((char *)"Unable to decode IE MeiIe\n");
         return false;
     }
 }
 void MeiIe::displayMeiIe_v(MeiIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("MeiIeData:");
+    stream.add((char *)"MeiIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("imeiSvValue:");
+    stream.add((char *)"imeiSvValue:");
     stream.endOfLine();
     DataTypeCodecUtils::displayDigitRegister_v(data.imeiSvValue, stream);
     stream.decrIndent();

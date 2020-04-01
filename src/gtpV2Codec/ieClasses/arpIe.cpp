@@ -1,9 +1,10 @@
 /*
- * arpIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "arpIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,17 +26,19 @@ bool ArpIe::encodeArpIe(MsgBuffer &buffer, ArpIeData const &data)
 
     if(!(buffer.writeBits(data.pci, 1)))
     {
-        errorStream.add("Encoding of pci failed\n");
+        errorStream.add((char *)"Encoding of pci failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.pl, 4)))
     {
-        errorStream.add("Encoding of pl failed\n");
+        errorStream.add((char *)"Encoding of pl failed\n");
         return false;
     }
+    buffer.skipBits(1);
+
     if(!(buffer.writeBits(data.pvi, 1)))
     {
-        errorStream.add("Encoding of pvi failed\n");
+        errorStream.add((char *)"Encoding of pvi failed\n");
         return false;
     }
 
@@ -43,14 +46,14 @@ bool ArpIe::encodeArpIe(MsgBuffer &buffer, ArpIeData const &data)
 }
 
 bool ArpIe::decodeArpIe(MsgBuffer &buffer, ArpIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(1);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -58,21 +61,28 @@ bool ArpIe::decodeArpIe(MsgBuffer &buffer, ArpIeData &data, Uint16 length)
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: pci\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: pci\n");
         return false;
     }
     data.pl = buffer.readBits(4);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: pl\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: pl\n");
         return false;
     }
+    buffer.skipBits(1);
+    if (buffer.getCurrentIndex() > ieBoundary)
+    {
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
+        return false;
+    }
+
     data.pvi = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: pvi\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: pvi\n");
         return false;
     }
 
@@ -85,26 +95,26 @@ bool ArpIe::decodeArpIe(MsgBuffer &buffer, ArpIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE ArpIe\n");
+        errorStream.add((char *)"Unable to decode IE ArpIe\n");
         return false;
     }
 }
 void ArpIe::displayArpIe_v(ArpIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ArpIeData:");
+    stream.add((char *)"ArpIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "pci: "); 
+    stream.add( (char *)"pci: "); 
     stream.add((Uint8)data.pci);
     stream.endOfLine();
   
-    stream.add( "pl: "); 
+    stream.add( (char *)"pl: "); 
     stream.add((Uint8)data.pl);
     stream.endOfLine();
   
-    stream.add( "pvi: "); 
+    stream.add( (char *)"pvi: "); 
     stream.add((Uint8)data.pvi);
     stream.endOfLine();
     stream.decrIndent();

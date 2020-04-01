@@ -1,9 +1,10 @@
 /*
- * changeReportingActionIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "changeReportingActionIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool ChangeReportingActionIe::encodeChangeReportingActionIe(MsgBuffer &buffer, C
 {
     if (!(data.action< 7))
     {
-        errorStream.add("Data validation failure: action\n");
+        errorStream.add((char *)"Data validation failure: action\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.action)))
     {
-        errorStream.add("Encoding of action failed\n");
+        errorStream.add((char *)"Encoding of action failed\n");
         return false;
     }
 
@@ -36,20 +37,20 @@ bool ChangeReportingActionIe::encodeChangeReportingActionIe(MsgBuffer &buffer, C
 }
 
 bool ChangeReportingActionIe::decodeChangeReportingActionIe(MsgBuffer &buffer, ChangeReportingActionIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.action);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: action\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: action\n");
         return false;
     }
     if (!(data.action< 7))
     {
-        errorStream.add("Data validation failure : action\n");
+        errorStream.add((char *)"Data validation failure : action\n");
         return false; //TODO need to add validations
     }
 
@@ -62,18 +63,18 @@ bool ChangeReportingActionIe::decodeChangeReportingActionIe(MsgBuffer &buffer, C
     }
     else
     {
-        errorStream.add("Unable to decode IE ChangeReportingActionIe\n");
+        errorStream.add((char *)"Unable to decode IE ChangeReportingActionIe\n");
         return false;
     }
 }
 void ChangeReportingActionIe::displayChangeReportingActionIe_v(ChangeReportingActionIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ChangeReportingActionIeData:");
+    stream.add((char *)"ChangeReportingActionIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("action: ");
+    stream.add((char *)"action: ");
     stream.add(data.action);
     stream.endOfLine();
     stream.decrIndent();

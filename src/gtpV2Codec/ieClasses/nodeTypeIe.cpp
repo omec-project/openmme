@@ -1,9 +1,10 @@
 /*
- * nodeTypeIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "nodeTypeIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool NodeTypeIe::encodeNodeTypeIe(MsgBuffer &buffer, NodeTypeIeData const &data)
 {
     if (!(data.nodeType==0||data.nodeType==1))
     {
-        errorStream.add("Data validation failure: nodeType\n");
+        errorStream.add((char *)"Data validation failure: nodeType\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.nodeType)))
     {
-        errorStream.add("Encoding of nodeType failed\n");
+        errorStream.add((char *)"Encoding of nodeType failed\n");
         return false;
     }
 
@@ -36,20 +37,20 @@ bool NodeTypeIe::encodeNodeTypeIe(MsgBuffer &buffer, NodeTypeIeData const &data)
 }
 
 bool NodeTypeIe::decodeNodeTypeIe(MsgBuffer &buffer, NodeTypeIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.nodeType);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: nodeType\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: nodeType\n");
         return false;
     }
     if (!(data.nodeType==0||data.nodeType==1))
     {
-        errorStream.add("Data validation failure : nodeType\n");
+        errorStream.add((char *)"Data validation failure : nodeType\n");
         return false; //TODO need to add validations
     }
 
@@ -62,18 +63,18 @@ bool NodeTypeIe::decodeNodeTypeIe(MsgBuffer &buffer, NodeTypeIeData &data, Uint1
     }
     else
     {
-        errorStream.add("Unable to decode IE NodeTypeIe\n");
+        errorStream.add((char *)"Unable to decode IE NodeTypeIe\n");
         return false;
     }
 }
 void NodeTypeIe::displayNodeTypeIe_v(NodeTypeIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("NodeTypeIeData:");
+    stream.add((char *)"NodeTypeIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("nodeType: ");
+    stream.add((char *)"nodeType: ");
     stream.add(data.nodeType);
     stream.endOfLine();
     stream.decrIndent();

@@ -1,9 +1,10 @@
 /*
- * chargingCharacteristicsIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "chargingCharacteristicsIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool ChargingCharacteristicsIe::encodeChargingCharacteristicsIe(MsgBuffer &buffe
 {
     if (!(buffer.writeUint16(data.value)))
     {
-        errorStream.add("Encoding of value failed\n");
+        errorStream.add((char *)"Encoding of value failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool ChargingCharacteristicsIe::encodeChargingCharacteristicsIe(MsgBuffer &buffe
 }
 
 bool ChargingCharacteristicsIe::decodeChargingCharacteristicsIe(MsgBuffer &buffer, ChargingCharacteristicsIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint16(data.value);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: value\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: value\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool ChargingCharacteristicsIe::decodeChargingCharacteristicsIe(MsgBuffer &buffe
     }
     else
     {
-        errorStream.add("Unable to decode IE ChargingCharacteristicsIe\n");
+        errorStream.add((char *)"Unable to decode IE ChargingCharacteristicsIe\n");
         return false;
     }
 }
 void ChargingCharacteristicsIe::displayChargingCharacteristicsIe_v(ChargingCharacteristicsIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ChargingCharacteristicsIeData:");
+    stream.add((char *)"ChargingCharacteristicsIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("value: ");
+    stream.add((char *)"value: ");
     stream.add(data.value);
     stream.endOfLine();
     stream.decrIndent();

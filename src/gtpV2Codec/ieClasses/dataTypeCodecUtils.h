@@ -1,9 +1,9 @@
 /*
- * tempdata.fileName.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 
 #ifndef DATATYPECODECUTILS_H_
@@ -105,6 +105,12 @@ public:
     static bool decodeUint8Array512(MsgBuffer &buffer, Uint8Array512 &data,
                  Uint16 length, Uint16 count);
     static void displayUint8Array512_v(Uint8Array512 const &data, Debug &stream);
+
+
+    static bool encodeUint8Array255(MsgBuffer &buffer, Uint8Array255 const &data);
+    static bool decodeUint8Array255(MsgBuffer &buffer, Uint8Array255 &data,
+                 Uint16 length, Uint16 count);
+    static void displayUint8Array255_v(Uint8Array255 const &data, Debug &stream);
 
 
     static bool encodeCgiFieldArray64(MsgBuffer &buffer, CgiFieldArray64 const &data);

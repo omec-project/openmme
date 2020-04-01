@@ -1,9 +1,11 @@
-/*
- * gtpV2Message.h
- *
- *  Created on: Jul 11, 2014
- *      Author: hariharanb
- */
+ /*
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+ 
+
 
 #ifndef GTPV2MESSAGE_H_
 #define GTPV2MESSAGE_H_

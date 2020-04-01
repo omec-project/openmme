@@ -1,9 +1,10 @@
 /*
- * ebiIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "ebiIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,7 +26,7 @@ bool EbiIe::encodeEbiIe(MsgBuffer &buffer, EbiIeData const &data)
 
     if(!(buffer.writeBits(data.epsBearerId, 4)))
     {
-        errorStream.add("Encoding of epsBearerId failed\n");
+        errorStream.add((char *)"Encoding of epsBearerId failed\n");
         return false;
     }
 
@@ -33,14 +34,14 @@ bool EbiIe::encodeEbiIe(MsgBuffer &buffer, EbiIeData const &data)
 }
 
 bool EbiIe::decodeEbiIe(MsgBuffer &buffer, EbiIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(4);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -48,7 +49,7 @@ bool EbiIe::decodeEbiIe(MsgBuffer &buffer, EbiIeData &data, Uint16 length)
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: epsBearerId\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: epsBearerId\n");
         return false;
     }
 
@@ -61,18 +62,18 @@ bool EbiIe::decodeEbiIe(MsgBuffer &buffer, EbiIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE EbiIe\n");
+        errorStream.add((char *)"Unable to decode IE EbiIe\n");
         return false;
     }
 }
 void EbiIe::displayEbiIe_v(EbiIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("EbiIeData:");
+    stream.add((char *)"EbiIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "epsBearerId: "); 
+    stream.add( (char *)"epsBearerId: "); 
     stream.add((Uint8)data.epsBearerId);
     stream.endOfLine();
     stream.decrIndent();

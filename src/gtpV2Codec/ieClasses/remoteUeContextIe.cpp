@@ -1,9 +1,9 @@
 /*
- * remoteUeContextIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "remoteUeContextIe.h"
 #include "gtpV2GrpIeDataTypes.h"

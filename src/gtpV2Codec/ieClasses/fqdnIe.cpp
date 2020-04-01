@@ -1,9 +1,10 @@
 /*
- * fqdnIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "fqdnIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool FqdnIe::encodeFqdnIe(MsgBuffer &buffer, FqdnIeData const &data)
 {
     if (!(DataTypeCodecUtils::encodeUint8Array32(buffer, data.fqdn)))
     {
-    errorStream.add("Encoding of fqdn failed\n");
+    errorStream.add((char *)"Encoding of fqdn failed\n");
     return false;
     }
 
@@ -31,14 +32,16 @@ bool FqdnIe::encodeFqdnIe(MsgBuffer &buffer, FqdnIeData const &data)
 }
 
 bool FqdnIe::decodeFqdnIe(MsgBuffer &buffer, FqdnIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array32(buffer, data.fqdn, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: fqdn\n");
+        errorStream.add((char *)"Failed to decode: fqdn\n");
         return false;
     }
 
@@ -51,18 +54,18 @@ bool FqdnIe::decodeFqdnIe(MsgBuffer &buffer, FqdnIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE FqdnIe\n");
+        errorStream.add((char *)"Unable to decode IE FqdnIe\n");
         return false;
     }
 }
 void FqdnIe::displayFqdnIe_v(FqdnIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("FqdnIeData:");
+    stream.add((char *)"FqdnIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("fqdn:");
+    stream.add((char *)"fqdn:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array32_v(data.fqdn, stream);
     stream.decrIndent();

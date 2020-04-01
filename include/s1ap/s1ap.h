@@ -64,6 +64,22 @@ int s1ap_mme_encode_service_rej(
 int s1ap_mme_encode_attach_rej(
         struct s1ap_common_req_Q_msg *s1apPDU,
         uint8_t **buffer, uint32_t *length);
+
+int s1ap_mme_encode_handover_request(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length);
+
+int s1ap_mme_encode_handover_command(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length);
+
+int s1ap_mme_encode_handover_mme_status_transfer(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length);
+
 int
 s1ap_mme_decode_initiating (InitiatingMessage_t *initiating_p, int enb_fd);
 

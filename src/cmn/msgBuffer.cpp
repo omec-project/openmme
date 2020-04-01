@@ -1,9 +1,9 @@
 /*
- * msgBuffer.cpp
- *
- *  Created on: Dec 2012
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -260,22 +260,22 @@ void MsgBuffer::display(Debug &stream)
         Uint16 bufLength = getLength();
 
 	// Displays current buffer contents
-	stream.add("Buffer Size: ");
+	stream.add((char *)"Buffer Size: ");
         stream.add(bufLength);
         stream.endOfLine();
-	stream.add("Current Index: ");
+	stream.add((char *)"Current Index: ");
         stream.add(byteIndex);
-        stream.add(".");
+        stream.add((char *)".");
         stream.add(bitIndex);
         stream.endOfLine();
-	stream.add("Data:");
+	stream.add((char *)"Data:");
         stream.endOfLine();
         stream.setHexOutput();
 
         for (Uint16 i = 0; i < bufLength; i++)
         {
     	  stream.add(data_mp[i]);
-	  stream.add(" ");
+	  stream.add((char *)" ");
           if (((i+1) % 16) == 0)
           {
             stream.endOfLine();

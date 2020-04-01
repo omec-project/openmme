@@ -1,9 +1,10 @@
 /*
- * ip4cpIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "ip4cpIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool Ip4cpIe::encodeIp4cpIe(MsgBuffer &buffer, Ip4cpIeData const &data)
 {
     if (!(buffer.writeUint8(data.subnetPrefixLength)))
     {
-        errorStream.add("Encoding of subnetPrefixLength failed\n");
+        errorStream.add((char *)"Encoding of subnetPrefixLength failed\n");
         return false;
     }
     if (!(DataTypeCodecUtils::encodeIpAddressV4(buffer, data.iPv4DefaultRouterAddress)))
     {
-    errorStream.add("Encoding of iPv4DefaultRouterAddress failed\n");
+    errorStream.add((char *)"Encoding of iPv4DefaultRouterAddress failed\n");
     return false;
     }
 
@@ -36,21 +37,23 @@ bool Ip4cpIe::encodeIp4cpIe(MsgBuffer &buffer, Ip4cpIeData const &data)
 }
 
 bool Ip4cpIe::decodeIp4cpIe(MsgBuffer &buffer, Ip4cpIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.subnetPrefixLength);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: subnetPrefixLength\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: subnetPrefixLength\n");
         return false;
     }
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeIpAddressV4(buffer, data.iPv4DefaultRouterAddress, lengthLeft)))
     {
-        errorStream.add("Failed to decode: iPv4DefaultRouterAddress\n");
+        errorStream.add((char *)"Failed to decode: iPv4DefaultRouterAddress\n");
         return false;
     }
 
@@ -63,22 +66,22 @@ bool Ip4cpIe::decodeIp4cpIe(MsgBuffer &buffer, Ip4cpIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE Ip4cpIe\n");
+        errorStream.add((char *)"Unable to decode IE Ip4cpIe\n");
         return false;
     }
 }
 void Ip4cpIe::displayIp4cpIe_v(Ip4cpIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("Ip4cpIeData:");
+    stream.add((char *)"Ip4cpIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("subnetPrefixLength: ");
+    stream.add((char *)"subnetPrefixLength: ");
     stream.add(data.subnetPrefixLength);
     stream.endOfLine();
   
-    stream.add("iPv4DefaultRouterAddress:");
+    stream.add((char *)"iPv4DefaultRouterAddress:");
     stream.endOfLine();
     DataTypeCodecUtils::displayIpAddressV4_v(data.iPv4DefaultRouterAddress, stream);
     stream.decrIndent();

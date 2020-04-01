@@ -1,9 +1,10 @@
 /*
- * recoveryIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "recoveryIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool RecoveryIe::encodeRecoveryIe(MsgBuffer &buffer, RecoveryIeData const &data)
 {
     if (!(buffer.writeUint8(data.restartCounter)))
     {
-        errorStream.add("Encoding of restartCounter failed\n");
+        errorStream.add((char *)"Encoding of restartCounter failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool RecoveryIe::encodeRecoveryIe(MsgBuffer &buffer, RecoveryIeData const &data)
 }
 
 bool RecoveryIe::decodeRecoveryIe(MsgBuffer &buffer, RecoveryIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.restartCounter);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: restartCounter\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: restartCounter\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool RecoveryIe::decodeRecoveryIe(MsgBuffer &buffer, RecoveryIeData &data, Uint1
     }
     else
     {
-        errorStream.add("Unable to decode IE RecoveryIe\n");
+        errorStream.add((char *)"Unable to decode IE RecoveryIe\n");
         return false;
     }
 }
 void RecoveryIe::displayRecoveryIe_v(RecoveryIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("RecoveryIeData:");
+    stream.add((char *)"RecoveryIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("restartCounter: ");
+    stream.add((char *)"restartCounter: ");
     stream.add(data.restartCounter);
     stream.endOfLine();
     stream.decrIndent();

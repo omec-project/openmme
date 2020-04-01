@@ -1,9 +1,10 @@
 /*
- * additionalProtocolConfigurationOptionsIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "additionalProtocolConfigurationOptionsIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool AdditionalProtocolConfigurationOptionsIe::encodeAdditionalProtocolConfigura
 {
     if (!(DataTypeCodecUtils::encodeUint8Array16(buffer, data.apco)))
     {
-    errorStream.add("Encoding of apco failed\n");
+    errorStream.add((char *)"Encoding of apco failed\n");
     return false;
     }
 
@@ -31,14 +32,16 @@ bool AdditionalProtocolConfigurationOptionsIe::encodeAdditionalProtocolConfigura
 }
 
 bool AdditionalProtocolConfigurationOptionsIe::decodeAdditionalProtocolConfigurationOptionsIe(MsgBuffer &buffer, AdditionalProtocolConfigurationOptionsIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array16(buffer, data.apco, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: apco\n");
+        errorStream.add((char *)"Failed to decode: apco\n");
         return false;
     }
 
@@ -51,18 +54,18 @@ bool AdditionalProtocolConfigurationOptionsIe::decodeAdditionalProtocolConfigura
     }
     else
     {
-        errorStream.add("Unable to decode IE AdditionalProtocolConfigurationOptionsIe\n");
+        errorStream.add((char *)"Unable to decode IE AdditionalProtocolConfigurationOptionsIe\n");
         return false;
     }
 }
 void AdditionalProtocolConfigurationOptionsIe::displayAdditionalProtocolConfigurationOptionsIe_v(AdditionalProtocolConfigurationOptionsIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("AdditionalProtocolConfigurationOptionsIeData:");
+    stream.add((char *)"AdditionalProtocolConfigurationOptionsIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("apco:");
+    stream.add((char *)"apco:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array16_v(data.apco, stream);
     stream.decrIndent();

@@ -1,9 +1,10 @@
 /*
- * signallingPriorityIndicationIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "signallingPriorityIndicationIe.h"
 #include "dataTypeCodecUtils.h"
@@ -28,14 +29,14 @@ bool SignallingPriorityIndicationIe::encodeSignallingPriorityIndicationIe(MsgBuf
 }
 
 bool SignallingPriorityIndicationIe::decodeSignallingPriorityIndicationIe(MsgBuffer &buffer, SignallingPriorityIndicationIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBytes(2);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -49,14 +50,14 @@ bool SignallingPriorityIndicationIe::decodeSignallingPriorityIndicationIe(MsgBuf
     }
     else
     {
-        errorStream.add("Unable to decode IE SignallingPriorityIndicationIe\n");
+        errorStream.add((char *)"Unable to decode IE SignallingPriorityIndicationIe\n");
         return false;
     }
 }
 void SignallingPriorityIndicationIe::displaySignallingPriorityIndicationIe_v(SignallingPriorityIndicationIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("SignallingPriorityIndicationIeData:");
+    stream.add((char *)"SignallingPriorityIndicationIeData:");
     stream.incrIndent();
     stream.endOfLine();
     stream.decrIndent();

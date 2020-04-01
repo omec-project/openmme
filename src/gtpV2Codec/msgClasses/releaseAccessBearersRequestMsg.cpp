@@ -1,9 +1,10 @@
 /*
- * releaseAccessBearersRequestMsg.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #include "releaseAccessBearersRequestMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
 #include "../ieClasses/gtpV2IeFactory.h"
@@ -56,7 +57,7 @@ bool ReleaseAccessBearersRequestMsg::encodeReleaseAccessBearersRequestMsg(MsgBuf
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: listOfRabs\n");
+            errorStream.add((char *)"Failed to encode IE: listOfRabs\n");
             return false;
         }
     }
@@ -84,7 +85,7 @@ bool ReleaseAccessBearersRequestMsg::encodeReleaseAccessBearersRequestMsg(MsgBuf
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: originatingNode\n");
+            errorStream.add((char *)"Failed to encode IE: originatingNode\n");
             return false;
         }
     }
@@ -112,7 +113,7 @@ bool ReleaseAccessBearersRequestMsg::encodeReleaseAccessBearersRequestMsg(MsgBuf
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: indicationFlags\n");
+            errorStream.add((char *)"Failed to encode IE: indicationFlags\n");
             return false;
         }
     }
@@ -140,7 +141,7 @@ bool ReleaseAccessBearersRequestMsg::encodeReleaseAccessBearersRequestMsg(MsgBuf
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: secondaryRatUsageDataReport\n");
+            errorStream.add((char *)"Failed to encode IE: secondaryRatUsageDataReport\n");
             return false;
         }
     }
@@ -163,12 +164,12 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -189,7 +190,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
                     data.listOfRabsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: listOfRabs\n");
+                        errorStream.add((char *)"Failed to decode IE: listOfRabs\n");
                         return false;
                     }
                 }
@@ -197,7 +198,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -218,7 +219,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
                     data.originatingNodeIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: originatingNode\n");
+                        errorStream.add((char *)"Failed to decode IE: originatingNode\n");
                         return false;
                     }
                 }
@@ -226,7 +227,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -247,7 +248,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
                     data.indicationFlagsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: indicationFlags\n");
+                        errorStream.add((char *)"Failed to decode IE: indicationFlags\n");
                         return false;
                     }
                 }
@@ -255,7 +256,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -276,7 +277,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
                     data.secondaryRatUsageDataReportIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: secondaryRatUsageDataReport\n");
+                        errorStream.add((char *)"Failed to decode IE: secondaryRatUsageDataReport\n");
                         return false;
                     }
                 }
@@ -284,7 +285,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -295,7 +296,7 @@ bool ReleaseAccessBearersRequestMsg::decodeReleaseAccessBearersRequestMsg(MsgBuf
             default:
             {
                 // Unknown IE print error
-                errorStream.add("Unknown IE Type: ");
+                errorStream.add((char *)"Unknown IE Type: ");
                 errorStream.add(ieHeader.ieType);
                 errorStream.endOfLine();
                 buffer.skipBytes(ieHeader.length);
@@ -309,13 +310,16 @@ void ReleaseAccessBearersRequestMsg::
 displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ReleaseAccessBearersRequestMsg:");
+    stream.add((char *)"ReleaseAccessBearersRequestMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
     if (data.listOfRabsIePresent)
     {
-        stream.add("IE - listOfRabs:");
+
+
+        stream.add((char *)"IE - listOfRabs:");
         stream.endOfLine();
         EbiIe ebi=
         dynamic_cast<
@@ -325,7 +329,9 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
     }
     if (data.originatingNodeIePresent)
     {
-        stream.add("IE - originatingNode:");
+
+
+        stream.add((char *)"IE - originatingNode:");
         stream.endOfLine();
         NodeTypeIe nodeType=
         dynamic_cast<
@@ -335,7 +341,9 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
     }
     if (data.indicationFlagsIePresent)
     {
-        stream.add("IE - indicationFlags:");
+
+
+        stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
         dynamic_cast<
@@ -345,7 +353,9 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
     }
     if (data.secondaryRatUsageDataReportIePresent)
     {
-        stream.add("IE - secondaryRatUsageDataReport:");
+
+
+        stream.add((char *)"IE - secondaryRatUsageDataReport:");
         stream.endOfLine();
         SecondaryRatUsageDataReportIe secondaryRatUsageDataReport=
         dynamic_cast<
@@ -353,6 +363,7 @@ displayReleaseAccessBearersRequestMsgData_v(ReleaseAccessBearersRequestMsgData c
         secondaryRatUsageDataReport.displaySecondaryRatUsageDataReportIe_v(data.secondaryRatUsageDataReport, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

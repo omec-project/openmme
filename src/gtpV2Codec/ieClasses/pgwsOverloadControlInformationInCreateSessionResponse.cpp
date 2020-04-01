@@ -1,9 +1,10 @@
 /*
- * pgwsOverloadControlInformationInCreateSessionResponse.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #include "pgwsOverloadControlInformationInCreateSessionResponse.h"
 #include "manual/gtpV2Ie.h"
 #include "gtpV2IeFactory.h"
@@ -65,7 +66,7 @@ encodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: overloadControlSequenceNumber\n");
+        errorStream.add((char *)"Failed to encode IE: overloadControlSequenceNumber\n");
         return false;
     }
 
@@ -90,7 +91,7 @@ encodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: overloadReductionMetric\n");
+        errorStream.add((char *)"Failed to encode IE: overloadReductionMetric\n");
         return false;
     }
 
@@ -115,7 +116,7 @@ encodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: periodOfValidity\n");
+        errorStream.add((char *)"Failed to encode IE: periodOfValidity\n");
         return false;
     }
 
@@ -142,7 +143,7 @@ encodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: listOfAccessPointName\n");
+          errorStream.add((char *)"Failed to encode IE: listOfAccessPointName\n");
           return false;
         }
     }
@@ -164,12 +165,12 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -191,7 +192,7 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: overloadControlSequenceNumber\n");
+                        errorStream.add((char *)"Failed to decode IE: overloadControlSequenceNumber\n");
                         return false;
                     }
                     Uint16 mandIe = SequenceNumberIeType;
@@ -201,7 +202,7 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -223,7 +224,7 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: overloadReductionMetric\n");
+                        errorStream.add((char *)"Failed to decode IE: overloadReductionMetric\n");
                         return false;
                     }
                     Uint16 mandIe = MetricIeType;
@@ -233,7 +234,7 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -255,7 +256,7 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: periodOfValidity\n");
+                        errorStream.add((char *)"Failed to decode IE: periodOfValidity\n");
                         return false;
                     }
                     Uint16 mandIe = EpcTimerIeType;
@@ -265,7 +266,7 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -288,14 +289,14 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
                     data.listOfAccessPointNameIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: listOfAccessPointName\n");
+                        errorStream.add((char *)"Failed to decode IE: listOfAccessPointName\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -305,7 +306,7 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
             default:
             {
             // Unknown IE print error
-            errorStream.add("Unknown IE Type: ");
+            errorStream.add((char *)"Unknown IE Type: ");
             errorStream.add(ieHeader.ieType);
             errorStream.endOfLine();
             buffer.skipBytes(ieHeader.length);
@@ -315,7 +316,7 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
     if (!mandatoryIeLocalList.empty())
     {
         // some mandatory IEs are missing
-        errorStream.add("Missing Mandatory IEs:");
+        errorStream.add((char *)"Missing Mandatory IEs:");
         errorStream.endOfLine();
         while (!mandatoryIeLocalList.empty())
         {
@@ -323,9 +324,9 @@ decodePgwsOverloadControlInformationInCreateSessionResponse(MsgBuffer &buffer,
             mandatoryIeLocalList.erase (mandatoryIeLocalList.begin ());
             Uint16 missingInstance = missingMandIe & 0x00FF;
             Uint16 missingIeType = (missingMandIe >> 8);
-            errorStream.add ("Missing Ie type: ");
+            errorStream.add ((char *)"Missing Ie type: ");
             errorStream.add (missingIeType);
-            errorStream.add ("  Instance: ");
+            errorStream.add ((char *)"  Instance: ");
             errorStream.add (missingInstance);
             errorStream.endOfLine();
         }
@@ -340,7 +341,7 @@ displayPgwsOverloadControlInformationInCreateSessionResponseData_v
 (PgwsOverloadControlInformationInCreateSessionResponseData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("PgwsOverloadControlInformationInCreateSessionResponse:");
+    stream.add((char *)"PgwsOverloadControlInformationInCreateSessionResponse:");
     stream.endOfLine();
     stream.incrIndent();
 
@@ -350,7 +351,7 @@ displayPgwsOverloadControlInformationInCreateSessionResponseData_v
     if (data.listOfAccessPointNameIePresent)
     {
 
-        stream.add("listOfAccessPointName:");
+        stream.add((char *)"listOfAccessPointName:");
         stream.endOfLine();
         ApnIe apn=
         dynamic_cast<

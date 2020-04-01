@@ -1,9 +1,10 @@
 /*
- * .h
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #ifndef MMES4SGSNSOVERLOADCONTROLINFORMATIONINMODIFYBEARERREQUEST_H_
 #define MMES4SGSNSOVERLOADCONTROLINFORMATIONINMODIFYBEARERREQUEST_H_
 

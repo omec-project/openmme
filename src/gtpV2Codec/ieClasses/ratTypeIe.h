@@ -1,9 +1,9 @@
 /*
- * ratTypeIe.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef RATTYPEIE_H_
 #define RATTYPEIE_H_

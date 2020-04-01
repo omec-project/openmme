@@ -1,9 +1,10 @@
 /*
- * delayValueIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "delayValueIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool DelayValueIe::encodeDelayValueIe(MsgBuffer &buffer, DelayValueIeData const 
 {
     if (!(data.delayValue% 50 == 0 || data.delayValue== 0))
     {
-        errorStream.add("Data validation failure: delayValue\n");
+        errorStream.add((char *)"Data validation failure: delayValue\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.delayValue)))
     {
-        errorStream.add("Encoding of delayValue failed\n");
+        errorStream.add((char *)"Encoding of delayValue failed\n");
         return false;
     }
 
@@ -36,20 +37,20 @@ bool DelayValueIe::encodeDelayValueIe(MsgBuffer &buffer, DelayValueIeData const 
 }
 
 bool DelayValueIe::decodeDelayValueIe(MsgBuffer &buffer, DelayValueIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.delayValue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: delayValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: delayValue\n");
         return false;
     }
     if (!(data.delayValue% 50 == 0 || data.delayValue== 0))
     {
-        errorStream.add("Data validation failure : delayValue\n");
+        errorStream.add((char *)"Data validation failure : delayValue\n");
         return false; //TODO need to add validations
     }
 
@@ -62,18 +63,18 @@ bool DelayValueIe::decodeDelayValueIe(MsgBuffer &buffer, DelayValueIeData &data,
     }
     else
     {
-        errorStream.add("Unable to decode IE DelayValueIe\n");
+        errorStream.add((char *)"Unable to decode IE DelayValueIe\n");
         return false;
     }
 }
 void DelayValueIe::displayDelayValueIe_v(DelayValueIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("DelayValueIeData:");
+    stream.add((char *)"DelayValueIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("delayValue: ");
+    stream.add((char *)"delayValue: ");
     stream.add(data.delayValue);
     stream.endOfLine();
     stream.decrIndent();

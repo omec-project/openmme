@@ -1,9 +1,10 @@
 /*
- * localDistinguishedNameIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "localDistinguishedNameIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool LocalDistinguishedNameIe::encodeLocalDistinguishedNameIe(MsgBuffer &buffer,
 {
     if (!(DataTypeCodecUtils::encodeUint8Array512(buffer, data.ldn)))
     {
-    errorStream.add("Encoding of ldn failed\n");
+    errorStream.add((char *)"Encoding of ldn failed\n");
     return false;
     }
 
@@ -31,14 +32,16 @@ bool LocalDistinguishedNameIe::encodeLocalDistinguishedNameIe(MsgBuffer &buffer,
 }
 
 bool LocalDistinguishedNameIe::decodeLocalDistinguishedNameIe(MsgBuffer &buffer, LocalDistinguishedNameIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array512(buffer, data.ldn, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: ldn\n");
+        errorStream.add((char *)"Failed to decode: ldn\n");
         return false;
     }
 
@@ -51,18 +54,18 @@ bool LocalDistinguishedNameIe::decodeLocalDistinguishedNameIe(MsgBuffer &buffer,
     }
     else
     {
-        errorStream.add("Unable to decode IE LocalDistinguishedNameIe\n");
+        errorStream.add((char *)"Unable to decode IE LocalDistinguishedNameIe\n");
         return false;
     }
 }
 void LocalDistinguishedNameIe::displayLocalDistinguishedNameIe_v(LocalDistinguishedNameIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("LocalDistinguishedNameIeData:");
+    stream.add((char *)"LocalDistinguishedNameIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("ldn:");
+    stream.add((char *)"ldn:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array512_v(data.ldn, stream);
     stream.decrIndent();

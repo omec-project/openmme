@@ -1,9 +1,10 @@
 /*
- * chargingIdIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "chargingIdIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool ChargingIdIe::encodeChargingIdIe(MsgBuffer &buffer, ChargingIdIeData const 
 {
     if (!(buffer.writeUint32(data.chargingIdValue)))
     {
-        errorStream.add("Encoding of chargingIdValue failed\n");
+        errorStream.add((char *)"Encoding of chargingIdValue failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool ChargingIdIe::encodeChargingIdIe(MsgBuffer &buffer, ChargingIdIeData const 
 }
 
 bool ChargingIdIe::decodeChargingIdIe(MsgBuffer &buffer, ChargingIdIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint32(data.chargingIdValue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: chargingIdValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: chargingIdValue\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool ChargingIdIe::decodeChargingIdIe(MsgBuffer &buffer, ChargingIdIeData &data,
     }
     else
     {
-        errorStream.add("Unable to decode IE ChargingIdIe\n");
+        errorStream.add((char *)"Unable to decode IE ChargingIdIe\n");
         return false;
     }
 }
 void ChargingIdIe::displayChargingIdIe_v(ChargingIdIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ChargingIdIeData:");
+    stream.add((char *)"ChargingIdIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("chargingIdValue: ");
+    stream.add((char *)"chargingIdValue: ");
     stream.add(data.chargingIdValue);
     stream.endOfLine();
     stream.decrIndent();

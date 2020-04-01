@@ -1,9 +1,10 @@
 /*
- * millisecondTimeStampIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "millisecondTimeStampIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool MillisecondTimeStampIe::encodeMillisecondTimeStampIe(MsgBuffer &buffer, Mil
 {
     if (!(buffer.writeUint64(data.millisecondTimeStampValue)))
     {
-        errorStream.add("Encoding of millisecondTimeStampValue failed\n");
+        errorStream.add((char *)"Encoding of millisecondTimeStampValue failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool MillisecondTimeStampIe::encodeMillisecondTimeStampIe(MsgBuffer &buffer, Mil
 }
 
 bool MillisecondTimeStampIe::decodeMillisecondTimeStampIe(MsgBuffer &buffer, MillisecondTimeStampIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint64(data.millisecondTimeStampValue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: millisecondTimeStampValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: millisecondTimeStampValue\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool MillisecondTimeStampIe::decodeMillisecondTimeStampIe(MsgBuffer &buffer, Mil
     }
     else
     {
-        errorStream.add("Unable to decode IE MillisecondTimeStampIe\n");
+        errorStream.add((char *)"Unable to decode IE MillisecondTimeStampIe\n");
         return false;
     }
 }
 void MillisecondTimeStampIe::displayMillisecondTimeStampIe_v(MillisecondTimeStampIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("MillisecondTimeStampIeData:");
+    stream.add((char *)"MillisecondTimeStampIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("millisecondTimeStampValue: ");
+    stream.add((char *)"millisecondTimeStampValue: ");
     stream.add(data.millisecondTimeStampValue);
     stream.endOfLine();
     stream.decrIndent();

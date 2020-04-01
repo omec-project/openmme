@@ -1,9 +1,11 @@
-/*
- * GtpV2Ie.cpp
- *
- *  Created on: Jul 4, 2014
- *      Author: hariharanb
- */
+ /*
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+ 
+
 
 #include "../../../gtpV2Codec/ieClasses/manual/gtpV2Ie.h"
 

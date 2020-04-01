@@ -1,9 +1,10 @@
 /*
- * selectionModeIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "selectionModeIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,7 +26,7 @@ bool SelectionModeIe::encodeSelectionModeIe(MsgBuffer &buffer, SelectionModeIeDa
 
     if(!(buffer.writeBits(data.selectionMode, 2)))
     {
-        errorStream.add("Encoding of selectionMode failed\n");
+        errorStream.add((char *)"Encoding of selectionMode failed\n");
         return false;
     }
 
@@ -33,14 +34,14 @@ bool SelectionModeIe::encodeSelectionModeIe(MsgBuffer &buffer, SelectionModeIeDa
 }
 
 bool SelectionModeIe::decodeSelectionModeIe(MsgBuffer &buffer, SelectionModeIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(6);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -48,7 +49,7 @@ bool SelectionModeIe::decodeSelectionModeIe(MsgBuffer &buffer, SelectionModeIeDa
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: selectionMode\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: selectionMode\n");
         return false;
     }
 
@@ -61,18 +62,18 @@ bool SelectionModeIe::decodeSelectionModeIe(MsgBuffer &buffer, SelectionModeIeDa
     }
     else
     {
-        errorStream.add("Unable to decode IE SelectionModeIe\n");
+        errorStream.add((char *)"Unable to decode IE SelectionModeIe\n");
         return false;
     }
 }
 void SelectionModeIe::displaySelectionModeIe_v(SelectionModeIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("SelectionModeIeData:");
+    stream.add((char *)"SelectionModeIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "selectionMode: "); 
+    stream.add( (char *)"selectionMode: "); 
     stream.add((Uint8)data.selectionMode);
     stream.endOfLine();
     stream.decrIndent();

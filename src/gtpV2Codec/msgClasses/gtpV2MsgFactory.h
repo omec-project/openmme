@@ -1,9 +1,9 @@
 /*
- * gtpV2MsgFactory.h
- *
- *  Created on: Jul 10, 2014
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef GTPV2MSGFACTORY_H_
 #define GTPV2MSGFACTORY_H_

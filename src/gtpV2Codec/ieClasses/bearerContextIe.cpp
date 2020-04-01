@@ -1,9 +1,9 @@
 /*
- * bearerContextIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "bearerContextIe.h"
 #include "gtpV2GrpIeDataTypes.h"
@@ -31,9 +31,9 @@ BearerContextIe::BearerContextIe()
     BearerContextsToBeRemovedInModifyBearerRequest* bearerContextsToBeRemovedInModifyBearerRequest_p = new (BearerContextsToBeRemovedInModifyBearerRequest);
     insertGroupedIeObject(ModifyBearerRequestMsgType, 1, bearerContextsToBeRemovedInModifyBearerRequest_p);
     BearerContextsMarkedForRemovalInModifyBearerResponse* bearerContextsMarkedForRemovalInModifyBearerResponse_p = new (BearerContextsMarkedForRemovalInModifyBearerResponse);
-    insertGroupedIeObject(ModifyBearerResponseMsgType, 0, bearerContextsMarkedForRemovalInModifyBearerResponse_p);
+    insertGroupedIeObject(ModifyBearerResponseMsgType, 1, bearerContextsMarkedForRemovalInModifyBearerResponse_p);
     BearerContextsModifiedInModifyBearerResponse* bearerContextsModifiedInModifyBearerResponse_p = new (BearerContextsModifiedInModifyBearerResponse);
-    insertGroupedIeObject(ModifyBearerResponseMsgType, 1, bearerContextsModifiedInModifyBearerResponse_p);
+    insertGroupedIeObject(ModifyBearerResponseMsgType, 0, bearerContextsModifiedInModifyBearerResponse_p);
     BearerContextsToBeCreatedInCreateSessionRequest* bearerContextsToBeCreatedInCreateSessionRequest_p = new (BearerContextsToBeCreatedInCreateSessionRequest);
     insertGroupedIeObject(CreateSessionRequestMsgType, 0, bearerContextsToBeCreatedInCreateSessionRequest_p);
     BearerContextsToBeRemovedInCreateSessionRequest* bearerContextsToBeRemovedInCreateSessionRequest_p = new (BearerContextsToBeRemovedInCreateSessionRequest);

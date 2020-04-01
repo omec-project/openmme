@@ -1,9 +1,10 @@
 /*
- * apnIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "apnIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool ApnIe::encodeApnIe(MsgBuffer &buffer, ApnIeData const &data)
 {
     if (!(DataTypeCodecUtils::encodeUint8Array32(buffer, data.apnValue)))
     {
-    errorStream.add("Encoding of apnValue failed\n");
+    errorStream.add((char *)"Encoding of apnValue failed\n");
     return false;
     }
 
@@ -31,14 +32,16 @@ bool ApnIe::encodeApnIe(MsgBuffer &buffer, ApnIeData const &data)
 }
 
 bool ApnIe::decodeApnIe(MsgBuffer &buffer, ApnIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array32(buffer, data.apnValue, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: apnValue\n");
+        errorStream.add((char *)"Failed to decode: apnValue\n");
         return false;
     }
 
@@ -51,18 +54,18 @@ bool ApnIe::decodeApnIe(MsgBuffer &buffer, ApnIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE ApnIe\n");
+        errorStream.add((char *)"Unable to decode IE ApnIe\n");
         return false;
     }
 }
 void ApnIe::displayApnIe_v(ApnIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ApnIeData:");
+    stream.add((char *)"ApnIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("apnValue:");
+    stream.add((char *)"apnValue:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array32_v(data.apnValue, stream);
     stream.decrIndent();

@@ -1,9 +1,10 @@
 /*
- * bearerFlagsIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "bearerFlagsIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,12 +26,12 @@ bool BearerFlagsIe::encodeBearerFlagsIe(MsgBuffer &buffer, BearerFlagsIeData con
 
     if(!(buffer.writeBits(data.vb, 1)))
     {
-        errorStream.add("Encoding of vb failed\n");
+        errorStream.add((char *)"Encoding of vb failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.ppc, 1)))
     {
-        errorStream.add("Encoding of ppc failed\n");
+        errorStream.add((char *)"Encoding of ppc failed\n");
         return false;
     }
 
@@ -38,14 +39,14 @@ bool BearerFlagsIe::encodeBearerFlagsIe(MsgBuffer &buffer, BearerFlagsIeData con
 }
 
 bool BearerFlagsIe::decodeBearerFlagsIe(MsgBuffer &buffer, BearerFlagsIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(6);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -53,14 +54,14 @@ bool BearerFlagsIe::decodeBearerFlagsIe(MsgBuffer &buffer, BearerFlagsIeData &da
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: vb\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: vb\n");
         return false;
     }
     data.ppc = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: ppc\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: ppc\n");
         return false;
     }
 
@@ -73,22 +74,22 @@ bool BearerFlagsIe::decodeBearerFlagsIe(MsgBuffer &buffer, BearerFlagsIeData &da
     }
     else
     {
-        errorStream.add("Unable to decode IE BearerFlagsIe\n");
+        errorStream.add((char *)"Unable to decode IE BearerFlagsIe\n");
         return false;
     }
 }
 void BearerFlagsIe::displayBearerFlagsIe_v(BearerFlagsIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("BearerFlagsIeData:");
+    stream.add((char *)"BearerFlagsIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "vb: "); 
+    stream.add( (char *)"vb: "); 
     stream.add((Uint8)data.vb);
     stream.endOfLine();
   
-    stream.add( "ppc: "); 
+    stream.add( (char *)"ppc: "); 
     stream.add((Uint8)data.ppc);
     stream.endOfLine();
     stream.decrIndent();

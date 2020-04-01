@@ -1,9 +1,9 @@
 /*
- * debugUtils.h
- *
- *  Created on: Feb 13, 2011
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #include "debug.h"
 
@@ -33,7 +33,7 @@ void Debug::printDebugStreamToFile()
   // TODO 
 }
 
-void Debug::add(const char* data)
+void Debug::add(char* data)
 {
   if (newLine)
      startNewLine();

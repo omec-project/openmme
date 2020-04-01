@@ -1,9 +1,10 @@
 /*
- * integerNumberIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "integerNumberIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool IntegerNumberIe::encodeIntegerNumberIe(MsgBuffer &buffer, IntegerNumberIeDa
 {
     if (!(buffer.writeUint64(data.integerNumberValue)))
     {
-        errorStream.add("Encoding of integerNumberValue failed\n");
+        errorStream.add((char *)"Encoding of integerNumberValue failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool IntegerNumberIe::encodeIntegerNumberIe(MsgBuffer &buffer, IntegerNumberIeDa
 }
 
 bool IntegerNumberIe::decodeIntegerNumberIe(MsgBuffer &buffer, IntegerNumberIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint64(data.integerNumberValue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: integerNumberValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: integerNumberValue\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool IntegerNumberIe::decodeIntegerNumberIe(MsgBuffer &buffer, IntegerNumberIeDa
     }
     else
     {
-        errorStream.add("Unable to decode IE IntegerNumberIe\n");
+        errorStream.add((char *)"Unable to decode IE IntegerNumberIe\n");
         return false;
     }
 }
 void IntegerNumberIe::displayIntegerNumberIe_v(IntegerNumberIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("IntegerNumberIeData:");
+    stream.add((char *)"IntegerNumberIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("integerNumberValue: ");
+    stream.add((char *)"integerNumberValue: ");
     stream.add(data.integerNumberValue);
     stream.endOfLine();
     stream.decrIndent();

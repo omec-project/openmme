@@ -1,9 +1,10 @@
 /*
- * bearerContextsInDeleteBearerResponse.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #include "bearerContextsInDeleteBearerResponse.h"
 #include "manual/gtpV2Ie.h"
 #include "gtpV2IeFactory.h"
@@ -63,7 +64,7 @@ encodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: epsBearerId\n");
+        errorStream.add((char *)"Failed to encode IE: epsBearerId\n");
         return false;
     }
 
@@ -88,7 +89,7 @@ encodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
     buffer.goToIndex(endIndex);
     if (!(rc))
     {
-        errorStream.add("Failed to encode IE: cause\n");
+        errorStream.add((char *)"Failed to encode IE: cause\n");
         return false;
     }
 
@@ -115,7 +116,7 @@ encodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: protocolConfigurationOptions\n");
+          errorStream.add((char *)"Failed to encode IE: protocolConfigurationOptions\n");
           return false;
         }
     }
@@ -143,7 +144,7 @@ encodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: ranNasCause\n");
+          errorStream.add((char *)"Failed to encode IE: ranNasCause\n");
           return false;
         }
     }
@@ -171,7 +172,7 @@ encodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
 
         if (!(rc))
         {
-          errorStream.add("Failed to encode IE: extendedProtocolConfigurationOptions\n");
+          errorStream.add((char *)"Failed to encode IE: extendedProtocolConfigurationOptions\n");
           return false;
         }
     }
@@ -193,12 +194,12 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -220,7 +221,7 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: epsBearerId\n");
+                        errorStream.add((char *)"Failed to decode IE: epsBearerId\n");
                         return false;
                     }
                     Uint16 mandIe = EbiIeType;
@@ -230,7 +231,7 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -252,7 +253,7 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: cause\n");
+                        errorStream.add((char *)"Failed to decode IE: cause\n");
                         return false;
                     }
                     Uint16 mandIe = CauseIeType;
@@ -262,7 +263,7 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -285,14 +286,14 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
                     data.protocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: protocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: protocolConfigurationOptions\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -315,14 +316,14 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
                     data.ranNasCauseIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: ranNasCause\n");
+                        errorStream.add((char *)"Failed to decode IE: ranNasCause\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -345,14 +346,14 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
                     data.extendedProtocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: extendedProtocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: extendedProtocolConfigurationOptions\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error TODO
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -362,7 +363,7 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
             default:
             {
             // Unknown IE print error
-            errorStream.add("Unknown IE Type: ");
+            errorStream.add((char *)"Unknown IE Type: ");
             errorStream.add(ieHeader.ieType);
             errorStream.endOfLine();
             buffer.skipBytes(ieHeader.length);
@@ -372,7 +373,7 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
     if (!mandatoryIeLocalList.empty())
     {
         // some mandatory IEs are missing
-        errorStream.add("Missing Mandatory IEs:");
+        errorStream.add((char *)"Missing Mandatory IEs:");
         errorStream.endOfLine();
         while (!mandatoryIeLocalList.empty())
         {
@@ -380,9 +381,9 @@ decodeBearerContextsInDeleteBearerResponse(MsgBuffer &buffer,
             mandatoryIeLocalList.erase (mandatoryIeLocalList.begin ());
             Uint16 missingInstance = missingMandIe & 0x00FF;
             Uint16 missingIeType = (missingMandIe >> 8);
-            errorStream.add ("Missing Ie type: ");
+            errorStream.add ((char *)"Missing Ie type: ");
             errorStream.add (missingIeType);
-            errorStream.add ("  Instance: ");
+            errorStream.add ((char *)"  Instance: ");
             errorStream.add (missingInstance);
             errorStream.endOfLine();
         }
@@ -397,7 +398,7 @@ displayBearerContextsInDeleteBearerResponseData_v
 (BearerContextsInDeleteBearerResponseData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("BearerContextsInDeleteBearerResponse:");
+    stream.add((char *)"BearerContextsInDeleteBearerResponse:");
     stream.endOfLine();
     stream.incrIndent();
 
@@ -406,7 +407,7 @@ displayBearerContextsInDeleteBearerResponseData_v
     if (data.protocolConfigurationOptionsIePresent)
     {
 
-        stream.add("protocolConfigurationOptions:");
+        stream.add((char *)"protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
         dynamic_cast<
@@ -418,7 +419,7 @@ displayBearerContextsInDeleteBearerResponseData_v
     if (data.ranNasCauseIePresent)
     {
 
-        stream.add("ranNasCause:");
+        stream.add((char *)"ranNasCause:");
         stream.endOfLine();
         RanNasCauseIe ranNasCause=
         dynamic_cast<
@@ -430,7 +431,7 @@ displayBearerContextsInDeleteBearerResponseData_v
     if (data.extendedProtocolConfigurationOptionsIePresent)
     {
 
-        stream.add("extendedProtocolConfigurationOptions:");
+        stream.add((char *)"extendedProtocolConfigurationOptions:");
         stream.endOfLine();
         EpcoIe epco=
         dynamic_cast<

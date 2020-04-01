@@ -1,9 +1,9 @@
 /*
- * gtpV2Stack.h
- *
- *  Created on: Jul 11, 2014
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef GTPV2STACK_H_
 #define GTPV2STACK_H_
@@ -37,7 +37,7 @@ public:
 
     bool encodeMessage(GtpV2MessageHeader& msgHeader, MsgBuffer& buffer,
                  void* data_p = NULL);
-    bool decodeGtpMessageHeader(GtpV2MessageHeader& msgHeader, MsgBuffer& buffer);
+	bool decodeGtpMessageHeader(GtpV2MessageHeader& msgHeader, MsgBuffer& buffer);
     bool decodeMessage(GtpV2MessageHeader& msgHeader, MsgBuffer& buffer,
                  void* data_p = NULL);
     void display_v(Uint8 msgType, Debug& stream, void* data_p = NULL);

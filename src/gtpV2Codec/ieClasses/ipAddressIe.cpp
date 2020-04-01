@@ -1,9 +1,10 @@
 /*
- * ipAddressIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "ipAddressIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,7 +26,7 @@ bool IpAddressIe::encodeIpAddressIe(MsgBuffer &buffer, IpAddressIeData const &da
     {
         if (!(DataTypeCodecUtils::encodeIpAddressV4(buffer, data.ipAddressV4)))
         {
-            errorStream.add("Encoding of ipAddressV4 failed\n");
+            errorStream.add((char *)"Encoding of ipAddressV4 failed\n");
             return false;
         }
     }
@@ -33,7 +34,7 @@ bool IpAddressIe::encodeIpAddressIe(MsgBuffer &buffer, IpAddressIeData const &da
     {
         if (!(DataTypeCodecUtils::encodeIpAddressV6(buffer, data.ipAddressV6)))
         {
-            errorStream.add("Encoding of ipAddressV6 failed\n");
+            errorStream.add((char *)"Encoding of ipAddressV6 failed\n");
             return false;
         }
     }
@@ -42,17 +43,19 @@ bool IpAddressIe::encodeIpAddressIe(MsgBuffer &buffer, IpAddressIeData const &da
 }
 
 bool IpAddressIe::decodeIpAddressIe(MsgBuffer &buffer, IpAddressIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
 
     if (length == 4)
     {
         lengthLeft = ieBoundary - buffer.getCurrentIndex();
         if (!(DataTypeCodecUtils::decodeIpAddressV4(buffer, data.ipAddressV4, lengthLeft)))
         {
-            errorStream.add("Failed to decode: ipAddressV4\n");
+            errorStream.add((char *)"Failed to decode: ipAddressV4\n");
             return false;
         }
         data.ipAddressV4Present = true;
@@ -63,7 +66,7 @@ bool IpAddressIe::decodeIpAddressIe(MsgBuffer &buffer, IpAddressIeData &data, Ui
         lengthLeft = ieBoundary - buffer.getCurrentIndex();
         if (!(DataTypeCodecUtils::decodeIpAddressV6(buffer, data.ipAddressV6, lengthLeft)))
         {
-            errorStream.add("Failed to decode: ipAddressV6\n");
+            errorStream.add((char *)"Failed to decode: ipAddressV6\n");
             return false;
         }
         data.ipAddressV6Present = true;
@@ -78,27 +81,27 @@ bool IpAddressIe::decodeIpAddressIe(MsgBuffer &buffer, IpAddressIeData &data, Ui
     }
     else
     {
-        errorStream.add("Unable to decode IE IpAddressIe\n");
+        errorStream.add((char *)"Unable to decode IE IpAddressIe\n");
         return false;
     }
 }
 void IpAddressIe::displayIpAddressIe_v(IpAddressIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("IpAddressIeData:");
+    stream.add((char *)"IpAddressIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
     if (data.ipAddressV4Present)
     {
-        stream.add("ipAddressV4:");
+        stream.add((char *)"ipAddressV4:");
         stream.endOfLine();
         DataTypeCodecUtils::displayIpAddressV4_v(data.ipAddressV4, stream);
     }   
   
     if (data.ipAddressV6Present)
     {
-        stream.add("ipAddressV6:");
+        stream.add((char *)"ipAddressV6:");
         stream.endOfLine();
         DataTypeCodecUtils::displayIpAddressV6_v(data.ipAddressV6, stream);
     }   

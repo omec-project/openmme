@@ -1,9 +1,9 @@
 /*
- * debugUtils.h
- *
- *  Created on: Feb 13, 2011
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef DEBUG_H_
 #define DEBUG_H_
@@ -30,7 +30,7 @@ public:
   void printDebugStream();
   void printDebugStreamToFile();
 
-  void add(const char* data);
+  void add(char* data);
   void add(Uint8 data);
   void add(Uint16 data);
   void add(Uint32 data);

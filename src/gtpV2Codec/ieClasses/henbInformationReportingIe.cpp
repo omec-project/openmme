@@ -1,9 +1,10 @@
 /*
- * henbInformationReportingIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "henbInformationReportingIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,7 +26,7 @@ bool HenbInformationReportingIe::encodeHenbInformationReportingIe(MsgBuffer &buf
 
     if(!(buffer.writeBits(data.fti, 4)))
     {
-        errorStream.add("Encoding of fti failed\n");
+        errorStream.add((char *)"Encoding of fti failed\n");
         return false;
     }
 
@@ -33,14 +34,14 @@ bool HenbInformationReportingIe::encodeHenbInformationReportingIe(MsgBuffer &buf
 }
 
 bool HenbInformationReportingIe::decodeHenbInformationReportingIe(MsgBuffer &buffer, HenbInformationReportingIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(4);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -48,7 +49,7 @@ bool HenbInformationReportingIe::decodeHenbInformationReportingIe(MsgBuffer &buf
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: fti\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: fti\n");
         return false;
     }
 
@@ -61,18 +62,18 @@ bool HenbInformationReportingIe::decodeHenbInformationReportingIe(MsgBuffer &buf
     }
     else
     {
-        errorStream.add("Unable to decode IE HenbInformationReportingIe\n");
+        errorStream.add((char *)"Unable to decode IE HenbInformationReportingIe\n");
         return false;
     }
 }
 void HenbInformationReportingIe::displayHenbInformationReportingIe_v(HenbInformationReportingIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("HenbInformationReportingIeData:");
+    stream.add((char *)"HenbInformationReportingIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "fti: "); 
+    stream.add( (char *)"fti: "); 
     stream.add((Uint8)data.fti);
     stream.endOfLine();
     stream.decrIndent();

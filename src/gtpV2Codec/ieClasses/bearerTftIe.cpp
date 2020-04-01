@@ -1,9 +1,10 @@
 /*
- * bearerTftIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "bearerTftIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool BearerTftIe::encodeBearerTftIe(MsgBuffer &buffer, BearerTftIeData const &da
 {
     if (!(DataTypeCodecUtils::encodeUint8Array16(buffer, data.tft)))
     {
-    errorStream.add("Encoding of tft failed\n");
+    errorStream.add((char *)"Encoding of tft failed\n");
     return false;
     }
 
@@ -31,14 +32,16 @@ bool BearerTftIe::encodeBearerTftIe(MsgBuffer &buffer, BearerTftIeData const &da
 }
 
 bool BearerTftIe::decodeBearerTftIe(MsgBuffer &buffer, BearerTftIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array16(buffer, data.tft, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: tft\n");
+        errorStream.add((char *)"Failed to decode: tft\n");
         return false;
     }
 
@@ -51,18 +54,18 @@ bool BearerTftIe::decodeBearerTftIe(MsgBuffer &buffer, BearerTftIeData &data, Ui
     }
     else
     {
-        errorStream.add("Unable to decode IE BearerTftIe\n");
+        errorStream.add((char *)"Unable to decode IE BearerTftIe\n");
         return false;
     }
 }
 void BearerTftIe::displayBearerTftIe_v(BearerTftIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("BearerTftIeData:");
+    stream.add((char *)"BearerTftIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("tft:");
+    stream.add((char *)"tft:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array16_v(data.tft, stream);
     stream.decrIndent();

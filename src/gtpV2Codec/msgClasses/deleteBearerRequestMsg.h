@@ -1,9 +1,9 @@
 /*
- * deleteBearerRequestMsg.h
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 #ifndef DELETEBEARERREQUESTMSG_H_
 #define DELETEBEARERREQUESTMSG_H_
 

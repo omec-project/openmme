@@ -1,9 +1,10 @@
 /*
- * mappedUeUsageTypeIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "mappedUeUsageTypeIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool MappedUeUsageTypeIe::encodeMappedUeUsageTypeIe(MsgBuffer &buffer, MappedUeU
 {
     if (!(buffer.writeUint16(data.mappedUEUsageType)))
     {
-        errorStream.add("Encoding of mappedUEUsageType failed\n");
+        errorStream.add((char *)"Encoding of mappedUEUsageType failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool MappedUeUsageTypeIe::encodeMappedUeUsageTypeIe(MsgBuffer &buffer, MappedUeU
 }
 
 bool MappedUeUsageTypeIe::decodeMappedUeUsageTypeIe(MsgBuffer &buffer, MappedUeUsageTypeIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint16(data.mappedUEUsageType);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: mappedUEUsageType\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: mappedUEUsageType\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool MappedUeUsageTypeIe::decodeMappedUeUsageTypeIe(MsgBuffer &buffer, MappedUeU
     }
     else
     {
-        errorStream.add("Unable to decode IE MappedUeUsageTypeIe\n");
+        errorStream.add((char *)"Unable to decode IE MappedUeUsageTypeIe\n");
         return false;
     }
 }
 void MappedUeUsageTypeIe::displayMappedUeUsageTypeIe_v(MappedUeUsageTypeIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("MappedUeUsageTypeIeData:");
+    stream.add((char *)"MappedUeUsageTypeIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("mappedUEUsageType: ");
+    stream.add((char *)"mappedUEUsageType: ");
     stream.add(data.mappedUEUsageType);
     stream.endOfLine();
     stream.decrIndent();

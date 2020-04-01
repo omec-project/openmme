@@ -1,9 +1,10 @@
 /*
- * uliIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "uliIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,39 +26,39 @@ bool UliIe::encodeUliIe(MsgBuffer &buffer, UliIeData const &data)
 
     if(!(buffer.writeBits(data.laipresent, 1)))
     {
-        errorStream.add("Encoding of laipresent failed\n");
+        errorStream.add((char *)"Encoding of laipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.ecgipresent, 1)))
     {
-        errorStream.add("Encoding of ecgipresent failed\n");
+        errorStream.add((char *)"Encoding of ecgipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.taipresent, 1)))
     {
-        errorStream.add("Encoding of taipresent failed\n");
+        errorStream.add((char *)"Encoding of taipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.raipresent, 1)))
     {
-        errorStream.add("Encoding of raipresent failed\n");
+        errorStream.add((char *)"Encoding of raipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.saipresent, 1)))
     {
-        errorStream.add("Encoding of saipresent failed\n");
+        errorStream.add((char *)"Encoding of saipresent failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.cgipresent, 1)))
     {
-        errorStream.add("Encoding of cgipresent failed\n");
+        errorStream.add((char *)"Encoding of cgipresent failed\n");
         return false;
     }
     if (data.cgipresent)
     {
         if (!(DataTypeCodecUtils::encodeCgiField(buffer, data.cgi)))
         {
-            errorStream.add("Encoding of cgi failed\n");
+            errorStream.add((char *)"Encoding of cgi failed\n");
             return false;
         }
     }
@@ -65,7 +66,7 @@ bool UliIe::encodeUliIe(MsgBuffer &buffer, UliIeData const &data)
     {
         if (!(DataTypeCodecUtils::encodeSaiField(buffer, data.sai)))
         {
-            errorStream.add("Encoding of sai failed\n");
+            errorStream.add((char *)"Encoding of sai failed\n");
             return false;
         }
     }
@@ -73,7 +74,7 @@ bool UliIe::encodeUliIe(MsgBuffer &buffer, UliIeData const &data)
     {
         if (!(DataTypeCodecUtils::encodeRaiField(buffer, data.rai)))
         {
-            errorStream.add("Encoding of rai failed\n");
+            errorStream.add((char *)"Encoding of rai failed\n");
             return false;
         }
     }
@@ -81,7 +82,7 @@ bool UliIe::encodeUliIe(MsgBuffer &buffer, UliIeData const &data)
     {
         if (!(DataTypeCodecUtils::encodeTaiField(buffer, data.tai)))
         {
-            errorStream.add("Encoding of tai failed\n");
+            errorStream.add((char *)"Encoding of tai failed\n");
             return false;
         }
     }
@@ -89,7 +90,7 @@ bool UliIe::encodeUliIe(MsgBuffer &buffer, UliIeData const &data)
     {
         if (!(DataTypeCodecUtils::encodeEcgiField(buffer, data.ecgi)))
         {
-            errorStream.add("Encoding of ecgi failed\n");
+            errorStream.add((char *)"Encoding of ecgi failed\n");
             return false;
         }
     }
@@ -97,7 +98,7 @@ bool UliIe::encodeUliIe(MsgBuffer &buffer, UliIeData const &data)
     {
         if (!(DataTypeCodecUtils::encodeLaiField(buffer, data.lai)))
         {
-            errorStream.add("Encoding of lai failed\n");
+            errorStream.add((char *)"Encoding of lai failed\n");
             return false;
         }
     }
@@ -106,14 +107,14 @@ bool UliIe::encodeUliIe(MsgBuffer &buffer, UliIeData const &data)
 }
 
 bool UliIe::decodeUliIe(MsgBuffer &buffer, UliIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(2);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -121,79 +122,105 @@ bool UliIe::decodeUliIe(MsgBuffer &buffer, UliIeData &data, Uint16 length)
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: laipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: laipresent\n");
         return false;
     }
     data.ecgipresent = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: ecgipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: ecgipresent\n");
         return false;
     }
     data.taipresent = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: taipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: taipresent\n");
         return false;
     }
     data.raipresent = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: raipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: raipresent\n");
         return false;
     }
     data.saipresent = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: saipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: saipresent\n");
         return false;
     }
     data.cgipresent = buffer.readBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: cgipresent\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: cgipresent\n");
         return false;
     }
-    lengthLeft = ieBoundary - buffer.getCurrentIndex();
-    if (!(DataTypeCodecUtils::decodeCgiField(buffer, data.cgi, lengthLeft)))
+
+    Uint16 lengthLeft = length;
+
+    if (data.cgipresent)
     {
-        errorStream.add("Failed to decode: cgi\n");
-        return false;
+        lengthLeft = ieBoundary - buffer.getCurrentIndex();
+        if (!(DataTypeCodecUtils::decodeCgiField(buffer, data.cgi, lengthLeft)))
+        {
+            errorStream.add((char *)"Failed to decode: cgi\n");
+            return false;
+        }
     }
-    lengthLeft = ieBoundary - buffer.getCurrentIndex();
-    if (!(DataTypeCodecUtils::decodeSaiField(buffer, data.sai, lengthLeft)))
+
+    if (data.saipresent)
     {
-        errorStream.add("Failed to decode: sai\n");
-        return false;
+        lengthLeft = ieBoundary - buffer.getCurrentIndex();
+        if (!(DataTypeCodecUtils::decodeSaiField(buffer, data.sai, lengthLeft)))
+        {
+            errorStream.add((char *)"Failed to decode: sai\n");
+            return false;
+        }
     }
-    lengthLeft = ieBoundary - buffer.getCurrentIndex();
-    if (!(DataTypeCodecUtils::decodeRaiField(buffer, data.rai, lengthLeft)))
+
+    if (data.raipresent)
     {
-        errorStream.add("Failed to decode: rai\n");
-        return false;
+        lengthLeft = ieBoundary - buffer.getCurrentIndex();
+        if (!(DataTypeCodecUtils::decodeRaiField(buffer, data.rai, lengthLeft)))
+        {
+            errorStream.add((char *)"Failed to decode: rai\n");
+            return false;
+        }
     }
-    lengthLeft = ieBoundary - buffer.getCurrentIndex();
-    if (!(DataTypeCodecUtils::decodeTaiField(buffer, data.tai, lengthLeft)))
+
+    if (data.taipresent)
     {
-        errorStream.add("Failed to decode: tai\n");
-        return false;
+        lengthLeft = ieBoundary - buffer.getCurrentIndex();
+        if (!(DataTypeCodecUtils::decodeTaiField(buffer, data.tai, lengthLeft)))
+        {
+            errorStream.add((char *)"Failed to decode: tai\n");
+            return false;
+        }
     }
-    lengthLeft = ieBoundary - buffer.getCurrentIndex();
-    if (!(DataTypeCodecUtils::decodeEcgiField(buffer, data.ecgi, lengthLeft)))
+
+    if (data.ecgipresent)
     {
-        errorStream.add("Failed to decode: ecgi\n");
-        return false;
+        lengthLeft = ieBoundary - buffer.getCurrentIndex();
+        if (!(DataTypeCodecUtils::decodeEcgiField(buffer, data.ecgi, lengthLeft)))
+        {
+            errorStream.add((char *)"Failed to decode: ecgi\n");
+            return false;
+        }
     }
-    lengthLeft = ieBoundary - buffer.getCurrentIndex();
-    if (!(DataTypeCodecUtils::decodeLaiField(buffer, data.lai, lengthLeft)))
+
+    if (data.laipresent)
     {
-        errorStream.add("Failed to decode: lai\n");
-        return false;
+        lengthLeft = ieBoundary - buffer.getCurrentIndex();
+        if (!(DataTypeCodecUtils::decodeLaiField(buffer, data.lai, lengthLeft)))
+        {
+            errorStream.add((char *)"Failed to decode: lai\n");
+            return false;
+        }
     }
 
     // The IE is decoded now. The buffer index should be pointing to the 
@@ -205,79 +232,79 @@ bool UliIe::decodeUliIe(MsgBuffer &buffer, UliIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE UliIe\n");
+        errorStream.add((char *)"Unable to decode IE UliIe\n");
         return false;
     }
 }
 void UliIe::displayUliIe_v(UliIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("UliIeData:");
+    stream.add((char *)"UliIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "laipresent: "); 
+    stream.add( (char *)"laipresent: "); 
     stream.add((Uint8)data.laipresent);
     stream.endOfLine();
   
-    stream.add( "ecgipresent: "); 
+    stream.add( (char *)"ecgipresent: "); 
     stream.add((Uint8)data.ecgipresent);
     stream.endOfLine();
   
-    stream.add( "taipresent: "); 
+    stream.add( (char *)"taipresent: "); 
     stream.add((Uint8)data.taipresent);
     stream.endOfLine();
   
-    stream.add( "raipresent: "); 
+    stream.add( (char *)"raipresent: "); 
     stream.add((Uint8)data.raipresent);
     stream.endOfLine();
   
-    stream.add( "saipresent: "); 
+    stream.add( (char *)"saipresent: "); 
     stream.add((Uint8)data.saipresent);
     stream.endOfLine();
   
-    stream.add( "cgipresent: "); 
+    stream.add( (char *)"cgipresent: "); 
     stream.add((Uint8)data.cgipresent);
     stream.endOfLine();
   
     if (data.cgipresent)
     {
-        stream.add("cgi:");
+        stream.add((char *)"cgi:");
         stream.endOfLine();
         DataTypeCodecUtils::displayCgiField_v(data.cgi, stream);
     }
   
     if (data.saipresent)
     {
-        stream.add("sai:");
+        stream.add((char *)"sai:");
         stream.endOfLine();
         DataTypeCodecUtils::displaySaiField_v(data.sai, stream);
     }
   
     if (data.raipresent)
     {
-        stream.add("rai:");
+        stream.add((char *)"rai:");
         stream.endOfLine();
         DataTypeCodecUtils::displayRaiField_v(data.rai, stream);
     }
   
     if (data.taipresent)
     {
-        stream.add("tai:");
+        stream.add((char *)"tai:");
         stream.endOfLine();
         DataTypeCodecUtils::displayTaiField_v(data.tai, stream);
     }
   
     if (data.ecgipresent)
     {
-        stream.add("ecgi:");
+        stream.add((char *)"ecgi:");
         stream.endOfLine();
         DataTypeCodecUtils::displayEcgiField_v(data.ecgi, stream);
     }
   
     if (data.laipresent)
     {
-        stream.add("lai:");
+        stream.add((char *)"lai:");
         stream.endOfLine();
         DataTypeCodecUtils::displayLaiField_v(data.lai, stream);
     }

@@ -1,9 +1,10 @@
 /*
- * epcoIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "epcoIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool EpcoIe::encodeEpcoIe(MsgBuffer &buffer, EpcoIeData const &data)
 {
     if (!(DataTypeCodecUtils::encodeUint8Array16(buffer, data.epco)))
     {
-    errorStream.add("Encoding of epco failed\n");
+    errorStream.add((char *)"Encoding of epco failed\n");
     return false;
     }
 
@@ -31,14 +32,16 @@ bool EpcoIe::encodeEpcoIe(MsgBuffer &buffer, EpcoIeData const &data)
 }
 
 bool EpcoIe::decodeEpcoIe(MsgBuffer &buffer, EpcoIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeUint8Array16(buffer, data.epco, lengthLeft, 0)))
     {
-        errorStream.add("Failed to decode: epco\n");
+        errorStream.add((char *)"Failed to decode: epco\n");
         return false;
     }
 
@@ -51,18 +54,18 @@ bool EpcoIe::decodeEpcoIe(MsgBuffer &buffer, EpcoIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE EpcoIe\n");
+        errorStream.add((char *)"Unable to decode IE EpcoIe\n");
         return false;
     }
 }
 void EpcoIe::displayEpcoIe_v(EpcoIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("EpcoIeData:");
+    stream.add((char *)"EpcoIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("epco:");
+    stream.add((char *)"epco:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array16_v(data.epco, stream);
     stream.decrIndent();

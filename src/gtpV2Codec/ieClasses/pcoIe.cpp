@@ -1,9 +1,10 @@
 /*
- * pcoIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "pcoIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,9 +24,10 @@ PcoIe::~PcoIe() {
 
 bool PcoIe::encodePcoIe(MsgBuffer &buffer, PcoIeData const &data)
 {
+
     if (!(DataTypeCodecUtils::encodeUint8Array512(buffer, data.pcoValue)))
     {
-    errorStream.add("Encoding of pcoValue failed\n");
+    errorStream.add((char *)"Encoding of pcoValue failed\n");
     return false;
     }
 
@@ -33,7 +35,7 @@ bool PcoIe::encodePcoIe(MsgBuffer &buffer, PcoIeData const &data)
 }
 
 bool PcoIe::decodePcoIe(MsgBuffer &buffer, PcoIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
     if (!(DataTypeCodecUtils::decodeUint8Array512(buffer, data.pcoValue, length, 0)))
     {
@@ -46,11 +48,11 @@ bool PcoIe::decodePcoIe(MsgBuffer &buffer, PcoIeData &data, Uint16 length)
 void PcoIe::displayPcoIe_v(PcoIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("PcoIeData:");
+    stream.add((char *)"PcoIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("pcoValue:");
+    stream.add((char *)"pcoValue:");
     stream.endOfLine();
     DataTypeCodecUtils::displayUint8Array512_v(data.pcoValue, stream);
     stream.decrIndent();

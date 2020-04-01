@@ -1,9 +1,10 @@
 /*
- * imsiIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "imsiIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool ImsiIe::encodeImsiIe(MsgBuffer &buffer, ImsiIeData const &data)
 {
     if (!(data.imsiValue.length>=9 && data.imsiValue.length <=15))
     {
-        errorStream.add("Data validation failure: imsiValue\n");
+        errorStream.add((char *)"Data validation failure: imsiValue\n");
         return false; 
     }
     if (!(DataTypeCodecUtils::encodeDigitRegister(buffer, data.imsiValue)))
     {
-    errorStream.add("Encoding of imsiValue failed\n");
+    errorStream.add((char *)"Encoding of imsiValue failed\n");
     return false;
     }
 
@@ -36,19 +37,21 @@ bool ImsiIe::encodeImsiIe(MsgBuffer &buffer, ImsiIeData const &data)
 }
 
 bool ImsiIe::decodeImsiIe(MsgBuffer &buffer, ImsiIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
+
+    Uint16 lengthLeft = length;
     lengthLeft = ieBoundary - buffer.getCurrentIndex();
     if (!(DataTypeCodecUtils::decodeDigitRegister(buffer, data.imsiValue, lengthLeft)))
     {
-        errorStream.add("Failed to decode: imsiValue\n");
+        errorStream.add((char *)"Failed to decode: imsiValue\n");
         return false;
     }
     if (!(data.imsiValue.length>=9 && data.imsiValue.length <=15))
     {
-        errorStream.add("Data validation failure : imsiValue\n");
+        errorStream.add((char *)"Data validation failure : imsiValue\n");
         return false; //TODO need to add validations
     }
 
@@ -61,18 +64,18 @@ bool ImsiIe::decodeImsiIe(MsgBuffer &buffer, ImsiIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE ImsiIe\n");
+        errorStream.add((char *)"Unable to decode IE ImsiIe\n");
         return false;
     }
 }
 void ImsiIe::displayImsiIe_v(ImsiIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ImsiIeData:");
+    stream.add((char *)"ImsiIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("imsiValue:");
+    stream.add((char *)"imsiValue:");
     stream.endOfLine();
     DataTypeCodecUtils::displayDigitRegister_v(data.imsiValue, stream);
     stream.decrIndent();

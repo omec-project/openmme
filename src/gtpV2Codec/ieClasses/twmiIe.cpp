@@ -1,9 +1,10 @@
 /*
- * twmiIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "twmiIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,12 +26,12 @@ bool TwmiIe::encodeTwmiIe(MsgBuffer &buffer, TwmiIeData const &data)
 
     if(!(buffer.writeBits(data.mcm, 2)))
     {
-        errorStream.add("Encoding of mcm failed\n");
+        errorStream.add((char *)"Encoding of mcm failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.scm, 2)))
     {
-        errorStream.add("Encoding of scm failed\n");
+        errorStream.add((char *)"Encoding of scm failed\n");
         return false;
     }
 
@@ -38,14 +39,14 @@ bool TwmiIe::encodeTwmiIe(MsgBuffer &buffer, TwmiIeData const &data)
 }
 
 bool TwmiIe::decodeTwmiIe(MsgBuffer &buffer, TwmiIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(4);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -53,14 +54,14 @@ bool TwmiIe::decodeTwmiIe(MsgBuffer &buffer, TwmiIeData &data, Uint16 length)
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: mcm\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: mcm\n");
         return false;
     }
     data.scm = buffer.readBits(2);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: scm\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: scm\n");
         return false;
     }
 
@@ -73,22 +74,22 @@ bool TwmiIe::decodeTwmiIe(MsgBuffer &buffer, TwmiIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE TwmiIe\n");
+        errorStream.add((char *)"Unable to decode IE TwmiIe\n");
         return false;
     }
 }
 void TwmiIe::displayTwmiIe_v(TwmiIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("TwmiIeData:");
+    stream.add((char *)"TwmiIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "mcm: "); 
+    stream.add( (char *)"mcm: "); 
     stream.add((Uint8)data.mcm);
     stream.endOfLine();
   
-    stream.add( "scm: "); 
+    stream.add( (char *)"scm: "); 
     stream.add((Uint8)data.scm);
     stream.endOfLine();
     stream.decrIndent();

@@ -1,9 +1,9 @@
 /*
- * createBearerResponseMsg.h
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 #ifndef CREATEBEARERRESPONSEMSG_H_
 #define CREATEBEARERRESPONSEMSG_H_
 

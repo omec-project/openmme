@@ -1,9 +1,10 @@
 /*
- * createSessionResponseMsg.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #include "assert.h"
 #include "createSessionResponseMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
@@ -76,6 +77,30 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
     Uint16 endIndex = 0;
     Uint16 length = 0;
 
+    
+    // Encode the Ie Header
+    header.ieType = CauseIeType;
+    header.instance = 0;
+    header.length = 0; // We will encode the IE first and then update the length
+    GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+    startIndex = buffer.getCurrentIndex(); 
+    CauseIe cause=
+    dynamic_cast<
+    CauseIe&>(GtpV2IeFactory::getInstance().getIeObject(CauseIeType));
+    rc = cause.encodeCauseIe(buffer, data.cause);
+    endIndex = buffer.getCurrentIndex();
+    length = endIndex - startIndex;
+
+    // encode the length value now
+    buffer.goToIndex(startIndex - 3);
+    buffer.writeUint16(length, false);
+    buffer.goToIndex(endIndex);
+
+    if (!(rc))
+    { 
+        errorStream.add((char *)"Failed to encode IE: cause\n");
+        return false;
+    }
 
     if (data.changeReportingActionIePresent)
     {
@@ -100,7 +125,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: changeReportingAction\n");
+            errorStream.add((char *)"Failed to encode IE: changeReportingAction\n");
             return false;
         }
     }
@@ -128,7 +153,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: csgInformationReportingAction\n");
+            errorStream.add((char *)"Failed to encode IE: csgInformationReportingAction\n");
             return false;
         }
     }
@@ -156,7 +181,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: senderFTeidForControlPlane\n");
+            errorStream.add((char *)"Failed to encode IE: senderFTeidForControlPlane\n");
             return false;
         }
     }
@@ -184,7 +209,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: apnRestriction\n");
+            errorStream.add((char *)"Failed to encode IE: apnRestriction\n");
             return false;
         }
     }
@@ -212,7 +237,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: aggregateMaximumBitRate\n");
+            errorStream.add((char *)"Failed to encode IE: aggregateMaximumBitRate\n");
             return false;
         }
     }
@@ -240,18 +265,55 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: linkedEpsBearerId\n");
+            errorStream.add((char *)"Failed to encode IE: linkedEpsBearerId\n");
             return false;
         }
     }
 
+        // First validate if the applicatoin provided more than the expected cardinality
+    if (data.bearerContextsCreatedCount > 11)
+    {
+        errorStream.add((char *)"Number of entries of bearerContextsCreated exceeded\n");
+        errorStream.add((char *)"Expected count: 11 Received count: ");
+        errorStream.add((char *)"data.bearerContextsCreatedCount");
+        errorStream.endOfLine();
+        return false;
+    }
+    for (Uint8 i = 0; i < data.bearerContextsCreatedCount; i++)
+    {
+        // Encode the Ie Header
+        header.ieType = BearerContextIeType;
+        header.instance = 0;
+        header.length = 0; // We will encode the IE first and then update the length
+        GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+        startIndex = buffer.getCurrentIndex(); 
+        BearerContextIe bearerContext=
+        dynamic_cast<
+        BearerContextIe&>(GtpV2IeFactory::getInstance().
+        getIeObject(BearerContextIeType));
+        BearerContextsCreatedInCreateSessionResponse groupedIeInstance = dynamic_cast<BearerContextsCreatedInCreateSessionResponse&>(bearerContext.getGroupedIe(msgType, 0));
+        rc = groupedIeInstance.encodeBearerContextsCreatedInCreateSessionResponse(buffer, data.bearerContextsCreated[i]);
+        endIndex = buffer.getCurrentIndex();
+        length = endIndex - startIndex;
+
+        // encode the length value now
+        buffer.goToIndex(startIndex - 3);
+        buffer.writeUint16(length, false);
+        buffer.goToIndex(endIndex);
+    }
+
+    if (!(rc))
+    { 
+        errorStream.add((char *)"Failed to encode IE: bearerContextsCreated\n");
+        return false;
+    }
 
         // First validate if the applicatoin provided more than the expected cardinality
     if (data.bearerContextsMarkedForRemovalCount > 11)
     {
-        errorStream.add("Number of entries of bearerContextsMarkedForRemoval exceeded\n");
-        errorStream.add("Expected count: 11 Received count: ");
-        errorStream.add("data.bearerContextsMarkedForRemovalCount");
+        errorStream.add((char *)"Number of entries of bearerContextsMarkedForRemoval exceeded\n");
+        errorStream.add((char *)"Expected count: 11 Received count: ");
+        errorStream.add((char *)"data.bearerContextsMarkedForRemovalCount");
         errorStream.endOfLine();
         return false;
     }
@@ -280,7 +342,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
     if (!(rc))
     { 
-        errorStream.add("Failed to encode IE: bearerContextsMarkedForRemoval\n");
+        errorStream.add((char *)"Failed to encode IE: bearerContextsMarkedForRemoval\n");
         return false;
     }
 
@@ -307,7 +369,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: recovery\n");
+            errorStream.add((char *)"Failed to encode IE: recovery\n");
             return false;
         }
     }
@@ -335,7 +397,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: chargingGatewayName\n");
+            errorStream.add((char *)"Failed to encode IE: chargingGatewayName\n");
             return false;
         }
     }
@@ -363,7 +425,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: chargingGatewayAddress\n");
+            errorStream.add((char *)"Failed to encode IE: chargingGatewayAddress\n");
             return false;
         }
     }
@@ -391,7 +453,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwFqCsid\n");
+            errorStream.add((char *)"Failed to encode IE: pgwFqCsid\n");
             return false;
         }
     }
@@ -419,7 +481,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwFqCsid\n");
+            errorStream.add((char *)"Failed to encode IE: sgwFqCsid\n");
             return false;
         }
     }
@@ -447,7 +509,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwLdn\n");
+            errorStream.add((char *)"Failed to encode IE: sgwLdn\n");
             return false;
         }
     }
@@ -475,7 +537,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwLdn\n");
+            errorStream.add((char *)"Failed to encode IE: pgwLdn\n");
             return false;
         }
     }
@@ -503,7 +565,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwBackOffTime\n");
+            errorStream.add((char *)"Failed to encode IE: pgwBackOffTime\n");
             return false;
         }
     }
@@ -531,12 +593,12 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: hNbInformationReporting\n");
+            errorStream.add((char *)"Failed to encode IE: hNbInformationReporting\n");
             return false;
         }
     }
 
-    if (data.pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterfaceIePresent)
+    if (data.pgwS5S8S2bFTeidIePresent)
     {
             
         // Encode the Ie Header
@@ -548,7 +610,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
         FTeidIe fTeid=
         dynamic_cast<
         FTeidIe&>(GtpV2IeFactory::getInstance().getIeObject(FTeidIeType));
-        rc = fTeid.encodeFTeidIe(buffer, data.pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterface);
+        rc = fTeid.encodeFTeidIe(buffer, data.pgwS5S8S2bFTeid);
         endIndex = buffer.getCurrentIndex();
         length = endIndex - startIndex;
     
@@ -559,7 +621,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterface\n");
+            errorStream.add((char *)"Failed to encode IE: pgwS5S8S2bFTeid\n");
             return false;
         }
     }
@@ -587,7 +649,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pdnAddressAllocation\n");
+            errorStream.add((char *)"Failed to encode IE: pdnAddressAllocation\n");
             return false;
         }
     }
@@ -615,7 +677,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: protocolConfigurationOptions\n");
+            errorStream.add((char *)"Failed to encode IE: protocolConfigurationOptions\n");
             return false;
         }
     }
@@ -643,7 +705,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: additionalProtocolConfigurationOptions\n");
+            errorStream.add((char *)"Failed to encode IE: additionalProtocolConfigurationOptions\n");
             return false;
         }
     }
@@ -671,7 +733,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: trustedWlanIpv4Parameters\n");
+            errorStream.add((char *)"Failed to encode IE: trustedWlanIpv4Parameters\n");
             return false;
         }
     }
@@ -699,7 +761,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: indicationFlags\n");
+            errorStream.add((char *)"Failed to encode IE: indicationFlags\n");
             return false;
         }
     }
@@ -727,7 +789,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: presenceReportingAreaAction\n");
+            errorStream.add((char *)"Failed to encode IE: presenceReportingAreaAction\n");
             return false;
         }
     }
@@ -758,7 +820,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwsNodeLevelLoadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: pgwsNodeLevelLoadControlInformation\n");
             return false;
         }
     }
@@ -789,7 +851,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwsApnLevelLoadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: pgwsApnLevelLoadControlInformation\n");
             return false;
         }
     }
@@ -820,7 +882,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwsNodeLevelLoadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: sgwsNodeLevelLoadControlInformation\n");
             return false;
         }
     }
@@ -851,7 +913,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pgwsOverloadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: pgwsOverloadControlInformation\n");
             return false;
         }
     }
@@ -882,7 +944,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: sgwsOverloadControlInformation\n");
+            errorStream.add((char *)"Failed to encode IE: sgwsOverloadControlInformation\n");
             return false;
         }
     }
@@ -910,7 +972,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: nbifomContainer\n");
+            errorStream.add((char *)"Failed to encode IE: nbifomContainer\n");
             return false;
         }
     }
@@ -938,7 +1000,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: pdnConnectionChargingId\n");
+            errorStream.add((char *)"Failed to encode IE: pdnConnectionChargingId\n");
             return false;
         }
     }
@@ -966,7 +1028,7 @@ bool CreateSessionResponseMsg::encodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: extendedProtocolConfigurationOptions\n");
+            errorStream.add((char *)"Failed to encode IE: extendedProtocolConfigurationOptions\n");
             return false;
         }
     }
@@ -989,12 +1051,12 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -1014,7 +1076,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: cause\n");
+                        errorStream.add((char *)"Failed to decode IE: cause\n");
                         return false;
                     }
                 }
@@ -1022,7 +1084,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1043,7 +1105,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.changeReportingActionIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: changeReportingAction\n");
+                        errorStream.add((char *)"Failed to decode IE: changeReportingAction\n");
                         return false;
                     }
                 }
@@ -1051,7 +1113,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1072,7 +1134,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.csgInformationReportingActionIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: csgInformationReportingAction\n");
+                        errorStream.add((char *)"Failed to decode IE: csgInformationReportingAction\n");
                         return false;
                     }
                 }
@@ -1080,7 +1142,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1101,18 +1163,18 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.senderFTeidForControlPlaneIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: senderFTeidForControlPlane\n");
+                        errorStream.add((char *)"Failed to decode IE: senderFTeidForControlPlane\n");
                         return false;
                     }
                 }
                 else if(ieHeader.instance == 1)
                 {
-					rc = ieObject.decodeFTeidIe(buffer, data.pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterface, ieHeader.length);
+					rc = ieObject.decodeFTeidIe(buffer, data.pgwS5S8S2bFTeid, ieHeader.length);
 
-                    data.pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterfaceIePresent = true;
+                    data.pgwS5S8S2bFTeidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterface\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwS5S8S2bFTeid\n");
                         return false;
                     }
                 }
@@ -1120,7 +1182,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1141,7 +1203,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.apnRestrictionIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: apnRestriction\n");
+                        errorStream.add((char *)"Failed to decode IE: apnRestriction\n");
                         return false;
                     }
                 }
@@ -1149,7 +1211,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1170,7 +1232,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.aggregateMaximumBitRateIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: aggregateMaximumBitRate\n");
+                        errorStream.add((char *)"Failed to decode IE: aggregateMaximumBitRate\n");
                         return false;
                     }
                 }
@@ -1178,7 +1240,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1199,7 +1261,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.linkedEpsBearerIdIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: linkedEpsBearerId\n");
+                        errorStream.add((char *)"Failed to decode IE: linkedEpsBearerId\n");
                         return false;
                     }
                 }
@@ -1207,7 +1269,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1226,7 +1288,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
 					// First check if we have enough space left to decode and store this instance
                     if (data.bearerContextsCreatedCount == 11)
                     {
-                        errorStream.add("More than 11 instances of bearerContextsCreated received\n");
+                        errorStream.add((char *)"More than 11 instances of bearerContextsCreated received\n");
                         return false;
                     }
                     BearerContextsCreatedInCreateSessionResponse groupedIeInstance =
@@ -1238,7 +1300,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: bearerContextsCreated\n");
+                        errorStream.add((char *)"Failed to decode IE: bearerContextsCreated\n");
                         return false;
                     }
                 }
@@ -1247,7 +1309,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
 					// First check if we have enough space left to decode and store this instance
                     if (data.bearerContextsMarkedForRemovalCount == 11)
                     {
-                        errorStream.add("More than 11 instances of bearerContextsMarkedForRemoval received\n");
+                        errorStream.add((char *)"More than 11 instances of bearerContextsMarkedForRemoval received\n");
                         return false;
                     }
                     BearerContextsMarkedForRemovalInCreateSessionResponse groupedIeInstance =
@@ -1259,7 +1321,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: bearerContextsMarkedForRemoval\n");
+                        errorStream.add((char *)"Failed to decode IE: bearerContextsMarkedForRemoval\n");
                         return false;
                     }
                 }
@@ -1267,7 +1329,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1288,7 +1350,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.recoveryIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: recovery\n");
+                        errorStream.add((char *)"Failed to decode IE: recovery\n");
                         return false;
                     }
                 }
@@ -1296,7 +1358,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1317,7 +1379,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.chargingGatewayNameIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: chargingGatewayName\n");
+                        errorStream.add((char *)"Failed to decode IE: chargingGatewayName\n");
                         return false;
                     }
                 }
@@ -1325,7 +1387,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1346,7 +1408,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.chargingGatewayAddressIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: chargingGatewayAddress\n");
+                        errorStream.add((char *)"Failed to decode IE: chargingGatewayAddress\n");
                         return false;
                     }
                 }
@@ -1354,7 +1416,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1375,7 +1437,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.pgwFqCsidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwFqCsid\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwFqCsid\n");
                         return false;
                     }
                 }
@@ -1386,7 +1448,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.sgwFqCsidIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwFqCsid\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwFqCsid\n");
                         return false;
                     }
                 }
@@ -1394,7 +1456,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1415,7 +1477,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.sgwLdnIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwLdn\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwLdn\n");
                         return false;
                     }
                 }
@@ -1426,7 +1488,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.pgwLdnIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwLdn\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwLdn\n");
                         return false;
                     }
                 }
@@ -1434,7 +1496,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1455,7 +1517,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.pgwBackOffTimeIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwBackOffTime\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwBackOffTime\n");
                         return false;
                     }
                 }
@@ -1463,7 +1525,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1484,7 +1546,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.hNbInformationReportingIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: hNbInformationReporting\n");
+                        errorStream.add((char *)"Failed to decode IE: hNbInformationReporting\n");
                         return false;
                     }
                 }
@@ -1492,7 +1554,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1513,7 +1575,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.pdnAddressAllocationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pdnAddressAllocation\n");
+                        errorStream.add((char *)"Failed to decode IE: pdnAddressAllocation\n");
                         return false;
                     }
                 }
@@ -1521,7 +1583,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1542,14 +1604,14 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.protocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: protocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: protocolConfigurationOptions\n");
                         return false;
                     }
                 }
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1570,7 +1632,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.additionalProtocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: additionalProtocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: additionalProtocolConfigurationOptions\n");
                         return false;
                     }
                 }
@@ -1578,7 +1640,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1599,7 +1661,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.trustedWlanIpv4ParametersIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: trustedWlanIpv4Parameters\n");
+                        errorStream.add((char *)"Failed to decode IE: trustedWlanIpv4Parameters\n");
                         return false;
                     }
                 }
@@ -1607,7 +1669,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1628,7 +1690,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.indicationFlagsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: indicationFlags\n");
+                        errorStream.add((char *)"Failed to decode IE: indicationFlags\n");
                         return false;
                     }
                 }
@@ -1636,7 +1698,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1657,7 +1719,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.presenceReportingAreaActionIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: presenceReportingAreaAction\n");
+                        errorStream.add((char *)"Failed to decode IE: presenceReportingAreaAction\n");
                         return false;
                     }
                 }
@@ -1665,7 +1727,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1689,7 +1751,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.pgwsNodeLevelLoadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwsNodeLevelLoadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwsNodeLevelLoadControlInformation\n");
                         return false;
                     }
                 }
@@ -1703,7 +1765,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.pgwsApnLevelLoadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwsApnLevelLoadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwsApnLevelLoadControlInformation\n");
                         return false;
                     }
                 }
@@ -1717,7 +1779,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.sgwsNodeLevelLoadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwsNodeLevelLoadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwsNodeLevelLoadControlInformation\n");
                         return false;
                     }
                 }
@@ -1725,7 +1787,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1749,7 +1811,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.pgwsOverloadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pgwsOverloadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: pgwsOverloadControlInformation\n");
                         return false;
                     }
                 }
@@ -1763,7 +1825,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.sgwsOverloadControlInformationIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: sgwsOverloadControlInformation\n");
+                        errorStream.add((char *)"Failed to decode IE: sgwsOverloadControlInformation\n");
                         return false;
                     }
                 }
@@ -1771,7 +1833,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1792,7 +1854,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.nbifomContainerIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: nbifomContainer\n");
+                        errorStream.add((char *)"Failed to decode IE: nbifomContainer\n");
                         return false;
                     }
                 }
@@ -1800,7 +1862,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1821,7 +1883,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.pdnConnectionChargingIdIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: pdnConnectionChargingId\n");
+                        errorStream.add((char *)"Failed to decode IE: pdnConnectionChargingId\n");
                         return false;
                     }
                 }
@@ -1829,7 +1891,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1850,7 +1912,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                     data.extendedProtocolConfigurationOptionsIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: extendedProtocolConfigurationOptions\n");
+                        errorStream.add((char *)"Failed to decode IE: extendedProtocolConfigurationOptions\n");
                         return false;
                     }
                 }
@@ -1858,7 +1920,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -1869,7 +1931,7 @@ bool CreateSessionResponseMsg::decodeCreateSessionResponseMsg(MsgBuffer &buffer,
             default:
             {
                 // Unknown IE print error
-                errorStream.add("Unknown IE Type: ");
+                errorStream.add((char *)"Unknown IE Type: ");
                 errorStream.add(ieHeader.ieType);
                 errorStream.endOfLine();
                 buffer.skipBytes(ieHeader.length);
@@ -1883,13 +1945,23 @@ void CreateSessionResponseMsg::
 displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("CreateSessionResponseMsg:");
+    stream.add((char *)"CreateSessionResponseMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
+        stream.add((char *)"IE - cause:");
+        stream.endOfLine();
+        CauseIe cause=
+        dynamic_cast<
+        CauseIe&>(GtpV2IeFactory::getInstance().getIeObject(CauseIeType));
+        cause.displayCauseIe_v(data.cause, stream);
+
     if (data.changeReportingActionIePresent)
     {
-        stream.add("IE - changeReportingAction:");
+
+
+        stream.add((char *)"IE - changeReportingAction:");
         stream.endOfLine();
         ChangeReportingActionIe changeReportingAction=
         dynamic_cast<
@@ -1899,7 +1971,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.csgInformationReportingActionIePresent)
     {
-        stream.add("IE - csgInformationReportingAction:");
+
+
+        stream.add((char *)"IE - csgInformationReportingAction:");
         stream.endOfLine();
         CsgInformationReportingActionIe csgInformationReportingAction=
         dynamic_cast<
@@ -1909,7 +1983,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.senderFTeidForControlPlaneIePresent)
     {
-        stream.add("IE - senderFTeidForControlPlane:");
+
+
+        stream.add((char *)"IE - senderFTeidForControlPlane:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
@@ -1919,7 +1995,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.apnRestrictionIePresent)
     {
-        stream.add("IE - apnRestriction:");
+
+
+        stream.add((char *)"IE - apnRestriction:");
         stream.endOfLine();
         ApnRestrictionIe apnRestriction=
         dynamic_cast<
@@ -1929,7 +2007,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.aggregateMaximumBitRateIePresent)
     {
-        stream.add("IE - aggregateMaximumBitRate:");
+
+
+        stream.add((char *)"IE - aggregateMaximumBitRate:");
         stream.endOfLine();
         AmbrIe ambr=
         dynamic_cast<
@@ -1939,7 +2019,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.linkedEpsBearerIdIePresent)
     {
-        stream.add("IE - linkedEpsBearerId:");
+
+
+        stream.add((char *)"IE - linkedEpsBearerId:");
         stream.endOfLine();
         EbiIe ebi=
         dynamic_cast<
@@ -1947,31 +2029,61 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
         ebi.displayEbiIe_v(data.linkedEpsBearerId, stream);
 
     }
-    displayCount = data.bearerContextsMarkedForRemovalCount;
+
+    Uint8 displayCount;
+    
+    displayCount = data.bearerContextsCreatedCount;
     if (displayCount > 11)
     {
-        stream.add("Invalid data more than 11 instances");
+        stream.add((char *)"Invalid data more than 11 instances");
         stream.endOfLine();
-        stream.add("Displaying only 11");
+        stream.add((char *)"Displaying only 11");
         stream.endOfLine();
         displayCount = 11;
     }
     for (Uint8 i = 0; i < displayCount; i++)
     {
-        stream.add("IE -  bearerContextsMarkedForRemoval:");
+        stream.add((char *)"IE -  bearerContextsCreated:");
         stream.endOfLine();
         BearerContextIe bearerContext=
         dynamic_cast<
         BearerContextIe&>(GtpV2IeFactory::getInstance().getIeObject(BearerContextIeType));
-        BearerContextsMarkedForRemovalInCreateSessionResponse groupedIeInstance =
+        BearerContextsCreatedInCreateSessionResponse groupedIeInstance =
+        dynamic_cast<
+        BearerContextsCreatedInCreateSessionResponse&>(bearerContext.getGroupedIe(msgType, 0));
+        groupedIeInstance.displayBearerContextsCreatedInCreateSessionResponseData_v(data.bearerContextsCreated[i], stream);
+
+    }
+    displayCount = data.bearerContextsMarkedForRemovalCount;
+    if (displayCount > 11)
+    {
+        stream.add((char *)"Invalid data more than 11 instances");
+        stream.endOfLine();
+        stream.add((char *)"Displaying only 11");
+        stream.endOfLine();
+        displayCount = 11;
+    }
+    for (Uint8 i = 0; i < displayCount; i++)
+    {
+        stream.add((char *)"IE -  bearerContextsMarkedForRemoval:");
+        stream.endOfLine();
+        BearerContextIe bearerContext=
+        dynamic_cast<
+        BearerContextIe&>(GtpV2IeFactory::getInstance().getIeObject(BearerContextIeType));
+                BearerContextsMarkedForRemovalInCreateSessionResponse groupedIeInstance =
         dynamic_cast<
         BearerContextsMarkedForRemovalInCreateSessionResponse&>(bearerContext.getGroupedIe(msgType, 1));
         groupedIeInstance.displayBearerContextsMarkedForRemovalInCreateSessionResponseData_v(data.bearerContextsMarkedForRemoval[i], stream);
-
     }
+
+    
+
+    
     if (data.recoveryIePresent)
     {
-        stream.add("IE - recovery:");
+
+
+        stream.add((char *)"IE - recovery:");
         stream.endOfLine();
         RecoveryIe recovery=
         dynamic_cast<
@@ -1981,7 +2093,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.chargingGatewayNameIePresent)
     {
-        stream.add("IE - chargingGatewayName:");
+
+
+        stream.add((char *)"IE - chargingGatewayName:");
         stream.endOfLine();
         FqdnIe fqdn=
         dynamic_cast<
@@ -1991,7 +2105,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.chargingGatewayAddressIePresent)
     {
-        stream.add("IE - chargingGatewayAddress:");
+
+
+        stream.add((char *)"IE - chargingGatewayAddress:");
         stream.endOfLine();
         IpAddressIe ipAddress=
         dynamic_cast<
@@ -2001,7 +2117,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwFqCsidIePresent)
     {
-        stream.add("IE - pgwFqCsid:");
+
+
+        stream.add((char *)"IE - pgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
         dynamic_cast<
@@ -2011,7 +2129,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.sgwFqCsidIePresent)
     {
-        stream.add("IE - sgwFqCsid:");
+
+
+        stream.add((char *)"IE - sgwFqCsid:");
         stream.endOfLine();
         FqCsidIe fqCsid=
         dynamic_cast<
@@ -2021,7 +2141,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.sgwLdnIePresent)
     {
-        stream.add("IE - sgwLdn:");
+
+
+        stream.add((char *)"IE - sgwLdn:");
         stream.endOfLine();
         LocalDistinguishedNameIe localDistinguishedName=
         dynamic_cast<
@@ -2031,7 +2153,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwLdnIePresent)
     {
-        stream.add("IE - pgwLdn:");
+
+
+        stream.add((char *)"IE - pgwLdn:");
         stream.endOfLine();
         LocalDistinguishedNameIe localDistinguishedName=
         dynamic_cast<
@@ -2041,7 +2165,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwBackOffTimeIePresent)
     {
-        stream.add("IE - pgwBackOffTime:");
+
+
+        stream.add((char *)"IE - pgwBackOffTime:");
         stream.endOfLine();
         EpcTimerIe epcTimer=
         dynamic_cast<
@@ -2051,7 +2177,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.hNbInformationReportingIePresent)
     {
-        stream.add("IE - hNbInformationReporting:");
+
+
+        stream.add((char *)"IE - hNbInformationReporting:");
         stream.endOfLine();
         HenbInformationReportingIe henbInformationReporting=
         dynamic_cast<
@@ -2059,19 +2187,23 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
         henbInformationReporting.displayHenbInformationReportingIe_v(data.hNbInformationReporting, stream);
 
     }
-    if (data.pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterfaceIePresent)
+    if (data.pgwS5S8S2bFTeidIePresent)
     {
-        stream.add("IE - pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterface:");
+
+
+        stream.add((char *)"IE - pgwS5S8S2bFTeid:");
         stream.endOfLine();
         FTeidIe fTeid=
         dynamic_cast<
         FTeidIe&>(GtpV2IeFactory::getInstance().getIeObject(FTeidIeType));
-        fTeid.displayFTeidIe_v(data.pgwS5S8S2aS2bFTeidForPmipBasedInterfaceOrForGtpBasedControlPlaneInterface, stream);
+        fTeid.displayFTeidIe_v(data.pgwS5S8S2bFTeid, stream);
 
     }
     if (data.pdnAddressAllocationIePresent)
     {
-        stream.add("IE - pdnAddressAllocation:");
+
+
+        stream.add((char *)"IE - pdnAddressAllocation:");
         stream.endOfLine();
         PaaIe paa=
         dynamic_cast<
@@ -2081,7 +2213,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.protocolConfigurationOptionsIePresent)
     {
-        stream.add("IE - protocolConfigurationOptions:");
+
+
+        stream.add((char *)"IE - protocolConfigurationOptions:");
         stream.endOfLine();
         PcoIe pco=
         dynamic_cast<
@@ -2091,7 +2225,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.additionalProtocolConfigurationOptionsIePresent)
     {
-        stream.add("IE - additionalProtocolConfigurationOptions:");
+
+
+        stream.add((char *)"IE - additionalProtocolConfigurationOptions:");
         stream.endOfLine();
         AdditionalProtocolConfigurationOptionsIe additionalProtocolConfigurationOptions=
         dynamic_cast<
@@ -2101,7 +2237,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.trustedWlanIpv4ParametersIePresent)
     {
-        stream.add("IE - trustedWlanIpv4Parameters:");
+
+
+        stream.add((char *)"IE - trustedWlanIpv4Parameters:");
         stream.endOfLine();
         Ip4cpIe ip4cp=
         dynamic_cast<
@@ -2111,7 +2249,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.indicationFlagsIePresent)
     {
-        stream.add("IE - indicationFlags:");
+
+
+        stream.add((char *)"IE - indicationFlags:");
         stream.endOfLine();
         IndicationIe indication=
         dynamic_cast<
@@ -2121,7 +2261,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.presenceReportingAreaActionIePresent)
     {
-        stream.add("IE - presenceReportingAreaAction:");
+
+
+        stream.add((char *)"IE - presenceReportingAreaAction:");
         stream.endOfLine();
         PresenceReportingAreaActionIe presenceReportingAreaAction=
         dynamic_cast<
@@ -2131,7 +2273,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwsNodeLevelLoadControlInformationIePresent)
     {
-        stream.add("IE - pgwsNodeLevelLoadControlInformation:");
+
+
+        stream.add((char *)"IE - pgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
         dynamic_cast<
@@ -2144,7 +2288,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwsApnLevelLoadControlInformationIePresent)
     {
-        stream.add("IE - pgwsApnLevelLoadControlInformation:");
+
+
+        stream.add((char *)"IE - pgwsApnLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
         dynamic_cast<
@@ -2157,7 +2303,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.sgwsNodeLevelLoadControlInformationIePresent)
     {
-        stream.add("IE - sgwsNodeLevelLoadControlInformation:");
+
+
+        stream.add((char *)"IE - sgwsNodeLevelLoadControlInformation:");
         stream.endOfLine();
         LoadControlInformationIe loadControlInformation=
         dynamic_cast<
@@ -2170,7 +2318,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pgwsOverloadControlInformationIePresent)
     {
-        stream.add("IE - pgwsOverloadControlInformation:");
+
+
+        stream.add((char *)"IE - pgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
         dynamic_cast<
@@ -2183,7 +2333,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.sgwsOverloadControlInformationIePresent)
     {
-        stream.add("IE - sgwsOverloadControlInformation:");
+
+
+        stream.add((char *)"IE - sgwsOverloadControlInformation:");
         stream.endOfLine();
         OverloadControlInformationIe overloadControlInformation=
         dynamic_cast<
@@ -2196,7 +2348,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.nbifomContainerIePresent)
     {
-        stream.add("IE - nbifomContainer:");
+
+
+        stream.add((char *)"IE - nbifomContainer:");
         stream.endOfLine();
         FContainerIe fContainer=
         dynamic_cast<
@@ -2206,7 +2360,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.pdnConnectionChargingIdIePresent)
     {
-        stream.add("IE - pdnConnectionChargingId:");
+
+
+        stream.add((char *)"IE - pdnConnectionChargingId:");
         stream.endOfLine();
         ChargingIdIe chargingId=
         dynamic_cast<
@@ -2216,7 +2372,9 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
     }
     if (data.extendedProtocolConfigurationOptionsIePresent)
     {
-        stream.add("IE - extendedProtocolConfigurationOptions:");
+
+
+        stream.add((char *)"IE - extendedProtocolConfigurationOptions:");
         stream.endOfLine();
         EpcoIe epco=
         dynamic_cast<
@@ -2224,6 +2382,7 @@ displayCreateSessionResponseMsgData_v(CreateSessionResponseMsgData const &data, 
         epco.displayEpcoIe_v(data.extendedProtocolConfigurationOptions, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

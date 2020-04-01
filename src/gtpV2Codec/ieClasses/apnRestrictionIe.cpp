@@ -1,9 +1,10 @@
 /*
- * apnRestrictionIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "apnRestrictionIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool ApnRestrictionIe::encodeApnRestrictionIe(MsgBuffer &buffer, ApnRestrictionI
 {
     if (!(buffer.writeUint8(data.restrictionValue)))
     {
-        errorStream.add("Encoding of restrictionValue failed\n");
+        errorStream.add((char *)"Encoding of restrictionValue failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool ApnRestrictionIe::encodeApnRestrictionIe(MsgBuffer &buffer, ApnRestrictionI
 }
 
 bool ApnRestrictionIe::decodeApnRestrictionIe(MsgBuffer &buffer, ApnRestrictionIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.restrictionValue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: restrictionValue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: restrictionValue\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool ApnRestrictionIe::decodeApnRestrictionIe(MsgBuffer &buffer, ApnRestrictionI
     }
     else
     {
-        errorStream.add("Unable to decode IE ApnRestrictionIe\n");
+        errorStream.add((char *)"Unable to decode IE ApnRestrictionIe\n");
         return false;
     }
 }
 void ApnRestrictionIe::displayApnRestrictionIe_v(ApnRestrictionIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("ApnRestrictionIeData:");
+    stream.add((char *)"ApnRestrictionIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("restrictionValue: ");
+    stream.add((char *)"restrictionValue: ");
     stream.add(data.restrictionValue);
     stream.endOfLine();
     stream.decrIndent();

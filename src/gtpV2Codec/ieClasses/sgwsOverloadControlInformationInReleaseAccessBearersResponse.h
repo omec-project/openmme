@@ -1,9 +1,10 @@
 /*
- * .h
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #ifndef SGWSOVERLOADCONTROLINFORMATIONINRELEASEACCESSBEARERSRESPONSE_H_
 #define SGWSOVERLOADCONTROLINFORMATIONINRELEASEACCESSBEARERSRESPONSE_H_
 

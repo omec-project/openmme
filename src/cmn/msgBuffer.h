@@ -1,9 +1,9 @@
 /*
- * MsgBuffer.h
- *
- *  Created on: Feb 13, 2011
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef MSGBUFFER_H_
 #define MSGBUFFER_H_

@@ -1,9 +1,10 @@
 /*
- * downlinkDataNotificationFailureIndicationMsg.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 #include "downlinkDataNotificationFailureIndicationMsg.h"
 #include "../ieClasses/manual/gtpV2Ie.h"
 #include "../ieClasses/gtpV2IeFactory.h"
@@ -35,6 +36,30 @@ bool DownlinkDataNotificationFailureIndicationMsg::encodeDownlinkDataNotificatio
     Uint16 endIndex = 0;
     Uint16 length = 0;
 
+    
+    // Encode the Ie Header
+    header.ieType = CauseIeType;
+    header.instance = 0;
+    header.length = 0; // We will encode the IE first and then update the length
+    GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+    startIndex = buffer.getCurrentIndex(); 
+    CauseIe cause=
+    dynamic_cast<
+    CauseIe&>(GtpV2IeFactory::getInstance().getIeObject(CauseIeType));
+    rc = cause.encodeCauseIe(buffer, data.cause);
+    endIndex = buffer.getCurrentIndex();
+    length = endIndex - startIndex;
+
+    // encode the length value now
+    buffer.goToIndex(startIndex - 3);
+    buffer.writeUint16(length, false);
+    buffer.goToIndex(endIndex);
+
+    if (!(rc))
+    { 
+        errorStream.add((char *)"Failed to encode IE: cause\n");
+        return false;
+    }
 
     if (data.originatingNodeIePresent)
     {
@@ -59,7 +84,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::encodeDownlinkDataNotificatio
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: originatingNode\n");
+            errorStream.add((char *)"Failed to encode IE: originatingNode\n");
             return false;
         }
     }
@@ -87,7 +112,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::encodeDownlinkDataNotificatio
 
         if (!(rc))
         { 
-            errorStream.add("Failed to encode IE: imsi\n");
+            errorStream.add((char *)"Failed to encode IE: imsi\n");
             return false;
         }
     }
@@ -110,12 +135,12 @@ bool DownlinkDataNotificationFailureIndicationMsg::decodeDownlinkDataNotificatio
         if (ieHeader.length > buffer.lengthLeft())
         {
             // We do not have enough bytes left in the message for this IE
-            errorStream.add("IE Length exceeds beyond message boundary\n");
-            errorStream.add("  Offending IE Type: ");
+            errorStream.add((char *)"IE Length exceeds beyond message boundary\n");
+            errorStream.add((char *)"  Offending IE Type: ");
             errorStream.add(ieHeader.ieType);
-            errorStream.add("\n  Ie Length in Header: ");
+            errorStream.add((char *)"\n  Ie Length in Header: ");
             errorStream.add(ieHeader.length);
-            errorStream.add("\n  Bytes left in message: ");
+            errorStream.add((char *)"\n  Bytes left in message: ");
             errorStream.add(buffer.lengthLeft());
             errorStream.endOfLine();
             return false;
@@ -135,7 +160,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::decodeDownlinkDataNotificatio
 
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: cause\n");
+                        errorStream.add((char *)"Failed to decode IE: cause\n");
                         return false;
                     }
                 }
@@ -143,7 +168,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::decodeDownlinkDataNotificatio
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -164,7 +189,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::decodeDownlinkDataNotificatio
                     data.originatingNodeIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: originatingNode\n");
+                        errorStream.add((char *)"Failed to decode IE: originatingNode\n");
                         return false;
                     }
                 }
@@ -172,7 +197,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::decodeDownlinkDataNotificatio
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -193,7 +218,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::decodeDownlinkDataNotificatio
                     data.imsiIePresent = true;
                     if (!(rc))
                     {
-                        errorStream.add("Failed to decode IE: imsi\n");
+                        errorStream.add((char *)"Failed to decode IE: imsi\n");
                         return false;
                     }
                 }
@@ -201,7 +226,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::decodeDownlinkDataNotificatio
                 else
                 {
                     // Unknown IE instance print error
-                    errorStream.add("Unknown IE Type: ");
+                    errorStream.add((char *)"Unknown IE Type: ");
                     errorStream.add(ieHeader.ieType);
                     errorStream.endOfLine();
                     buffer.skipBytes(ieHeader.length);
@@ -212,7 +237,7 @@ bool DownlinkDataNotificationFailureIndicationMsg::decodeDownlinkDataNotificatio
             default:
             {
                 // Unknown IE print error
-                errorStream.add("Unknown IE Type: ");
+                errorStream.add((char *)"Unknown IE Type: ");
                 errorStream.add(ieHeader.ieType);
                 errorStream.endOfLine();
                 buffer.skipBytes(ieHeader.length);
@@ -226,13 +251,23 @@ void DownlinkDataNotificationFailureIndicationMsg::
 displayDownlinkDataNotificationFailureIndicationMsgData_v(DownlinkDataNotificationFailureIndicationMsgData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("DownlinkDataNotificationFailureIndicationMsg:");
+    stream.add((char *)"DownlinkDataNotificationFailureIndicationMsg:");
     stream.endOfLine();
-    Uint8 displayCount;
     stream.incrIndent();
+        
+    
+        stream.add((char *)"IE - cause:");
+        stream.endOfLine();
+        CauseIe cause=
+        dynamic_cast<
+        CauseIe&>(GtpV2IeFactory::getInstance().getIeObject(CauseIeType));
+        cause.displayCauseIe_v(data.cause, stream);
+
     if (data.originatingNodeIePresent)
     {
-        stream.add("IE - originatingNode:");
+
+
+        stream.add((char *)"IE - originatingNode:");
         stream.endOfLine();
         NodeTypeIe nodeType=
         dynamic_cast<
@@ -242,7 +277,9 @@ displayDownlinkDataNotificationFailureIndicationMsgData_v(DownlinkDataNotificati
     }
     if (data.imsiIePresent)
     {
-        stream.add("IE - imsi:");
+
+
+        stream.add((char *)"IE - imsi:");
         stream.endOfLine();
         ImsiIe imsi=
         dynamic_cast<
@@ -250,6 +287,7 @@ displayDownlinkDataNotificationFailureIndicationMsgData_v(DownlinkDataNotificati
         imsi.displayImsiIe_v(data.imsi, stream);
 
     }
+
     stream.decrIndent();
     stream.decrIndent();
 }

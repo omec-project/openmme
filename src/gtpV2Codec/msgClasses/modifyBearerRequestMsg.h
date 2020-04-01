@@ -1,9 +1,9 @@
 /*
- * modifyBearerRequestMsg.h
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 #ifndef MODIFYBEARERREQUESTMSG_H_
 #define MODIFYBEARERREQUESTMSG_H_
 

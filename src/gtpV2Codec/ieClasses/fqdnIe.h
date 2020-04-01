@@ -1,9 +1,9 @@
 /*
- * fqdnIe.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef FQDNIE_H_
 #define FQDNIE_H_

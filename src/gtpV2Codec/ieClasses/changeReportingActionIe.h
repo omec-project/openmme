@@ -1,9 +1,9 @@
 /*
- * changeReportingActionIe.h
- *
- *  Revisit Header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef CHANGEREPORTINGACTIONIE_H_
 #define CHANGEREPORTINGACTIONIE_H_

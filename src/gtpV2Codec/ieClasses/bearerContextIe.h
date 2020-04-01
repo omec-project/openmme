@@ -1,9 +1,9 @@
 /*
- * bearerContextIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 
 #ifndef BEARERCONTEXTIE_H_
 #define BEARERCONTEXTIE_H_

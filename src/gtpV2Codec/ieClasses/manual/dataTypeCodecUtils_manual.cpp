@@ -1,9 +1,10 @@
-/*
- * dataTypeCodecUtils_manual.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+ /*
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "../../../gtpV2Codec/ieClasses/dataTypeCodecUtils.h"
 #include "../../../gtpV2Codec/ieClasses/manual/gtpV2DataTypes_Manual.h"
@@ -20,7 +21,7 @@ DataTypeCodecUtils::encodeDigitRegister (MsgBuffer & buffer,
    
     if (digit1 >9 || (digit2 > 9 && digit2 != 0x0F))
     {
-      errorStream.add("Data validation failure: Non BCD digit encountered in DigitRegister\n");
+      errorStream.add((char *)"Data validation failure: Non BCD digit encountered in DigitRegister\n");
       return false;
     }
     else
@@ -41,7 +42,7 @@ DataTypeCodecUtils::decodeDigitRegister (MsgBuffer & buffer,
   Uint8 digitLength = 0;
   if (length > 8)
   { 
-    errorStream.add("Data validation failure:DigitRegister.Length\n");
+    errorStream.add((char *)"Data validation failure:DigitRegister.Length\n");
     return false;
   }
   for (i = 0; i < length; i ++)
@@ -52,7 +53,7 @@ DataTypeCodecUtils::decodeDigitRegister (MsgBuffer & buffer,
      digit1 = buffer.readBits(4);
      if (digit1 >9 || (digit2 > 9 && digit2 != 0x0F))
      {
-       errorStream.add("Data validation failure: Non BCD Digit in DigitRegister\n");
+       errorStream.add((char *)"Data validation failure: Non BCD Digit in DigitRegister\n");
        return false;
      }
      else
@@ -78,17 +79,17 @@ DataTypeCodecUtils::displayDigitRegister_v (DigitRegister const & data,
                                             Debug & stream)
 {
   stream.incrIndent();
-  stream.add("DigitRegister:");
+  stream.add((char *)"DigitRegister:");
   stream.endOfLine();
   stream.incrIndent();
-  stream.add("Length:");
+  stream.add((char *)"Length:");
   stream.add(data.length);
   stream.endOfLine();
   Uint8 i;
   for (i = 0; i < data.length; i++)
   {
     stream.add(data.digits[i]);
-    stream.add("  ");
+    stream.add((char *)"  ");
   }
   stream.endOfLine();
   stream.decrIndent();

@@ -1,9 +1,10 @@
 /*
- * sequenceNumberIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "sequenceNumberIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool SequenceNumberIe::encodeSequenceNumberIe(MsgBuffer &buffer, SequenceNumberI
 {
     if (!(buffer.writeUint32(data.sequenceNumber)))
     {
-        errorStream.add("Encoding of sequenceNumber failed\n");
+        errorStream.add((char *)"Encoding of sequenceNumber failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool SequenceNumberIe::encodeSequenceNumberIe(MsgBuffer &buffer, SequenceNumberI
 }
 
 bool SequenceNumberIe::decodeSequenceNumberIe(MsgBuffer &buffer, SequenceNumberIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint32(data.sequenceNumber);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: sequenceNumber\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: sequenceNumber\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool SequenceNumberIe::decodeSequenceNumberIe(MsgBuffer &buffer, SequenceNumberI
     }
     else
     {
-        errorStream.add("Unable to decode IE SequenceNumberIe\n");
+        errorStream.add((char *)"Unable to decode IE SequenceNumberIe\n");
         return false;
     }
 }
 void SequenceNumberIe::displaySequenceNumberIe_v(SequenceNumberIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("SequenceNumberIeData:");
+    stream.add((char *)"SequenceNumberIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("sequenceNumber: ");
+    stream.add((char *)"sequenceNumber: ");
     stream.add(data.sequenceNumber);
     stream.endOfLine();
     stream.decrIndent();

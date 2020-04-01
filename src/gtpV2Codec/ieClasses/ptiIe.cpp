@@ -1,9 +1,10 @@
 /*
- * ptiIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "ptiIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool PtiIe::encodePtiIe(MsgBuffer &buffer, PtiIeData const &data)
 {
     if (!(buffer.writeUint8(data.procedureTransactionId)))
     {
-        errorStream.add("Encoding of procedureTransactionId failed\n");
+        errorStream.add((char *)"Encoding of procedureTransactionId failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool PtiIe::encodePtiIe(MsgBuffer &buffer, PtiIeData const &data)
 }
 
 bool PtiIe::decodePtiIe(MsgBuffer &buffer, PtiIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint8(data.procedureTransactionId);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: procedureTransactionId\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: procedureTransactionId\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool PtiIe::decodePtiIe(MsgBuffer &buffer, PtiIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE PtiIe\n");
+        errorStream.add((char *)"Unable to decode IE PtiIe\n");
         return false;
     }
 }
 void PtiIe::displayPtiIe_v(PtiIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("PtiIeData:");
+    stream.add((char *)"PtiIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("procedureTransactionId: ");
+    stream.add((char *)"procedureTransactionId: ");
     stream.add(data.procedureTransactionId);
     stream.endOfLine();
     stream.decrIndent();

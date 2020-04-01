@@ -1,9 +1,9 @@
 /*
- * downlinkDataNotificationAcknowledgeMsg.h
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
 #ifndef DOWNLINKDATANOTIFICATIONACKNOWLEDGEMSG_H_
 #define DOWNLINKDATANOTIFICATIONACKNOWLEDGEMSG_H_
 

@@ -1,9 +1,10 @@
 /*
- * secondaryRatUsageDataReportIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "secondaryRatUsageDataReportIe.h"
 #include "dataTypeCodecUtils.h"
@@ -25,47 +26,49 @@ bool SecondaryRatUsageDataReportIe::encodeSecondaryRatUsageDataReportIe(MsgBuffe
 
     if(!(buffer.writeBits(data.irsgw, 2)))
     {
-        errorStream.add("Encoding of irsgw failed\n");
+        errorStream.add((char *)"Encoding of irsgw failed\n");
         return false;
     }
     if(!(buffer.writeBits(data.irpgw, 2)))
     {
-        errorStream.add("Encoding of irpgw failed\n");
+        errorStream.add((char *)"Encoding of irpgw failed\n");
         return false;
     }
     if (!(data.secondaryRatType== 0 || data.secondaryRatType== 1))
     {
-        errorStream.add("Data validation failure: secondaryRatType\n");
+        errorStream.add((char *)"Data validation failure: secondaryRatType\n");
         return false; 
     }
     if (!(buffer.writeUint8(data.secondaryRatType)))
     {
-        errorStream.add("Encoding of secondaryRatType failed\n");
+        errorStream.add((char *)"Encoding of secondaryRatType failed\n");
         return false;
     }
+    buffer.skipBits(4);
+
     if(!(buffer.writeBits(data.epsBearerId, 4)))
     {
-        errorStream.add("Encoding of epsBearerId failed\n");
+        errorStream.add((char *)"Encoding of epsBearerId failed\n");
         return false;
     }
     if (!(buffer.writeUint32(data.starttimestamp)))
     {
-        errorStream.add("Encoding of starttimestamp failed\n");
+        errorStream.add((char *)"Encoding of starttimestamp failed\n");
         return false;
     }
     if (!(buffer.writeUint32(data.endtimestamp)))
     {
-        errorStream.add("Encoding of endtimestamp failed\n");
+        errorStream.add((char *)"Encoding of endtimestamp failed\n");
         return false;
     }
     if (!(buffer.writeUint64(data.usageDataDL)))
     {
-        errorStream.add("Encoding of usageDataDL failed\n");
+        errorStream.add((char *)"Encoding of usageDataDL failed\n");
         return false;
     }
     if (!(buffer.writeUint64(data.usageDataUL)))
     {
-        errorStream.add("Encoding of usageDataUL failed\n");
+        errorStream.add((char *)"Encoding of usageDataUL failed\n");
         return false;
     }
 
@@ -73,14 +76,14 @@ bool SecondaryRatUsageDataReportIe::encodeSecondaryRatUsageDataReportIe(MsgBuffe
 }
 
 bool SecondaryRatUsageDataReportIe::decodeSecondaryRatUsageDataReportIe(MsgBuffer &buffer, SecondaryRatUsageDataReportIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
     buffer.skipBits(4);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: \n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
         return false;
     }
 
@@ -88,61 +91,68 @@ bool SecondaryRatUsageDataReportIe::decodeSecondaryRatUsageDataReportIe(MsgBuffe
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: irsgw\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: irsgw\n");
         return false;
     }
     data.irpgw = buffer.readBits(2);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: irpgw\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: irpgw\n");
         return false;
     }
 
     buffer.readUint8(data.secondaryRatType);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: secondaryRatType\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: secondaryRatType\n");
         return false;
     }
     if (!(data.secondaryRatType== 0 || data.secondaryRatType== 1))
     {
-        errorStream.add("Data validation failure : secondaryRatType\n");
+        errorStream.add((char *)"Data validation failure : secondaryRatType\n");
         return false; //TODO need to add validations
     }
+    buffer.skipBits(4);
+    if (buffer.getCurrentIndex() > ieBoundary)
+    {
+        errorStream.add((char *)"Attempt to read beyond IE boundary: \n");
+        return false;
+    }
+
     data.epsBearerId = buffer.readBits(4);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: epsBearerId\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: epsBearerId\n");
         return false;
     }
 
     buffer.readUint32(data.starttimestamp);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: starttimestamp\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: starttimestamp\n");
         return false;
     }
 
     buffer.readUint32(data.endtimestamp);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: endtimestamp\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: endtimestamp\n");
         return false;
     }
 
     buffer.readUint64(data.usageDataDL);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: usageDataDL\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: usageDataDL\n");
         return false;
     }
 
     buffer.readUint64(data.usageDataUL);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: usageDataUL\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: usageDataUL\n");
         return false;
     }
 
@@ -155,46 +165,46 @@ bool SecondaryRatUsageDataReportIe::decodeSecondaryRatUsageDataReportIe(MsgBuffe
     }
     else
     {
-        errorStream.add("Unable to decode IE SecondaryRatUsageDataReportIe\n");
+        errorStream.add((char *)"Unable to decode IE SecondaryRatUsageDataReportIe\n");
         return false;
     }
 }
 void SecondaryRatUsageDataReportIe::displaySecondaryRatUsageDataReportIe_v(SecondaryRatUsageDataReportIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("SecondaryRatUsageDataReportIeData:");
+    stream.add((char *)"SecondaryRatUsageDataReportIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add( "irsgw: "); 
+    stream.add( (char *)"irsgw: "); 
     stream.add((Uint8)data.irsgw);
     stream.endOfLine();
   
-    stream.add( "irpgw: "); 
+    stream.add( (char *)"irpgw: "); 
     stream.add((Uint8)data.irpgw);
     stream.endOfLine();
   
-    stream.add("secondaryRatType: ");
+    stream.add((char *)"secondaryRatType: ");
     stream.add(data.secondaryRatType);
     stream.endOfLine();
   
-    stream.add( "epsBearerId: "); 
+    stream.add( (char *)"epsBearerId: "); 
     stream.add((Uint8)data.epsBearerId);
     stream.endOfLine();
   
-    stream.add("starttimestamp: ");
+    stream.add((char *)"starttimestamp: ");
     stream.add(data.starttimestamp);
     stream.endOfLine();
   
-    stream.add("endtimestamp: ");
+    stream.add((char *)"endtimestamp: ");
     stream.add(data.endtimestamp);
     stream.endOfLine();
   
-    stream.add("usageDataDL: ");
+    stream.add((char *)"usageDataDL: ");
     stream.add(data.usageDataDL);
     stream.endOfLine();
   
-    stream.add("usageDataUL: ");
+    stream.add((char *)"usageDataUL: ");
     stream.add(data.usageDataUL);
     stream.endOfLine();
     stream.decrIndent();

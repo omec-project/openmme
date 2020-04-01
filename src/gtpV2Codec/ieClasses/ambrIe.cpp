@@ -1,9 +1,10 @@
 /*
- * ambrIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "ambrIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,12 +24,12 @@ bool AmbrIe::encodeAmbrIe(MsgBuffer &buffer, AmbrIeData const &data)
 {
     if (!(buffer.writeUint32(data.maxMbrUplink)))
     {
-        errorStream.add("Encoding of maxMbrUplink failed\n");
+        errorStream.add((char *)"Encoding of maxMbrUplink failed\n");
         return false;
     }
     if (!(buffer.writeUint32(data.maxMbrDownlink)))
     {
-        errorStream.add("Encoding of maxMbrDownlink failed\n");
+        errorStream.add((char *)"Encoding of maxMbrDownlink failed\n");
         return false;
     }
 
@@ -36,22 +37,22 @@ bool AmbrIe::encodeAmbrIe(MsgBuffer &buffer, AmbrIeData const &data)
 }
 
 bool AmbrIe::decodeAmbrIe(MsgBuffer &buffer, AmbrIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint32(data.maxMbrUplink);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: maxMbrUplink\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: maxMbrUplink\n");
         return false;
     }
 
     buffer.readUint32(data.maxMbrDownlink);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: maxMbrDownlink\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: maxMbrDownlink\n");
         return false;
     }
 
@@ -64,22 +65,22 @@ bool AmbrIe::decodeAmbrIe(MsgBuffer &buffer, AmbrIeData &data, Uint16 length)
     }
     else
     {
-        errorStream.add("Unable to decode IE AmbrIe\n");
+        errorStream.add((char *)"Unable to decode IE AmbrIe\n");
         return false;
     }
 }
 void AmbrIe::displayAmbrIe_v(AmbrIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("AmbrIeData:");
+    stream.add((char *)"AmbrIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("maxMbrUplink: ");
+    stream.add((char *)"maxMbrUplink: ");
     stream.add(data.maxMbrUplink);
     stream.endOfLine();
   
-    stream.add("maxMbrDownlink: ");
+    stream.add((char *)"maxMbrDownlink: ");
     stream.add(data.maxMbrDownlink);
     stream.endOfLine();
     stream.decrIndent();

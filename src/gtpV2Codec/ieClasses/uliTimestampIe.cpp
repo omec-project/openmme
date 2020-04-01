@@ -1,9 +1,10 @@
 /*
- * uliTimestampIe.cpp
- *
- * Revisit header later
- *      Author: hariharanb
- */
+Copyright 2019-present Infosys Limited  
+   
+SPDX-License-Identifier: Apache-2.0  
+  
+*/ 
+
 
 #include "uliTimestampIe.h"
 #include "dataTypeCodecUtils.h"
@@ -23,7 +24,7 @@ bool UliTimestampIe::encodeUliTimestampIe(MsgBuffer &buffer, UliTimestampIeData 
 {
     if (!(buffer.writeUint32(data.uliTimestampvalue)))
     {
-        errorStream.add("Encoding of uliTimestampvalue failed\n");
+        errorStream.add((char *)"Encoding of uliTimestampvalue failed\n");
         return false;
     }
 
@@ -31,15 +32,15 @@ bool UliTimestampIe::encodeUliTimestampIe(MsgBuffer &buffer, UliTimestampIeData 
 }
 
 bool UliTimestampIe::decodeUliTimestampIe(MsgBuffer &buffer, UliTimestampIeData &data, Uint16 length)
-{ 
+{     
     // TODO optimize the length checks
-    Uint16 lengthLeft = length;
+    
     Uint16 ieBoundary = buffer.getCurrentIndex() + length;
 
     buffer.readUint32(data.uliTimestampvalue);
     if (buffer.getCurrentIndex() > ieBoundary)
     {
-        errorStream.add("Attempt to read beyond IE boundary: uliTimestampvalue\n");
+        errorStream.add((char *)"Attempt to read beyond IE boundary: uliTimestampvalue\n");
         return false;
     }
 
@@ -52,18 +53,18 @@ bool UliTimestampIe::decodeUliTimestampIe(MsgBuffer &buffer, UliTimestampIeData 
     }
     else
     {
-        errorStream.add("Unable to decode IE UliTimestampIe\n");
+        errorStream.add((char *)"Unable to decode IE UliTimestampIe\n");
         return false;
     }
 }
 void UliTimestampIe::displayUliTimestampIe_v(UliTimestampIeData const &data, Debug &stream)
 {
     stream.incrIndent();
-    stream.add("UliTimestampIeData:");
+    stream.add((char *)"UliTimestampIeData:");
     stream.incrIndent();
     stream.endOfLine();
   
-    stream.add("uliTimestampvalue: ");
+    stream.add((char *)"uliTimestampvalue: ");
     stream.add(data.uliTimestampvalue);
     stream.endOfLine();
     stream.decrIndent();
