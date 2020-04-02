@@ -243,7 +243,7 @@ read_next_msg()
 
 	memset(buf, 0, UE_EMM_INFO_BUF_SIZE);
 	while (bytes_read < UE_EMM_INFO_BUF_SIZE) {
-		log_msg(LOG_INFO, "S1ap - waiting for EMM message read bytes %d \n",bytes_read);
+		log_msg(LOG_INFO, "S1ap - waiting for EMM message read \n");
 		if ((bytes_read = read_ipc_channel(
 				ipcHndl_emm_inforeq, buf,
 				UE_EMM_INFO_BUF_SIZE)) == -1) {

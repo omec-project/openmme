@@ -33,13 +33,13 @@
 #include "servicereq_info.h"
 
 extern int g_enb_fd;
-extern s1ap_config g_s1ap_cfg;
 extern ipc_handle ipcHndl_service_req;
 
 int
 s1_init_ue_service_req_handler(struct proto_IE *service_req_ies, int enb_fd)
 {
 	struct service_req_Q_msg req;
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
 
 	/*****Message structure***
 	*/
@@ -90,7 +90,7 @@ s1_init_ue_service_req_handler(struct proto_IE *service_req_ies, int enb_fd)
                 {
                     log_msg(LOG_INFO, "Service Req STMSI.\n");
                     if(service_req_ies->data[i].val.s_tmsi.mme_code 
-                       == g_s1ap_cfg.mme_code)
+                       == s1ap_cfg->mme_code)
                     {
                         log_msg(LOG_INFO, "Service Req MME Code matched.\n");
                         req.ue_idx = ntohl(service_req_ies->data[i].val.s_tmsi.m_TMSI);
@@ -105,7 +105,7 @@ s1_init_ue_service_req_handler(struct proto_IE *service_req_ies, int enb_fd)
                     }
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n", service_req_ies->data[i].IE_type);
         }
     }
 

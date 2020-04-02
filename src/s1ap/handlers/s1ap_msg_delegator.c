@@ -1139,7 +1139,7 @@ int convertUplinkNasToProtoIe(InitiatingMessage_t *msg, struct proto_IE* proto_i
 					} break;
                 default:
                     {
-                        log_msg(LOG_WARNING, "Unhandled IE %d", ie_p->id);
+                        log_msg(LOG_WARNING, "Unhandled IE %d\n", ie_p->id);
                     }
 			}
 		}
@@ -1275,7 +1275,7 @@ int convertInitCtxRspToProtoIe(SuccessfulOutcome_t *msg, struct proto_IE* proto_
 					} break;
                 default:
                     {
-                        log_msg(LOG_WARNING, "Unhandled IE %d", ie_p->id);
+                        log_msg(LOG_WARNING, "Unhandled IE %d \n", ie_p->id);
                     }
 			}
 		}

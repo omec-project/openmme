@@ -18,6 +18,13 @@
 #include "SuccessfulOutcome.h"
 #include "UnsuccessfulOutcome.h"
 #include "common_proc_info.h"
+#include "s1ap_config.h"
+
+/* Put all the instances within this */
+typedef struct s1ap_instance 
+{
+	s1ap_config_t *s1ap_config;
+}s1ap_instance_t;
 
 int
 s1_init_ctx_resp_handler(SuccessfulOutcome_t *msg);
@@ -134,5 +141,6 @@ msg_to_hex_str(const char *msg, int len, char **buffer);
 
 unsigned short
 get_length(char **msg);
+
 
 #endif /*__S1AP_H_*/

@@ -27,7 +27,6 @@
 #include "TAC.h"
 
 extern int g_enb_fd;
-extern s1ap_config g_s1ap_cfg;
 static struct Buffer resp_buf;
 
 int
@@ -40,6 +39,7 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp)
 	uint16_t proto_ie_id;
 	unsigned char tmp_str[4];
 	uint8_t criticality;
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
 
 	proto_ies.pos = 0;
 	gummies.pos = 0;
@@ -61,13 +61,13 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp)
 	criticality = CRITICALITY_IGNORE;
 	buffer_copy(&proto_ies, &criticality, sizeof(criticality));
 
-	data_len = strlen(g_s1ap_cfg.mme_name);
+	data_len = strlen(s1ap_cfg->mme_name);
 	data_len = copyU16(tmp_str, data_len);
 	tmp_str[1] = tmp_str[1]+2;
 	buffer_copy(&proto_ies, &tmp_str[1], 1);
 	proto_ies.buf[proto_ies.pos++] = 0x06;/*quest: what is this in encoding?*/
 	proto_ies.buf[proto_ies.pos++] = 0x80;
-	buffer_copy(&proto_ies, g_s1ap_cfg.mme_name, strlen(g_s1ap_cfg.mme_name));
+	buffer_copy(&proto_ies, s1ap_cfg->mme_name, strlen(s1ap_cfg->mme_name));
 
 	/*IE2*/
 	/**Item 1: id-ServedGUMMEIs*/
@@ -84,19 +84,19 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp)
 
 	/**Item 1: id-ServedGUMMEIs
 	 *       servedPLMNs: 1 item*/
-	buffer_copy(&gummies, &(g_s1ap_cfg.mme_plmn_id), sizeof(struct PLMN));
+	buffer_copy(&gummies, &(s1ap_cfg->mme_plmn_id), sizeof(struct PLMN));
 	gummies.buf[gummies.pos++]=0x0;
 	gummies.buf[gummies.pos++]=0x0;
 
 	/**Item 1: id-ServedGUMMEIs
 	 *       servedGroupIDs: 1 item*/
-	data_len = copyU16(tmp_str, g_s1ap_cfg.mme_group_id);
+	data_len = copyU16(tmp_str, s1ap_cfg->mme_group_id);
 	buffer_copy(&gummies, tmp_str, data_len);
 
 	/**Item 1: id-ServedGUMMEIs
 	 *       servedMMECs: 1 item*/
 	gummies.buf[gummies.pos++]=0x0;
-	gummies.buf[gummies.pos++] = g_s1ap_cfg.mme_code;
+	gummies.buf[gummies.pos++] = s1ap_cfg->mme_code;
 
 	data_len = copyU16(tmp_str, gummies.pos);
 	buffer_copy(&proto_ies, &(tmp_str[1]), 1);
@@ -111,8 +111,8 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp)
 	buffer_copy(&proto_ies, &criticality, sizeof(criticality));
 	data_len = 1;
 	buffer_copy(&proto_ies, &(data_len), 1);
-	g_s1ap_cfg.rel_cap = 1;
-	buffer_copy(&proto_ies, &(g_s1ap_cfg.rel_cap), 1);
+	s1ap_cfg->rel_cap = 1;
+	buffer_copy(&proto_ies, &(s1ap_cfg->rel_cap), 1);
 
 	/*number of proto IEs = 3*/
 	data_len = copyU16(tmp_str, 3);
@@ -135,6 +135,7 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 {
 	unsigned char *resp_msg = NULL;
 	int resp_len = 0;
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
 
 	/*Validate all eNB info*/
 	if(msg->value.present == InitiatingMessage__value_PR_S1SetupRequest)
@@ -187,29 +188,29 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 							char plmn_s1[10] = {'\0'};
 							sprintf(plmn_s1, "%d %d %d ",plmn->buf[0], plmn->buf[1], plmn->buf[2]);
 							log_msg(LOG_INFO, "S1setup Supported PLMN %s \n", plmn_s1);
-							struct PLMN plmn_struct; 
+							struct PLMN plmn_struct = {0}; 
 							for(int b=0; b< plmn->size; b++) 
 							{
 								plmn_struct.idx[b]  = plmn->buf[b]; 
 							}
 							int config_plmn;
-							for(config_plmn = 0; config_plmn < g_s1ap_cfg.num_plmns; config_plmn++)
+							for(config_plmn = 0; config_plmn < s1ap_cfg->num_plmns; config_plmn++)
 							{
-								if((g_s1ap_cfg.plmns[config_plmn].idx[0] == plmn_struct.idx[0]) &&
-								  (g_s1ap_cfg.plmns[config_plmn].idx[1] == plmn_struct.idx[1]) &&
-								  (g_s1ap_cfg.plmns[config_plmn].idx[2] == plmn_struct.idx[2])) 
+								if((s1ap_cfg->plmns[config_plmn].idx[0] == plmn_struct.idx[0]) &&
+								  (s1ap_cfg->plmns[config_plmn].idx[1] == plmn_struct.idx[1]) &&
+								  (s1ap_cfg->plmns[config_plmn].idx[2] == plmn_struct.idx[2])) 
 								{
-									log_msg(LOG_INFO, "PLMN match found  Configured %x %x %x \n", g_s1ap_cfg.plmns[config_plmn].idx[0], g_s1ap_cfg.plmns[config_plmn].idx[1], g_s1ap_cfg.plmns[config_plmn].idx[2]);
+									log_msg(LOG_INFO, "PLMN match found  Configured %x %x %x \n", s1ap_cfg->plmns[config_plmn].idx[0], s1ap_cfg->plmns[config_plmn].idx[1], s1ap_cfg->plmns[config_plmn].idx[2]);
 									log_msg(LOG_INFO, "PLMN match found  Received %x %x %x \n", plmn_struct.idx[0], plmn_struct.idx[1], plmn_struct.idx[2]);
 									break;
 								}
 								else 
 								{
-									log_msg(LOG_INFO, "PLMN match not found  - Configured - %x %x %x \n", g_s1ap_cfg.plmns[config_plmn].idx[0], g_s1ap_cfg.plmns[config_plmn].idx[1], g_s1ap_cfg.plmns[config_plmn].idx[2]);
+									log_msg(LOG_INFO, "PLMN match not found  - Configured - %x %x %x \n", s1ap_cfg->plmns[config_plmn].idx[0], s1ap_cfg->plmns[config_plmn].idx[1], s1ap_cfg->plmns[config_plmn].idx[2]);
 									log_msg(LOG_INFO, "PLMN match not found Received - %x %x %x \n", plmn_struct.idx[0], plmn_struct.idx[1], plmn_struct.idx[2]);
 								}
 							}
-							if(config_plmn >= g_s1ap_cfg.num_plmns)
+							if(config_plmn >= s1ap_cfg->num_plmns)
 							{
 								//TODO : reject connection no match found 
 							}

@@ -33,12 +33,25 @@ typedef struct s1ap_config
 	uint16_t num_plmns;
 	struct PLMN plmns[MAX_PLMN];
 	struct PLMN_C plmn_mcc_mnc[MAX_PLMN];
-} s1ap_config;
+} s1ap_config_t;
 
 void
 init_parser(char *path);
 
 int
-parse_s1ap_conf(struct s1ap_config *config);
+parse_s1ap_conf(s1ap_config_t *config);
+
+void 
+s1ap_parse_config(s1ap_config_t *config);
+
+void 
+set_s1ap_config(s1ap_config_t *cfg);
+
+void 
+switch_config(s1ap_config_t *new_config);
+
+s1ap_config_t *get_s1ap_config();
+
+void register_config_updates(void);
 
 #endif /*__S1AP_CONFIG_H_*/

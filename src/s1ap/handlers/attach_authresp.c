@@ -67,7 +67,7 @@ s1_auth_resp_handler(struct proto_IE *s1_auth_resp_ies)
                            sizeof(struct XRES));
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_auth_resp_ies->data[i].IE_type);
         }
     }
 
@@ -113,7 +113,7 @@ s1_auth_fail_handler(struct proto_IE *s1_auth_resp_ies)
 		                   sizeof(struct AUTS));
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_auth_resp_ies->data[i].IE_type);
         }
     }
 	
