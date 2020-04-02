@@ -48,7 +48,7 @@ s1_attach_complete_handler(struct proto_IE *s1_esm_resp_ies)
 	                attach_complete.ue_idx = s1_esm_resp_ies->data[i].val.mme_ue_s1ap_id;
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d\n",s1_esm_resp_ies->data[i].IE_type);
         }
     }
 	

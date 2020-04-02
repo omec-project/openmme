@@ -38,12 +38,6 @@ static char s1ap_common_req[S1AP_COMMON_REQ_BUF_SIZE];
 
 static struct s1ap_common_req_Q_msg *g_mmeS1apInfo;
 
-static Buffer g_ctxrel_buffer;
-static Buffer g_icsreq_buffer;
-static Buffer g_attach_rej_buffer;
-static Buffer g_svc_rej_buffer;
-static Buffer g_paging_buffer;
-
 extern int g_enb_fd;
 
 extern ipc_handle ipcHndl_mme_to_s1ap_msg;

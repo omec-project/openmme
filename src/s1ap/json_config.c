@@ -6,9 +6,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #include "json_data.h"
-#include "s1ap_config.h"
 #include "err_codes.h"
 #include "log.h"
+#include "s1ap_config.h"
+
 int get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i);
 
 void
@@ -18,7 +19,7 @@ init_parser(char *path)
 }
 
 int
-parse_s1ap_conf(s1ap_config *config)
+parse_s1ap_conf(s1ap_config_t *config)
 {
 	char  mcc_dig1;
 	char  mcc_dig2;
@@ -110,6 +111,7 @@ parse_s1ap_conf(s1ap_config *config)
 		config->logging = (char *)calloc(1, strlen("debug")+1);
 		strncpy(config->logging, "debug", strlen("debug")+1);
     }
+	log_msg(LOG_INFO, "logging level configured %s ", config->logging);
 	return SUCCESS;
 }
 

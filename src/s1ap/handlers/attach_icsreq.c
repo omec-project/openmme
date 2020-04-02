@@ -36,7 +36,6 @@ static Buffer g_nas_buffer;
 extern int g_enb_fd;
 
 extern ipc_handle ipcHndl_ics;
-extern s1ap_config g_s1ap_cfg;
 
 /****Global and externs end***/
 
@@ -119,6 +118,7 @@ get_icsreq_protoie_value(struct proto_IE *value)
 {
 	uint8_t ieCnt = 0;
 	uint8_t nasIeCnt = 0;
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
 
 	value->no_of_IEs = ICS_REQ_NO_OF_IES;
 
@@ -227,8 +227,8 @@ get_icsreq_protoie_value(struct proto_IE *value)
 
 	memcpy(&(nasIEs[nasIeCnt].pduElement.mi_guti.plmn_id),
 			&(g_icsReqInfo->tai.plmn_id), sizeof(struct PLMN));
-	nasIEs[nasIeCnt].pduElement.mi_guti.mme_grp_id = htons(g_s1ap_cfg.mme_group_id);
-	nasIEs[nasIeCnt].pduElement.mi_guti.mme_code = g_s1ap_cfg.mme_code;
+	nasIEs[nasIeCnt].pduElement.mi_guti.mme_grp_id = htons(s1ap_cfg->mme_group_id);
+	nasIEs[nasIeCnt].pduElement.mi_guti.mme_code = s1ap_cfg->mme_code;
 	/* TODO : Revisit, temp fix for handling detach request retransmit.
 	 * M-TMSI should come from MME */
 	nasIEs[nasIeCnt].pduElement.mi_guti.m_TMSI = htonl(g_icsReqInfo->m_tmsi);

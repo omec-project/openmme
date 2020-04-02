@@ -53,7 +53,7 @@ s1_ctx_release_req_handler(InitiatingMessage_t *msg)
 	                release_req.ue_idx = s1_ctx_rel_req_ies.data[i].val.mme_ue_s1ap_id;
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE.\n");
+                log_msg(LOG_WARNING,"Unhandled IE %d\n",s1_ctx_rel_req_ies.data[i].IE_type);
         }
     }
 

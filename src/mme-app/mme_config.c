@@ -30,11 +30,11 @@ void mme_config_change_cbk(char *config_file, uint32_t flags)
     {
         //Logging level changed 
         set_logging_level(new_config.logging);
+		log_msg(LOG_INFO, "g_mme_cfg logging level %s", new_config.logging);
     }
     free(g_mme_cfg.logging); /* Release old logging level string */
     free(g_mme_cfg.mme_name); /* Relese old mme_name */
     g_mme_cfg = new_config; /* shallow copy of the structure */ 
-    log_msg(LOG_INFO, "g_mme_cfg logging level %s");
 }
 
 void register_config_updates(void)

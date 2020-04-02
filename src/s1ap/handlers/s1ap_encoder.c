@@ -37,8 +37,6 @@
 #include "InitiatingMessage.h"
 #include "UE-S1AP-ID-pair.h"
 
-extern s1ap_config g_s1ap_cfg;
-
 int s1ap_mme_encode_initiating(
   struct s1ap_common_req_Q_msg *message_p,
   uint8_t **buffer,
@@ -516,6 +514,8 @@ int s1ap_mme_encode_paging_request(
   uint8_t **buffer,
   uint32_t *length)
 {
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
+
     log_msg(LOG_DEBUG,"Entered s1ap_encoder->s1ap_mme_encode_paging_request\n");
 
     S1AP_PDU_t pdu = {(S1AP_PDU_PR_NOTHING)};
@@ -589,7 +589,7 @@ int s1ap_mme_encode_paging_request(
         return -1;
     }
 
-    memcpy(pagingId.choice.s_TMSI->mMEC.buf, &g_s1ap_cfg.mme_code, sizeof(uint8_t));
+    memcpy(pagingId.choice.s_TMSI->mMEC.buf, &s1ap_cfg->mme_code, sizeof(uint8_t));
     pagingId.choice.s_TMSI->mMEC.size = sizeof(uint8_t);
     
     pagingId.choice.s_TMSI->m_TMSI.buf = calloc(sizeof(uint32_t), sizeof(uint8_t));
