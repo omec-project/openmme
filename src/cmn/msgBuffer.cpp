@@ -1,44 +1,38 @@
 /*
- * msgBuffer.cpp
- *
- *  Created on: Dec 2012
- *      Author: hariharanb
+ * Copyright 2019-present Infosys Limited  
+ *   
+ * SPDX-License-Identifier: Apache-2.0    
  */
 
 #include <arpa/inet.h>
 #include <stdio.h>
-#include <iostream>
 #include <string.h>
-
-#include "basicTypes.h"
-#include "msgBuffer.h"
+#include <basicTypes.h>
+#include <msgBuffer.h>
 
 using namespace std;
 
-Debug errorStream; // Need a better place to put this
+using namespace cmn::utils;
 
 MsgBuffer::MsgBuffer()
 {
 	initialize(DEFAULT_BUFF_SIZE);
 }
 
-
-
-MsgBuffer::MsgBuffer(Uint16 size)
+MsgBuffer::MsgBuffer(uint16_t size)
 {
 	initialize(size);
 }
-
 
 MsgBuffer::~MsgBuffer()
 {
 	delete data_mp;
 }
 
-void MsgBuffer::initialize(Uint16 size)
+void MsgBuffer::initialize(uint16_t size)
 {
 	bufSize = size;
-	data_mp = new Uint8[size];
+	data_mp = new uint8_t[size];
 	memset(data_mp, 0, size);
 	bitIndex = 0;
 	byteIndex = 0;
@@ -46,11 +40,11 @@ void MsgBuffer::initialize(Uint16 size)
 	bitLength = 0;
 }
 
-bool MsgBuffer::writeBits(Uint8 data, Uint8 size, bool append)
+bool MsgBuffer::writeBits(uint8_t data, uint8_t size, bool append)
 {
 
-        Uint8 mask = (0xFF >> (8 - size));
-        data = data & mask;
+    uint8_t mask = (0xFF >> (8 - size));
+    data = data & mask;
 
 	if ((bitIndex + size) <= 8)
 	{
@@ -72,7 +66,7 @@ bool MsgBuffer::writeBits(Uint8 data, Uint8 size, bool append)
 	}
 }
 
-bool MsgBuffer::writeBytes(Uint8* data, Uint16 size, bool append)
+bool MsgBuffer::writeBytes(uint8_t* data, uint16_t size, bool append)
 {
 	bool rc = false;
 	if (bitIndex == 0)
@@ -95,35 +89,33 @@ bool MsgBuffer::writeBytes(Uint8* data, Uint16 size, bool append)
 	return rc;
 }
 
-bool MsgBuffer::writeUint8(Uint8 data,  bool append)
+bool MsgBuffer::writeUint8(uint8_t data,  bool append)
 {
-	return writeBytes(&data, sizeof(Uint8), append);
+	return writeBytes(&data, sizeof(uint8_t), append);
 }
 
-bool MsgBuffer::writeUint16(Uint16 data,  bool append)
+bool MsgBuffer::writeUint16(uint16_t data,  bool append)
 {
-	Uint16 localData = htons(data);
-	return writeBytes((Uint8*)&localData, sizeof(Uint16), append);
+	uint16_t localData = htons(data);
+	return writeBytes((uint8_t*)&localData, sizeof(uint16_t), append);
 }
 
-bool MsgBuffer::writeUint32(Uint32 data,  bool append)
+bool MsgBuffer::writeUint32(uint32_t data,  bool append)
 {
-	Uint32 localData = htonl(data);
-	return writeBytes((Uint8*)&localData, sizeof(Uint32), append);
+	uint32_t localData = htonl(data);
+	return writeBytes((uint8_t*)&localData, sizeof(uint32_t), append);
 }
 
-bool MsgBuffer::writeUint64(Uint64 data, bool append)
+bool MsgBuffer::writeUint64(uint64_t data, bool append)
 {
-	Uint64 localData = htonl(data);
-	return writeBytes((Uint8*)&localData, sizeof(Uint64), append);
+	uint64_t localData = htonl(data);
+	return writeBytes((uint8_t*)&localData, sizeof(uint64_t), append);
 }
-
-
 
 bool MsgBuffer::readBit()
 {
-	Uint8 byteValue = data_mp[byteIndex];
-	Uint8 bitMask = 0x80;
+	uint8_t byteValue = data_mp[byteIndex];
+	uint8_t bitMask = 0x80;
 	bitMask = bitMask >> bitIndex;
 
 	// Adjust the indices
@@ -139,19 +131,19 @@ bool MsgBuffer::readBit()
 	}
 }
 
-void MsgBuffer::readUint8(Uint8 &data)
+void MsgBuffer::readUint8(uint8_t &data)
 {
 	data = data_mp[byteIndex];
 	nextByte();
 }
 
-bool MsgBuffer::readUint16(Uint16 &data)
+bool MsgBuffer::readUint16(uint16_t &data)
 {
-	if ((byteIndex + sizeof(Uint16)) <= length)
+	if ((byteIndex + sizeof(uint16_t)) <= length)
 	{
-		memcpy(&data, &data_mp[byteIndex], sizeof(Uint16));
+		memcpy(&data, &data_mp[byteIndex], sizeof(uint16_t));
 		data = ntohs(data);
-		incrByteIndex(sizeof(Uint16));
+		incrByteIndex(sizeof(uint16_t));
 		return true;
 	}
 	else
@@ -160,13 +152,13 @@ bool MsgBuffer::readUint16(Uint16 &data)
 	}
 }
 
-bool MsgBuffer::readUint32(Uint32 &data)
+bool MsgBuffer::readUint32(uint32_t &data)
 {
-	if ((byteIndex + sizeof(Uint32)) <= length)
+	if ((byteIndex + sizeof(uint32_t)) <= length)
 	{
-		memcpy(&data, &data_mp[byteIndex], sizeof(Uint32));
+		memcpy(&data, &data_mp[byteIndex], sizeof(uint32_t));
 		data = ntohl(data);
-		incrByteIndex(sizeof(Uint32));
+		incrByteIndex(sizeof(uint32_t));
 		return true;
 	}
 	else
@@ -175,13 +167,13 @@ bool MsgBuffer::readUint32(Uint32 &data)
 	}
 }
 
-bool MsgBuffer::readUint64(Uint64 &data)
+bool MsgBuffer::readUint64(uint64_t &data)
 {
-	if ((byteIndex + sizeof(Uint64)) <= length)
+	if ((byteIndex + sizeof(uint64_t)) <= length)
 	{
-		memcpy(&data, &data_mp[byteIndex], sizeof(Uint64));
+		memcpy(&data, &data_mp[byteIndex], sizeof(uint64_t));
 		data = ntohl(data);
-		incrByteIndex(sizeof(Uint64));
+		incrByteIndex(sizeof(uint64_t));
 		return true;
 	}
 	else
@@ -190,9 +182,9 @@ bool MsgBuffer::readUint64(Uint64 &data)
 	}
 }
 
-Uint8 MsgBuffer::readBits(Uint16 size)
+uint8_t MsgBuffer::readBits(uint16_t size)
 {
-	Uint8 data = 0;
+	uint8_t data = 0;
 
 	if ((bitIndex + size) > 8)
 	{
@@ -200,7 +192,7 @@ Uint8 MsgBuffer::readBits(Uint16 size)
 		return 0;
 	}
 
-	Uint16 i;
+	uint16_t i;
 	for (i = 0; i <size; i++)
 	{
 		data = data << 1;
@@ -213,7 +205,7 @@ Uint8 MsgBuffer::readBits(Uint16 size)
 }
 
 
-bool MsgBuffer::readBytes(Uint8* data, Uint16 size)
+bool MsgBuffer::readBytes(uint8_t* data, uint16_t size)
 {
 	if ((byteIndex + size) <= length)
 	{
@@ -240,16 +232,16 @@ void MsgBuffer::reset()
 {
 	memset(data_mp, 0, length);
 	rewind();
-        length = 0;
-        bitLength = 0;
+    length = 0;
+    bitLength = 0;
 }
 
-void MsgBuffer::skipBits(Uint8 size)
+void MsgBuffer::skipBits(uint8_t size)
 {
 	incrBitIndex(size);
 }
 
-void MsgBuffer::skipBytes(Uint16 size)
+void MsgBuffer::skipBytes(uint16_t size)
 {
 	incrByteIndex(size);
 }
@@ -257,41 +249,14 @@ void MsgBuffer::skipBytes(Uint16 size)
 void MsgBuffer::display(Debug &stream)
 {
 
-        Uint16 bufLength = getLength();
-
-	// Displays current buffer contents
-	stream.add("Buffer Size: ");
-        stream.add(bufLength);
-        stream.endOfLine();
-	stream.add("Current Index: ");
-        stream.add(byteIndex);
-        stream.add(".");
-        stream.add(bitIndex);
-        stream.endOfLine();
-	stream.add("Data:");
-        stream.endOfLine();
-        stream.setHexOutput();
-
-        for (Uint16 i = 0; i < bufLength; i++)
-        {
-    	  stream.add(data_mp[i]);
-	  stream.add(" ");
-          if (((i+1) % 16) == 0)
-          {
-            stream.endOfLine();
-          }
-        }
-        stream.unsetHexOutput();
-        stream.endOfLine();
 }
 
-
-bool MsgBuffer::incrBitIndex(Uint8 size)
+bool MsgBuffer::incrBitIndex(uint8_t size)
 {
     bool rc = false;
     if ((bitIndex + size) <= 8)
     {
-    	Uint16 savedBitIndex = bitIndex;
+    	uint16_t savedBitIndex = bitIndex;
     	bitIndex += size;
         rc = true;
     	if (bitIndex == 8)
@@ -318,10 +283,7 @@ bool MsgBuffer::incrBitIndex(Uint8 size)
     return rc;
 }
 
-
-
-
-bool MsgBuffer::incrByteIndex(Uint16 size)
+bool MsgBuffer::incrByteIndex(uint16_t size)
 {
 	if ((byteIndex + size) <= bufSize)
 	{
@@ -350,7 +312,7 @@ void MsgBuffer::goToEnd()
 	bitIndex = bitLength;
 }
 
-Uint16 MsgBuffer::getLength()
+uint16_t MsgBuffer::getLength()
 {
        if (bitIndex == 0)
            return length;
@@ -358,42 +320,42 @@ Uint16 MsgBuffer::getLength()
            return (length + 1);
 }
 
-Uint16 MsgBuffer::getBufferSize()
+uint16_t MsgBuffer::getBufferSize()
 {
   return bufSize;
 }
 
-Uint16 MsgBuffer::getCurrentIndex()
+uint16_t MsgBuffer::getCurrentIndex()
 {
        return byteIndex;
 }
 
-void MsgBuffer::goToIndex(Uint16 idx)
+void MsgBuffer::goToIndex(uint16_t idx)
 {
        byteIndex = idx;
 }
 
-Uint16 MsgBuffer::lengthLeft()
+uint16_t MsgBuffer::lengthLeft()
 {
   return (length - byteIndex);
 }
 
-Uint16 MsgBuffer::sizeLeft()
+uint16_t MsgBuffer::sizeLeft()
 {
   return (bufSize - byteIndex);
 }
 
-void* MsgBuffer::getDataPointer()
+void* MsgBuffer::getDataPointer() 
 {
   return data_mp;
 }
 
-void MsgBuffer::setLength(Uint16 bufLen)
+void MsgBuffer::setLength(uint16_t bufLen)
 {
   length = bufLen;
 }
 
-Uint8 MsgBuffer::charToHex (Uint8 x)
+uint8_t MsgBuffer::charToHex (uint8_t x)
 {
   if ((x >= '0') && (x <= '9'))
   {
@@ -412,8 +374,4 @@ Uint8 MsgBuffer::charToHex (Uint8 x)
     return 0;
   }
 }
-
-
-
-
 

@@ -25,6 +25,8 @@
 #include "ProtocolIE-Field.h"
 #include "SupportedTAs-Item.h"
 #include "TAC.h"
+#include "structs.h"
+#include "s1apContextWrapper_c.h"
 
 extern int g_enb_fd;
 static struct Buffer resp_buf;
@@ -136,7 +138,10 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 	unsigned char *resp_msg = NULL;
 	int resp_len = 0;
 	s1ap_config_t *s1ap_cfg = get_s1ap_config();
-
+    struct EnbStruct enbStruct = {0};
+    enbStruct.enbFd_m = enb_fd;
+    bool match_found = false;
+    uint32_t cbIndex = 0;
 	/*Validate all eNB info*/
 	if(msg->value.present == InitiatingMessage__value_PR_S1SetupRequest)
 	{
@@ -154,6 +159,16 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 					if(geNb->eNB_ID.present == ENB_ID_PR_macroENB_ID) 
 					{
 						log_msg(LOG_DEBUG, "macro eNB id size %d \n", geNb->eNB_ID.choice.macroENB_ID.size);
+                        // Home eNB ID = 28 bits
+                        uint8_t *enb_id_buf = geNb->eNB_ID.choice.homeENB_ID.buf;
+                        /*enbStruct.enbId_m = 
+                            (enb_id_buf[0] << 20) + 
+                            (enb_id_buf[1] << 12) + 
+                            (enb_id_buf[2] << 4) + 
+                            ((enb_id_buf[3] & 0xf0) >> 4);*/
+                        enbStruct.enbId_m = 
+                            (enb_id_buf[0] << 12) + 
+                            (enb_id_buf[1] << 4) + ((enb_id_buf[2] & 0xf0) >> 4);
 					}
 					break;
 				}
@@ -202,6 +217,11 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 								{
 									log_msg(LOG_INFO, "PLMN match found  Configured %x %x %x \n", s1ap_cfg->plmns[config_plmn].idx[0], s1ap_cfg->plmns[config_plmn].idx[1], s1ap_cfg->plmns[config_plmn].idx[2]);
 									log_msg(LOG_INFO, "PLMN match found  Received %x %x %x \n", plmn_struct.idx[0], plmn_struct.idx[1], plmn_struct.idx[2]);
+                                    memcpy(&enbStruct.tai_m.plmn_id,
+                                           &plmn_struct, 
+                                           sizeof(struct PLMN));
+                                    enbStruct.tai_m.tac = tac_i;
+                                    match_found = true;
 									break;
 								}
 								else 
@@ -229,14 +249,41 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 		}
 	} 
 
-	/*Add eNB info to hash*/
+    if(match_found)
+    {
+        log_msg(LOG_DEBUG, "PLMN Match found. Create CB and add Enb Info");
+        cbIndex = findControlBlockWithEnbId(enbStruct.enbId_m);
+        if(INVALID_CB_INDEX == cbIndex)
+        {
+            log_msg(LOG_DEBUG, "No ENb ctx found for enb id %d.\n", enbStruct.enbId_m);
+            cbIndex = createControlBlock();
+            if(INVALID_CB_INDEX == cbIndex)
+            {
+                log_msg(LOG_ERROR,"CB creation failed.");
+                return E_FAIL;
+            }
+
+            setValuesForEnbCtx(cbIndex, &enbStruct);
+        }
+        else
+        {
+            log_msg(LOG_DEBUG, "ENB Ctx found for enb id %d. Update values.\n",enbStruct.enbId_m);
+            setValuesForEnbCtx(cbIndex, &enbStruct);
+        }
+    }
+    else
+    {
+        log_msg(LOG_ERROR, "No PLMN Match found for enb id %d.\n",enbStruct.enbId_m);
+        /* Send S1Setup Failure. TBD */
+        return E_FAIL;
+    }
 
 	/*Create S1Setup response*/
 	resp_len = create_s1setup_response(/*enb info,*/ &resp_msg);
 
 	/*Send S1Setup response*/
 	log_msg(LOG_INFO, "Send s1setup response.\n");
-	resp_len = send_sctp_msg(enb_fd, resp_msg, resp_len, 0);
+	resp_len = send_sctp_msg(cbIndex, resp_msg, resp_len, 0);
 	log_msg(LOG_INFO, "send len %d\n", resp_len);
 	//free(resp_msg);
 
