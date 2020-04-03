@@ -24,6 +24,7 @@
 #include "s1ap_ie.h"
 #include "ProtocolIE-ID.h"
 #include "ProtocolIE-Field.h"
+#include "s1apContextWrapper_c.h"
 static void
 parse_erab_pdu(char *msg,  int nas_msg_len, struct eRAB_elements *erab)
 {
@@ -839,24 +840,30 @@ init_ue_msg_handler(InitiatingMessage_t *msg, int enb_fd)
       return E_FAIL;
     }
 
+    uint32_t cbIndex = findControlBlockWithEnbFd(enb_fd);
+    if(INVALID_CB_INDEX == cbIndex)
+    {
+        log_msg(LOG_ERROR,"No CB found for enb fd %d.\n", enb_fd);
+        return E_FAIL;
+    }
 	/*Check nas message type*/
 	//TODO: check through all proto IEs for which is nas
 	//currentlyy hard coding to 2 looking at packets
 	log_msg(LOG_INFO, "NAS msg type parsed = %x\n", proto_ies.data[1].val.nas.header.message_type);
 	switch(proto_ies.data[1].val.nas.header.message_type) {
 	case NAS_ATTACH_REQUEST:
-		s1_init_ue_handler(&proto_ies, enb_fd);
+		s1_init_ue_handler(&proto_ies, cbIndex);
 		break;
 
 	case NAS_SERVICE_REQUEST:
-		s1_init_ue_service_req_handler(&proto_ies, enb_fd);
+		s1_init_ue_service_req_handler(&proto_ies, cbIndex);
 		break;
 
 	case NAS_DETACH_REQUEST:
 		detach_stage1_handler(&proto_ies, true);
 		break;
     case NAS_TAU_REQUEST:
-        s1_tau_request_handler(&proto_ies, enb_fd);
+        s1_tau_request_handler(&proto_ies, cbIndex);
         break;
 	}
 
@@ -875,6 +882,12 @@ UL_NAS_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 
     convertUplinkNasToProtoIe(msg, &proto_ies);
 
+    uint32_t cbIndex = findControlBlockWithEnbFd(enb_fd);
+    if(INVALID_CB_INDEX == cbIndex)
+    {
+        log_msg(LOG_ERROR,"No CB found for enb fd %d.\n", enb_fd);
+        return E_FAIL;
+    }
 	/*Check nas message type*/
 	//TODO: check through all proto IEs for which is nas
 	//currentlyy hard coding to 2 looking at packets
@@ -889,7 +902,7 @@ UL_NAS_msg_handler(InitiatingMessage_t *msg, int enb_fd)
 		break;
 
 	case NAS_ATTACH_REQUEST:
-		s1_init_ue_handler(&proto_ies, enb_fd);
+		s1_init_ue_handler(&proto_ies, cbIndex);
 		break;
 
 	case NAS_SEC_MODE_COMPLETE:
@@ -912,7 +925,7 @@ UL_NAS_msg_handler(InitiatingMessage_t *msg, int enb_fd)
         s1_identity_resp_handler(&proto_ies);
         break;
     case NAS_TAU_REQUEST:
-        s1_tau_request_handler(&proto_ies, enb_fd);
+        s1_tau_request_handler(&proto_ies, cbIndex);
         break;
 	}
 

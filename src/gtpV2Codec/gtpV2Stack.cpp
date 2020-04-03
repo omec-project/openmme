@@ -21,6 +21,7 @@
 #include "msgClasses/downlinkDataNotificationAcknowledgeMsg.h"
 #include "msgClasses/downlinkDataNotificationFailureIndicationMsg.h"
 
+cmn::utils::Debug errorStream;
 
 GtpV2Stack::GtpV2Stack ()
 {

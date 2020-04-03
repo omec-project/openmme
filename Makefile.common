@@ -22,9 +22,19 @@ OBJDIR = $(BUILDDIR)/objs
 LIBDIR = $(BUILDDIR)/libs
 
 TARGET_DIR = $(TOPDIR)/target
+INCLUDE_DIR = $(TOPDIR)/include
 
 INC_DIRS= \
-	-I$(TOPDIR)/src/cmn \
+          -I$(INCLUDE_DIR)/mme-app \
+          -I$(INCLUDE_DIR)/s11 \
+          -I$(INCLUDE_DIR)/s1ap \
+          -I$(INCLUDE_DIR)/s1ap/contextManager \
+          -I$(INCLUDE_DIR)/s6a \
+          -I$(TOPDIR)/src/s1ap/asn1c/asnGenFiles \
+	  -I$(TOPDIR)/src/gtpV2Codec \
+	  -I$(INCLUDE_DIR)/common \
+          -I$(INCLUDE_DIR)/cmn \
+          -I$(INCLUDE_DIR)/stateMachineFwk 
 
 LIB_PATH := -L$(LIBDIR)
 

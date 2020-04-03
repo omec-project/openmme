@@ -17,6 +17,7 @@
 
 #include "log.h"
 #include "sctp_conn.h"
+#include "s1apContextWrapper_c.h"
 #define ENB_PORT 62324
 #define S1AP_PPID 18
 
@@ -94,7 +95,8 @@ int recv_sctp_msg(int connSock, unsigned char *buffer, size_t len)
 int send_sctp_msg(int connSock, unsigned char *buffer, size_t len, uint16_t stream_no)
 {
 	uint32_t ppid = S1AP_PPID;
-	return sctp_sendmsg(connSock, (void *)buffer, len,
+    uint32_t enb_fd = getEnbFdWithCbIndex(connSock);
+	return sctp_sendmsg(enb_fd, (void *)buffer, len,
 			NULL, 0, htonl(ppid), 0, stream_no, 0, 0);
 }
 
