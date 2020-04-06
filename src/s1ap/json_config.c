@@ -86,8 +86,10 @@ parse_s1ap_conf(s1ap_config_t *config)
 		unsigned char mnc_dig_1; 
 		unsigned char mnc_dig_2;
 		unsigned char mnc_dig_3;
+		unsigned char mnc_digits=3;
 		if(mnc_i <100) // 01
 		{
+			mnc_digits = 2;
 			mnc_dig_1 = 0;
 			mnc_dig_2 = mnc_i / 10;
 		}
@@ -97,9 +99,11 @@ parse_s1ap_conf(s1ap_config_t *config)
 			mnc_dig_2 = (mnc_i / 10) % 10; 
 		}
 		mnc_dig_3 = mnc_i % 10;
+		/* these values used to compare s1 setup Request */
 		config->plmns[count-1].idx[0] = (mcc_dig_2 << 4) | (mcc_dig_1);
 		config->plmns[count-1].idx[1] = (mnc_dig_1 << 4) | (mcc_dig_3);
 		config->plmns[count-1].idx[2] = (mnc_dig_3 << 4) | (mnc_dig_2);
+		config->plmns[count-1].mnc_digits = mnc_digits;
 		log_msg(LOG_INFO, "Configured plmn %x %x %x", config->plmns[count-1].idx[0], config->plmns[count-1].idx[1], config->plmns[count-1].idx[2]); 
 		count++;
 	}

@@ -215,6 +215,7 @@ struct s1ap_header{
 /*36.413: 9.2.3.8 - MCC, MCN : Only 3 bytes are used*/
 struct PLMN {
 	unsigned char  idx[3];
+    unsigned char  mnc_digits;
 };
 
 struct PLMN_C {
