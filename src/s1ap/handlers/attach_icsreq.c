@@ -226,7 +226,7 @@ get_icsreq_protoie_value(struct proto_IE *value)
 	nasIEs[nasIeCnt].pduElement.mi_guti.id_type = 6;
 
 	memcpy(&(nasIEs[nasIeCnt].pduElement.mi_guti.plmn_id),
-			&(g_icsReqInfo->tai.plmn_id), sizeof(struct PLMN));
+			&(g_icsReqInfo->tai.plmn_id), 3); // sizeof(struct PLMN)); plmn struct has some more fields
 	nasIEs[nasIeCnt].pduElement.mi_guti.mme_grp_id = htons(s1ap_cfg->mme_group_id);
 	nasIEs[nasIeCnt].pduElement.mi_guti.mme_code = s1ap_cfg->mme_code;
 	/* TODO : Revisit, temp fix for handling detach request retransmit.
