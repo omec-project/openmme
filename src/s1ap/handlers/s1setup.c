@@ -31,8 +31,8 @@
 extern int g_enb_fd;
 static struct Buffer resp_buf;
 
-int
-create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp)
+static int
+create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp, struct PLMN *plmn)
 {
 	unsigned char data_len = 0;
 	unsigned char msg[50];
@@ -86,7 +86,17 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp)
 
 	/**Item 1: id-ServedGUMMEIs
 	 *       servedPLMNs: 1 item*/
-	buffer_copy(&gummies, &(s1ap_cfg->mme_plmn_id), sizeof(struct PLMN));
+	struct PLMN local_plmn_id = {0};
+
+	local_plmn_id.idx[0] = plmn->idx[0];
+	local_plmn_id.idx[2] = plmn->idx[2];
+	log_msg(LOG_DEBUG,"Number of mnc digits %d \n", plmn->mnc_digits);
+	if(plmn->mnc_digits == 2) {
+		local_plmn_id.idx[1] = 0xf0 | plmn->idx[1];
+	} else {
+		local_plmn_id.idx[1] = plmn->idx[1];
+	}
+	buffer_copy(&gummies, &local_plmn_id, sizeof(struct PLMN));
 	gummies.buf[gummies.pos++]=0x0;
 	gummies.buf[gummies.pos++]=0x0;
 
@@ -142,6 +152,8 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
     enbStruct.enbFd_m = enb_fd;
     bool match_found = false;
     uint32_t cbIndex = 0;
+    struct PLMN matched_plmn = {0};
+
 	/*Validate all eNB info*/
 	if(msg->value.present == InitiatingMessage__value_PR_S1SetupRequest)
 	{
@@ -222,6 +234,7 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
                                            sizeof(struct PLMN));
                                     enbStruct.tai_m.tac = tac_i;
                                     match_found = true;
+                                    matched_plmn = s1ap_cfg->plmns[config_plmn];
 									break;
 								}
 								else 
@@ -279,7 +292,7 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
     }
 
 	/*Create S1Setup response*/
-	resp_len = create_s1setup_response(/*enb info,*/ &resp_msg);
+	resp_len = create_s1setup_response(/*enb info,*/ &resp_msg, &matched_plmn);
 
 	/*Send S1Setup response*/
 	log_msg(LOG_INFO, "Send s1setup response.\n");
