@@ -96,7 +96,7 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp, struct PLMN 
 	} else {
 		local_plmn_id.idx[1] = plmn->idx[1];
 	}
-	buffer_copy(&gummies, &local_plmn_id, sizeof(struct PLMN));
+	buffer_copy(&gummies, &local_plmn_id, 3); // sizeof(struct PLMN)); plmn struct has some more fields
 	gummies.buf[gummies.pos++]=0x0;
 	gummies.buf[gummies.pos++]=0x0;
 
@@ -231,7 +231,7 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 									log_msg(LOG_INFO, "PLMN match found  Received %x %x %x \n", plmn_struct.idx[0], plmn_struct.idx[1], plmn_struct.idx[2]);
                                     memcpy(&enbStruct.tai_m.plmn_id,
                                            &plmn_struct, 
-                                           sizeof(struct PLMN));
+                                           3); //sizeof(struct PLMN)); plmn struct has some more fields
                                     enbStruct.tai_m.tac = tac_i;
                                     match_found = true;
                                     matched_plmn = s1ap_cfg->plmns[config_plmn];
