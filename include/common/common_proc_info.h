@@ -35,6 +35,11 @@ struct s1ap_common_req_Q_msg {
     e_emmCause      emm_cause;
 	int ue_idx;
 	int enb_fd;
+	unsigned short mme_group_id;
+	unsigned char rel_cap;
+	unsigned char mme_code;
+	char  mme_name[MME_NAME_STR_LEN];
+	struct PLMN mme_plmn_id;
 	int enb_s1ap_ue_id;
 	int mme_s1ap_ue_id;
     enum s1ap_cn_domain cn_domain;
@@ -67,6 +72,8 @@ enum s1ap_common_req_type
     S1AP_PAGING_REQ,
     S1AP_ATTACH_REJ,
     S1AP_SERVICE_REJ,
+    S1AP_SETUP_FAILURE,
+    S1AP_SETUP_RESPONSE,
     S1AP_REQ_UNKNOWN
 };
 

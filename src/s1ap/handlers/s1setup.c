@@ -142,6 +142,89 @@ create_s1setup_response(/*enb info,*/unsigned char **s1_setup_resp, struct PLMN 
 	return resp_buf.pos;
 }
 
+/******************************************************
+  S1_SETUP_RESPONSE handling
+******************************************************/
+int
+s1_setup_response(int enb_fd, struct PLMN *plmn)
+{
+    log_msg(LOG_DEBUG,"Process S1 Setup response.");
+	uint32_t length = 0;
+    uint8_t *buffer = NULL;
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
+    struct s1ap_common_req_Q_msg rsp_msg;
+
+    memcpy(rsp_msg.mme_name, s1ap_cfg->mme_name, strlen(s1ap_cfg->mme_name));
+    rsp_msg.mme_code = s1ap_cfg->mme_code;
+    rsp_msg.mme_group_id = s1ap_cfg->mme_group_id;
+	
+    struct PLMN local_plmn_id = {0};
+
+	local_plmn_id.idx[0] = plmn->idx[0];
+	local_plmn_id.idx[2] = plmn->idx[2];
+	log_msg(LOG_DEBUG,"Number of mnc digits %d \n", plmn->mnc_digits);
+	if(plmn->mnc_digits == 2) {
+		local_plmn_id.idx[1] = 0xf0 | plmn->idx[1];
+	} else {
+		local_plmn_id.idx[1] = plmn->idx[1];
+	}
+    
+    memcpy(&rsp_msg.mme_plmn_id, &local_plmn_id, sizeof(struct PLMN));
+    rsp_msg.rel_cap = s1ap_cfg->rel_cap;
+
+    int ret = s1ap_mme_encode_outcome(&rsp_msg, &buffer, &length);
+    if(ret == -1)
+    {
+        log_msg(LOG_ERROR, "Encoding S1 setup response failed.\n");
+        return E_FAIL;
+    }
+
+    send_sctp_msg_with_fd(enb_fd, buffer, length, 1);
+	log_msg(LOG_INFO, "buffer size is %d\n", length);
+    if(buffer)
+    {
+        free(buffer);
+        buffer = NULL;
+        length = 0;
+    }
+
+	log_msg(LOG_INFO, "\n-----Message handlingcompleted.---\n");
+
+	return SUCCESS;
+}
+
+/******************************************************
+  S1_SETUP_FAILURE handling
+******************************************************/
+int
+s1_setup_failure(struct s1ap_common_req_Q_msg* s1ap_setup_failure)
+{
+    log_msg(LOG_DEBUG,"Process S1 Setup failure.");
+	uint32_t length = 0;
+    uint8_t *buffer = NULL;
+    int enb_fd = s1ap_setup_failure->enb_fd;
+
+    int ret = s1ap_mme_encode_outcome(s1ap_setup_failure, &buffer, &length);
+    if(ret == -1)
+    {
+        log_msg(LOG_ERROR, "Encoding S1 setup failure failed.\n");
+        return E_FAIL;
+    }
+
+    send_sctp_msg_with_fd(enb_fd, buffer, length, 1);
+	log_msg(LOG_INFO, "buffer size is %d\n", length);
+    if(buffer)
+    {
+        free(buffer);
+        buffer = NULL;
+        length = 0;
+    }
+
+	log_msg(LOG_INFO, "\n-----Message handlingcompleted.---\n");
+
+	return SUCCESS;
+}
+
 int
 s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 {
@@ -287,13 +370,18 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
     else
     {
         log_msg(LOG_ERROR, "No PLMN Match found for enb id %d.\n",enbStruct.enbId_m);
-        /* Send S1Setup Failure. TBD */
-        return E_FAIL;
+        /* Send S1Setup Failure.*/
+   	    struct s1ap_common_req_Q_msg s1ap_setup_failure = {0};
+        s1ap_setup_failure.IE_type = S1AP_SETUP_FAILURE;
+        s1ap_setup_failure.enb_fd = enb_fd;
+        s1ap_setup_failure.cause.present = s1apCause_PR_misc;
+        s1ap_setup_failure.cause.choice.misc = s1apCauseMisc_unknown_PLMN;
+        return s1_setup_failure(&s1ap_setup_failure);
     }
 
 	/*Create S1Setup response*/
 	resp_len = create_s1setup_response(/*enb info,*/ &resp_msg, &matched_plmn);
-
+    s1_setup_response(enb_fd, &matched_plmn);
 	/*Send S1Setup response*/
 	log_msg(LOG_INFO, "Send s1setup response.\n");
 	resp_len = send_sctp_msg(cbIndex, resp_msg, resp_len, 0);
