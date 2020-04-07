@@ -87,9 +87,9 @@ parse_mme_conf(mme_config *config)
 		unsigned char mnc_dig_1; 
 		unsigned char mnc_dig_2;
 		unsigned char mnc_dig_3;
-		if(mnc_i <100) // 01
+		if(mnc_digits == 2) // 01
 		{
-			mnc_dig_1 = 0xf;
+			mnc_dig_1 = 0x0F;
 			mnc_dig_2 = mnc_i / 10;
 		}
 		else
