@@ -10,7 +10,7 @@
 #include "mme_app.h"
 #include "err_codes.h"
 
-int get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i);
+static int get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i, uint16_t *mnc_digits);
 
 /**
  * @brief Initialize json parser
@@ -76,8 +76,8 @@ parse_mme_conf(mme_config *config)
 			break;
 		}
 		log_msg(LOG_INFO, "Parsed plmn %s \n", plmn);
-		uint16_t mcc_i, mnc_i;
-		get_mcc_mnc(plmn, &mcc_i, &mnc_i);
+		uint16_t mcc_i, mnc_i, mnc_digits=3;
+		get_mcc_mnc(plmn, &mcc_i, &mnc_i, &mnc_digits);
 		config->plmn_mcc_mnc[count-1].mcc = mcc_i;
 		config->plmn_mcc_mnc[count-1].mnc = mnc_i;
 		log_msg(LOG_INFO, "Parsed plmn mcc - %d mnc - %d \n", mcc_i, mnc_i);
@@ -101,6 +101,7 @@ parse_mme_conf(mme_config *config)
 		config->plmns[count-1].idx[0] = (mcc_dig_2 << 4) | (mcc_dig_1);
 		config->plmns[count-1].idx[1] = (mnc_dig_1 << 4) | (mcc_dig_3);
 		config->plmns[count-1].idx[2] = (mnc_dig_3 << 4) | (mnc_dig_2);
+        config->plmns[count-1].mnc_digits = mnc_digits;
 		log_msg(LOG_INFO, "Configured plmn %x %x %x", config->plmns[count-1].idx[0], config->plmns[count-1].idx[1], config->plmns[count-1].idx[2]); 
 		count++;
 	}
@@ -109,8 +110,8 @@ parse_mme_conf(mme_config *config)
 	return SUCCESS;
 }
 
-int 
-get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i)
+static int
+get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i, uint16_t *mnc_digits)
 {
 	char *token = ",";
 	char *saved_comma=NULL;
@@ -126,6 +127,7 @@ get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i)
 	saved_e=NULL;
 	char *mnc_f = strtok_r(mnc, token_e, &saved_e);
 	mnc_f = strtok_r(NULL, token_e, &saved_e);
+    *mnc_digits = strlen(mnc_f);
 	*mnc_i = atoi(mnc_f);
 	return 0;
 }
