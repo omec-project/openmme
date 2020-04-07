@@ -10,7 +10,7 @@
 #include "log.h"
 #include "s1ap_config.h"
 
-int get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i);
+static int get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i, uint16_t *mnc_digits);
 
 void
 init_parser(char *path)
@@ -76,8 +76,9 @@ parse_s1ap_conf(s1ap_config_t *config)
 		}
 		log_msg(LOG_INFO, "Parsed plmn %s \n", plmn);
 		uint16_t mcc_i, mnc_i;
-		get_mcc_mnc(plmn, &mcc_i, &mnc_i);
-		config->plmn_mcc_mnc[count-1].mcc = mcc_i;
+		uint16_t mnc_digits=3;
+        get_mcc_mnc(plmn, &mcc_i, &mnc_i, &mnc_digits);
+        config->plmn_mcc_mnc[count-1].mcc = mcc_i;
 		config->plmn_mcc_mnc[count-1].mnc = mnc_i;
 		log_msg(LOG_INFO, "Parsed plmn mcc - %d mnc - %d \n", mcc_i, mnc_i);
 		unsigned char mcc_dig_1 = mcc_i / 100; 
@@ -86,10 +87,8 @@ parse_s1ap_conf(s1ap_config_t *config)
 		unsigned char mnc_dig_1; 
 		unsigned char mnc_dig_2;
 		unsigned char mnc_dig_3;
-		unsigned char mnc_digits=3;
 		if(mnc_i <100) // 01
 		{
-			mnc_digits = 2;
 			mnc_dig_1 = 0;
 			mnc_dig_2 = mnc_i / 10;
 		}
@@ -119,8 +118,9 @@ parse_s1ap_conf(s1ap_config_t *config)
 	return SUCCESS;
 }
 
-int 
-get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i)
+/* plmn1: "mcc=315,mnc=010" */
+static int
+get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i, uint16_t *mnc_digits)
 {
 	char *token = ",";
 	char *saved_comma=NULL;
@@ -136,6 +136,7 @@ get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i)
 	saved_e=NULL;
 	char *mnc_f = strtok_r(mnc, token_e, &saved_e);
 	mnc_f = strtok_r(NULL, token_e, &saved_e);
+    *mnc_digits = strlen(mnc_f);
 	*mnc_i = atoi(mnc_f);
 	return 0;
 }

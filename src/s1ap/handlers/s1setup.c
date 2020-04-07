@@ -153,10 +153,11 @@ s1_setup_response(int enb_fd, struct PLMN *plmn)
     uint8_t *buffer = NULL;
 	s1ap_config_t *s1ap_cfg = get_s1ap_config();
     struct s1ap_common_req_Q_msg rsp_msg;
+    rsp_msg.IE_type = S1AP_SETUP_RESPONSE;
 
     memcpy(rsp_msg.mme_name, s1ap_cfg->mme_name, strlen(s1ap_cfg->mme_name));
     rsp_msg.mme_code = s1ap_cfg->mme_code;
-    rsp_msg.mme_group_id = s1ap_cfg->mme_group_id;
+	rsp_msg.mme_group_id = (s1ap_cfg->mme_group_id);
 	
     struct PLMN local_plmn_id = {0};
 
@@ -380,13 +381,15 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
     }
 
 	/*Create S1Setup response*/
-	resp_len = create_s1setup_response(/*enb info,*/ &resp_msg, &matched_plmn);
     s1_setup_response(enb_fd, &matched_plmn);
+#if 0
+    resp_len = create_s1setup_response(/*enb info,*/ &resp_msg, &matched_plmn);
 	/*Send S1Setup response*/
 	log_msg(LOG_INFO, "Send s1setup response.\n");
 	resp_len = send_sctp_msg(cbIndex, resp_msg, resp_len, 0);
 	log_msg(LOG_INFO, "send len %d\n", resp_len);
 	//free(resp_msg);
+#endif
 
 	return SUCCESS;
 }

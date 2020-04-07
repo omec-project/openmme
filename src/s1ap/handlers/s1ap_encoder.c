@@ -818,7 +818,7 @@ int s1ap_mme_encode_s1_setup_response(
     val[1].value.choice.RelativeMMECapacity = s1apPDU->rel_cap;
     
     val[0].id = ProtocolIE_ID_id_ServedGUMMEIs;
-    val[0].criticality = 1;
+    val[0].criticality = 0;
     val[0].value.present = S1SetupResponseIEs__value_PR_ServedGUMMEIs;
 
     ServedGUMMEIsItem_t gummei_item;
@@ -834,9 +834,11 @@ int s1ap_mme_encode_s1_setup_response(
     MME_Group_ID_t group_id;
     memset(&group_id, 0, sizeof(MME_Group_ID_t));
 
+    log_msg(LOG_DEBUG, "group id %d\n", s1apPDU->mme_group_id);
     group_id.size = 2;
     group_id.buf = calloc(2, sizeof(uint8_t));
-    memcpy(group_id.buf, &s1apPDU->mme_group_id, 2);
+	group_id.size = copyU16(group_id.buf, s1apPDU->mme_group_id);
+    //memcpy(group_id.buf, &s1apPDU->mme_group_id, 2);
    
     MME_Code_t mmecode;
     memset(&mmecode, 0, sizeof(MME_Code_t));
@@ -851,9 +853,9 @@ int s1ap_mme_encode_s1_setup_response(
     ASN_SEQUENCE_ADD(&val[0].value.choice.ServedGUMMEIs.list, &gummei_item);
     
     log_msg(LOG_INFO,"Add values to list.\n");
+    ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[2]);
     ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[0]);
     ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[1]);
-    ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[2]);
 
     if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) 
     {
