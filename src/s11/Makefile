@@ -48,7 +48,8 @@ INCS := $(INC_DIRS) \
 LIBS := -lpthread	\
 	-lsctp \
 	-lgtpV2Codec \
-	-lcommonUtils
+    -lmonitor_config \
+	-lcmnUtils
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."

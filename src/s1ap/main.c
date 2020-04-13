@@ -29,8 +29,9 @@
 #include "f9.h"
 
 
+s1ap_instance_t *s1ap_inst;
+
 /*Global and externs **/
-extern s1ap_config g_s1ap_cfg;
 pthread_t s1ap_iam_t;
 
 int g_enb_fd = 0;
@@ -80,6 +81,7 @@ pthread_t mme_to_s1ap_msg_t;
 pthread_t tau_rsp_msg_t;
 pthread_t emm_info_req_msg_t;
 pthread_t send_reset_eNB_msg_t;
+
 
 struct time_stat g_attach_stats[65535];
 /**End: global and externs**/
@@ -316,11 +318,13 @@ accept_sctp(void *data)
 int
 init_sctp()
 {
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
+	
 	log_msg(LOG_INFO, "Create sctp sock, ip:%d, port:%d\n",
-			g_s1ap_cfg.s1ap_local_ip, g_s1ap_cfg.sctp_port);
+			s1ap_cfg->s1ap_local_ip, s1ap_cfg->sctp_port);
 	/*Create MME sctp listned socket*/
-	g_sctp_fd = create_sctp_socket(g_s1ap_cfg.s1ap_local_ip,
-					g_s1ap_cfg.sctp_port);
+	g_sctp_fd = create_sctp_socket(s1ap_cfg->s1ap_local_ip,
+					s1ap_cfg->sctp_port);
 
 	if (g_sctp_fd == -1) {
 		log_msg(LOG_ERROR, "Error in creating sctp socket. \n");
@@ -491,12 +495,14 @@ start_sctp_threads()
 int
 main(int argc, char **argv)
 {
+	s1ap_inst = (s1ap_instance_t *) calloc(1, sizeof(s1ap_instance_t));
+	s1ap_inst->s1ap_config = (s1ap_config_t *) calloc(1, sizeof(s1ap_config_t));
+
     init_backtrace(argv[0]); 
 
 	parse_args(argc, argv);
 
-	init_parser("conf/s1ap.json");
-	parse_s1ap_conf();
+	s1ap_parse_config(s1ap_inst->s1ap_config);
 
 	if (init_writer_ipc() != SUCCESS) {
 		log_msg(LOG_ERROR, "Error in initializing writer ipc.\n");
@@ -522,19 +528,26 @@ main(int argc, char **argv)
 		log_msg(LOG_ERROR, "Error in initializing sctp server.\n");
 		return -E_FAIL_INIT;
 	}
-
-	log_msg(LOG_INFO, "Connection accespted from enb \n");
+	log_msg(LOG_INFO, "SCTP socket open - success \n");
 
 	if (start_sctp_threads() != SUCCESS) {
 		log_msg(LOG_ERROR, "Error in creating sctp reader/writer thread.\n");
 		return -E_FAIL_INIT;
 	}
-
 	log_msg(LOG_INFO, "sctp reader/writer thread started.\n");
+
+	register_config_updates();
 
 	while (1) {
 		sleep(10);
 	}
 
 	return SUCCESS;
+}
+
+void s1ap_parse_config(s1ap_config_t *config)
+{
+	/*Read MME configurations*/
+	init_parser("conf/s1ap.json");
+	parse_s1ap_conf(config);
 }

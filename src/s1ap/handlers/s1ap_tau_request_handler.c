@@ -54,7 +54,7 @@ s1_tau_request_handler(struct proto_IE *s1_tau_req_ies, int enb_fd)
             }
             default:
 			// Once MME starts handlign thsi request we can parse and send the content 
-			log_msg(LOG_WARNING,"Unhandled IE In tau request %d",s1_tau_req_ies->data[i].IE_type);
+			log_msg(LOG_WARNING,"Unhandled IE In tau request %d \n",s1_tau_req_ies->data[i].IE_type);
 		}
 	}
 	log_msg(LOG_INFO, "Send TAU request to mme-app\n");

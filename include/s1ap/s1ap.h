@@ -18,6 +18,13 @@
 #include "SuccessfulOutcome.h"
 #include "UnsuccessfulOutcome.h"
 #include "common_proc_info.h"
+#include "s1ap_config.h"
+
+/* Put all the instances within this */
+typedef struct s1ap_instance 
+{
+	s1ap_config_t *s1ap_config;
+}s1ap_instance_t;
 
 int
 s1_init_ctx_resp_handler(SuccessfulOutcome_t *msg);
@@ -53,11 +60,23 @@ int s1ap_mme_encode_initiating(
         struct s1ap_common_req_Q_msg *s1apPDU, 
         uint8_t **buffer, uint32_t *length);
 
+int s1ap_mme_encode_outcome(
+        struct s1ap_common_req_Q_msg *s1apPDU, 
+        uint8_t **buffer, uint32_t *length);
+
 int s1ap_mme_encode_initial_context_setup_request(
         struct s1ap_common_req_Q_msg *s1apPDU,
         uint8_t **buffer, uint32_t *length);
 
 int s1ap_mme_encode_service_rej(
+        struct s1ap_common_req_Q_msg *s1apPDU,
+        uint8_t **buffer, uint32_t *length);
+
+int s1ap_mme_encode_s1_setup_failure(
+        struct s1ap_common_req_Q_msg *s1apPDU,
+        uint8_t **buffer, uint32_t *length);
+
+int s1ap_mme_encode_s1_setup_response(
         struct s1ap_common_req_Q_msg *s1apPDU,
         uint8_t **buffer, uint32_t *length);
 
@@ -134,5 +153,6 @@ msg_to_hex_str(const char *msg, int len, char **buffer);
 
 unsigned short
 get_length(char **msg);
+
 
 #endif /*__S1AP_H_*/

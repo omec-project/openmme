@@ -35,9 +35,10 @@
 #include "ProtocolIE-Field.h"
 #include "common_proc_info.h"
 #include "InitiatingMessage.h"
+#include "SuccessfulOutcome.h"
+#include "UnsuccessfulOutcome.h"
 #include "UE-S1AP-ID-pair.h"
-
-extern s1ap_config g_s1ap_cfg;
+#include "ServedGUMMEIsItem.h"
 
 int s1ap_mme_encode_initiating(
   struct s1ap_common_req_Q_msg *message_p,
@@ -71,6 +72,31 @@ int s1ap_mme_encode_initiating(
             log_msg(
                   LOG_WARNING,
                   "Unknown procedure ID (%d) for initiating message_p\n",
+                  (int) message_p->IE_type);
+      }
+
+  return -1;
+}
+
+int s1ap_mme_encode_outcome(
+  struct s1ap_common_req_Q_msg *message_p,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+    log_msg(LOG_INFO, "MME Outcome Message Encode.\n");
+    switch (message_p->IE_type) {
+        case S1AP_SETUP_RESPONSE:
+            log_msg(LOG_INFO, "S1 Setup Response Encode.\n");
+            return s1ap_mme_encode_s1_setup_response(
+                      message_p, buffer, length);
+        case S1AP_SETUP_FAILURE:
+            log_msg(LOG_INFO, "S1 Setup failure Encode.\n");
+            return s1ap_mme_encode_s1_setup_failure(
+                      message_p, buffer, length);
+        default:
+            log_msg(
+                  LOG_WARNING,
+                  "Unknown procedure ID (%d) for Outcome msg\n",
                   (int) message_p->IE_type);
       }
 
@@ -516,6 +542,8 @@ int s1ap_mme_encode_paging_request(
   uint8_t **buffer,
   uint32_t *length)
 {
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
+
     log_msg(LOG_DEBUG,"Entered s1ap_encoder->s1ap_mme_encode_paging_request\n");
 
     S1AP_PDU_t pdu = {(S1AP_PDU_PR_NOTHING)};
@@ -589,7 +617,7 @@ int s1ap_mme_encode_paging_request(
         return -1;
     }
 
-    memcpy(pagingId.choice.s_TMSI->mMEC.buf, &g_s1ap_cfg.mme_code, sizeof(uint8_t));
+    memcpy(pagingId.choice.s_TMSI->mMEC.buf, &s1ap_cfg->mme_code, sizeof(uint8_t));
     pagingId.choice.s_TMSI->mMEC.size = sizeof(uint8_t);
     
     pagingId.choice.s_TMSI->m_TMSI.buf = calloc(sizeof(uint32_t), sizeof(uint8_t));
@@ -663,3 +691,182 @@ int s1ap_mme_encode_paging_request(
     *length = enc_ret;
     return enc_ret; 
 }
+
+int s1ap_mme_encode_s1_setup_failure(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+	log_msg(LOG_DEBUG,"Inside s1ap_mme_encode_s1_setup_failure\n");
+
+	S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+    UnsuccessfulOutcome_t *fail_msg = NULL;
+	S1AP_PDU_t                             *pdu_p = &pdu;
+	int                                     enc_ret = -1;
+	memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+
+    pdu.present = S1AP_PDU_PR_unsuccessfulOutcome;
+    pdu.choice.unsuccessfulOutcome = calloc(sizeof(UnsuccessfulOutcome_t), sizeof(uint8_t));
+    if(pdu.choice.unsuccessfulOutcome == NULL)
+    {
+        log_msg(LOG_ERROR,"calloc failed.\n");
+        return -1;
+    }
+
+    fail_msg = pdu.choice.unsuccessfulOutcome;
+    fail_msg->procedureCode = ProcedureCode_id_S1Setup;
+    fail_msg->criticality = 0;
+    fail_msg->value.present = UnsuccessfulOutcome__value_PR_S1SetupFailure;  
+    //proto_c = &initiating_msg->value.choice.UEContextReleaseCommand.protocolIEs;
+            
+    S1SetupFailureIEs_t val[1];
+    memset(val, 0, 1 * sizeof(S1SetupFailureIEs_t));
+    
+    val[0].id = ProtocolIE_ID_id_Cause;
+    val[0].criticality = 1;
+    val[0].value.present = S1SetupFailureIEs__value_PR_Cause;
+    //memcpy(&val[1].value.choice.Cause, &s1apPDU->cause, sizeof(Cause_t));
+    val[0].value.choice.Cause.present = s1apPDU->cause.present;
+    switch(s1apPDU->cause.present)
+    {
+        case Cause_PR_radioNetwork:
+            val[0].value.choice.Cause.choice.radioNetwork
+                = s1apPDU->cause.choice.radioNetwork;
+        break;
+        case Cause_PR_transport:
+            val[0].value.choice.Cause.choice.transport
+                = s1apPDU->cause.choice.transport;
+        break;
+        case Cause_PR_nas:
+            val[0].value.choice.Cause.choice.nas
+                = s1apPDU->cause.choice.nas;
+        break;
+        case Cause_PR_protocol:
+            val[0].value.choice.Cause.choice.protocol
+                = s1apPDU->cause.choice.protocol;
+        break;
+        case Cause_PR_misc:
+            val[0].value.choice.Cause.choice.misc
+                = s1apPDU->cause.choice.misc;
+        break;
+        case Cause_PR_NOTHING:
+        default:
+            log_msg(LOG_WARNING,"Unknown Cause type:%d\n",s1apPDU->cause.present);
+    }
+
+    log_msg(LOG_INFO,"Add values to list.\n");
+    ASN_SEQUENCE_ADD(&fail_msg->value.choice.S1SetupFailure.protocolIEs.list, &val[0]);
+
+    if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) 
+    {
+        log_msg(LOG_ERROR, "Encoding of S1 setup failure failed\n");
+        return -1;
+    }
+
+    log_msg(LOG_INFO,"free unsucessful outcome  msg");
+    free(pdu.choice.unsuccessfulOutcome);
+    
+    *length = enc_ret;
+    return enc_ret; 
+}
+
+int s1ap_mme_encode_s1_setup_response(
+  struct s1ap_common_req_Q_msg *s1apPDU,
+  uint8_t **buffer,
+  uint32_t *length)
+{
+	log_msg(LOG_DEBUG,"Inside s1ap_mme_encode_s1_setup_response\n");
+
+	S1AP_PDU_t                              pdu = {(S1AP_PDU_PR_NOTHING)};
+    SuccessfulOutcome_t *rsp_msg = NULL;
+	S1AP_PDU_t                             *pdu_p = &pdu;
+	int                                     enc_ret = -1;
+	memset ((void *)pdu_p, 0, sizeof (S1AP_PDU_t));
+
+    pdu.present = S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = calloc(sizeof(SuccessfulOutcome_t), sizeof(uint8_t));
+    if(pdu.choice.successfulOutcome == NULL)
+    {
+        log_msg(LOG_ERROR,"calloc failed.\n");
+        return -1;
+    }
+
+    rsp_msg = pdu.choice.successfulOutcome;
+    rsp_msg->procedureCode = ProcedureCode_id_S1Setup;
+    rsp_msg->criticality = 0;
+    rsp_msg->value.present = SuccessfulOutcome__value_PR_S1SetupResponse;  
+    //proto_c = &initiating_msg->value.choice.UEContextReleaseCommand.protocolIEs;
+            
+    S1SetupResponseIEs_t val[3];
+    memset(val, 0, 3 * sizeof(S1SetupFailureIEs_t));
+   
+    val[2].id = ProtocolIE_ID_id_MMEname;
+    val[2].criticality = 1;
+    val[2].value.present = S1SetupResponseIEs__value_PR_MMEname;
+   
+    int mme_name_len = strlen(s1apPDU->mme_name);
+    val[2].value.choice.MMEname.size = mme_name_len;
+    val[2].value.choice.MMEname.buf = calloc(mme_name_len, 
+                                             sizeof(uint8_t));
+    memcpy(val[2].value.choice.MMEname.buf, 
+           &s1apPDU->mme_name, mme_name_len);
+    
+    val[1].id = ProtocolIE_ID_id_RelativeMMECapacity;
+    val[1].criticality = 1;
+    val[1].value.present = S1SetupResponseIEs__value_PR_RelativeMMECapacity;
+    
+    val[1].value.choice.RelativeMMECapacity = s1apPDU->rel_cap;
+    
+    val[0].id = ProtocolIE_ID_id_ServedGUMMEIs;
+    val[0].criticality = 0;
+    val[0].value.present = S1SetupResponseIEs__value_PR_ServedGUMMEIs;
+
+    ServedGUMMEIsItem_t gummei_item;
+    memset(&gummei_item, 0, sizeof(ServedGUMMEIsItem_t));
+
+    PLMNidentity_t plmn;
+    memset(&plmn, 0, sizeof(PLMNidentity_t));
+
+    plmn.size = 3;
+    plmn.buf = calloc(3, sizeof(uint8_t));
+    memcpy(plmn.buf, s1apPDU->mme_plmn_id.idx, 3);
+   
+    MME_Group_ID_t group_id;
+    memset(&group_id, 0, sizeof(MME_Group_ID_t));
+
+    log_msg(LOG_DEBUG, "group id %d\n", s1apPDU->mme_group_id);
+    group_id.size = 2;
+    group_id.buf = calloc(2, sizeof(uint8_t));
+	group_id.size = copyU16(group_id.buf, s1apPDU->mme_group_id);
+    //memcpy(group_id.buf, &s1apPDU->mme_group_id, 2);
+   
+    MME_Code_t mmecode;
+    memset(&mmecode, 0, sizeof(MME_Code_t));
+
+    mmecode.size = 1;
+    mmecode.buf = calloc(1, sizeof(uint8_t));
+    memcpy(mmecode.buf, &s1apPDU->mme_code, 1);
+   
+    ASN_SEQUENCE_ADD(&gummei_item.servedPLMNs.list, &plmn);
+    ASN_SEQUENCE_ADD(&gummei_item.servedGroupIDs.list, &group_id);
+    ASN_SEQUENCE_ADD(&gummei_item.servedMMECs.list, &mmecode);
+    ASN_SEQUENCE_ADD(&val[0].value.choice.ServedGUMMEIs.list, &gummei_item);
+    
+    log_msg(LOG_INFO,"Add values to list.\n");
+    ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[2]);
+    ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[0]);
+    ASN_SEQUENCE_ADD(&rsp_msg->value.choice.S1SetupResponse.protocolIEs.list, &val[1]);
+
+    if ((enc_ret = aper_encode_to_new_buffer (&asn_DEF_S1AP_PDU, 0, &pdu, (void **)buffer)) < 0) 
+    {
+        log_msg(LOG_ERROR, "Encoding of S1 setup Response failed\n");
+        return -1;
+    }
+
+    log_msg(LOG_INFO,"free sucessful outcome  msg");
+    free(pdu.choice.successfulOutcome);
+    
+    *length = enc_ret;
+    return enc_ret; 
+}
+

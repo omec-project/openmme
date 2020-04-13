@@ -68,7 +68,7 @@ detach_stage1_handler(struct proto_IE *detach_ies, bool retransmit)
                     }
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",detach_ies->data[i].IE_type);
         }
     }
 

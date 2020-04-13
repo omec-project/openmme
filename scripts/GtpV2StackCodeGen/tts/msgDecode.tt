@@ -1,0 +1,27 @@
+[% IF ieTypeData.ieCardinality == 1 -%][% IF ieTypeData.grouped == "Yes" -%]
+[% ieTypeData.grpIeInstClassName %] groupedIeInstance =
+dynamic_cast<
+[% ieTypeData.grpIeInstClassName %]&>(ieObject.getGroupedIe(msgType, [% ieTypeData.instance %]));
+rc = groupedIeInstance.decode[% ieTypeData.grpIeInstClassName %](buffer, data.[% ieTypeData.ieVarName %], ieHeader.length);
+[% ELSE -%]
+rc = ieObject.decode[% ieTypeData.ieType %]Ie(buffer, data.[% ieTypeData.ieVarName %], ieHeader.length);
+[% END -%]
+[% ELSE -%]
+// First check if we have enough space left to decode and store this instance
+if (data.[% ieTypeData.ieVarName %]Count == [% ieTypeData.ieCardinality %])
+{
+    errorStream.add((char *)"More than [% ieTypeData.ieCardinality %] instances of [% ieTypeData.ieVarName %] received\n");
+	return false;
+}
+[% IF ieTypeData.grouped == "Yes" -%]
+[% ieTypeData.grpIeInstClassName %] groupedIeInstance =
+dynamic_cast<
+[% ieTypeData.grpIeInstClassName %]&>(ieObject.getGroupedIe(msgType, [% ieTypeData.instance %]));
+rc = groupedIeInstance.decode[% ieTypeData.grpIeInstClassName %](buffer,
+data.[% ieTypeData.ieVarName %][data.[% ieTypeData.ieVarName %]Count], ieHeader.length);
+data.[% ieTypeData.ieVarName %]Count++; // TODO Count validation
+[% ELSE -%]
+rc = ieObject.decode[% ieTypeData.ieType %]Ie(buffer, data.[% ieTypeData.ieVarName %][[% ieTypeData.ieVarName %]Count], ieHeader.length);
+data.[% ieTypeData.ieVarName %]Count++; // TODO Count validation
+[% END -%]
+[% END -%]

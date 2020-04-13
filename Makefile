@@ -10,7 +10,7 @@ PROJECT_NAME		 := openmme
 VERSION                  ?= $(shell cat ./VERSION)
 
 TOPTARGETS 		 := all clean install
-SUBDIRS 		 := src/common src/cmn src/gtpV2Codec src/s6a src/s1ap src/s11 src/mme-app/
+SUBDIRS 		 := src/common src/cmn src/stateMachineFwk src/s1ap/contextManager src/gtpV2Codec src/s6a src/s1ap src/s11 src/mme-app/
 #$(wildcard src/mme-app/.)
 
 $(TOPTARGETS): $(SUBDIRS)

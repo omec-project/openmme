@@ -227,6 +227,10 @@ secreq_processing()
 	buffer_copy(&g_sec_nas_buffer, &nas.elements->pduElement.ue_network.capab,
 			nas.elements->pduElement.ue_network.len);
 
+    /* Request IMEI from the device */
+	uint8_t imei = 0xc1;
+	buffer_copy(&g_sec_nas_buffer, &imei, sizeof(imei));
+
 	/* Calculate mac */
 	uint8_t direction = 1;
 	uint8_t bearer = 0;

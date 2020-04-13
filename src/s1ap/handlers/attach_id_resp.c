@@ -76,7 +76,7 @@ s1_identity_resp_handler(struct proto_IE *s1_id_resp_ies)
                            BINARY_IMSI_LEN);
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE In identification Response %d",s1_id_resp_ies->data[i].IE_type);
+                log_msg(LOG_WARNING,"Unhandled IE In identification Response %d \n",s1_id_resp_ies->data[i].IE_type);
         }
     }
 

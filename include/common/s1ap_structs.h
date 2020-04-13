@@ -215,6 +215,13 @@ struct s1ap_header{
 /*36.413: 9.2.3.8 - MCC, MCN : Only 3 bytes are used*/
 struct PLMN {
 	unsigned char  idx[3];
+    /*Start should always be idx. Dont move down */
+    unsigned char  mnc_digits;
+};
+
+struct PLMN_C {
+	uint16_t mcc;
+	uint16_t mnc; 
 };
 
 struct TAI {
@@ -376,6 +383,7 @@ typedef struct nas_pdu_header {
 /****Information elements presentations **/
 #define BINARY_IMSI_LEN 8 /*same as packet capture. TODO: Write macros*/
 #define BCD_IMSI_STR_LEN 15
+#define MME_NAME_STR_LEN 30
 
 /*36.413 - 9.2.1.38*/
 struct CGI {

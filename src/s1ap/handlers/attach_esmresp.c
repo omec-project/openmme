@@ -64,7 +64,7 @@ s1_esm_resp_handler(struct proto_IE *s1_esm_resp_ies)
 
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_esm_resp_ies->data[i].IE_type);
         }
     }
 

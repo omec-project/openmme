@@ -10,6 +10,7 @@
 #include "mme_app.h"
 #include "err_codes.h"
 
+static int get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i, uint16_t *mnc_digits);
 
 /**
  * @brief Initialize json parser
@@ -65,5 +66,68 @@ parse_mme_conf(mme_config *config)
 	config->mme_code = get_int_scalar("mme.code");
 	if(-1 == config->mme_code) return -1;
 
+	uint16_t count=1;
+	while(1) {
+		char name[100] = {'\0'};
+		sprintf(name,"%s%d","mme.plmnlist.plmn",count);
+		char *plmn = get_string_scalar(name);
+		if(NULL == plmn) {
+			// over
+			break;
+		}
+		log_msg(LOG_INFO, "Parsed plmn %s \n", plmn);
+		uint16_t mcc_i, mnc_i, mnc_digits=3;
+		get_mcc_mnc(plmn, &mcc_i, &mnc_i, &mnc_digits);
+		config->plmn_mcc_mnc[count-1].mcc = mcc_i;
+		config->plmn_mcc_mnc[count-1].mnc = mnc_i;
+		log_msg(LOG_INFO, "Parsed plmn mcc - %d mnc - %d \n", mcc_i, mnc_i);
+		unsigned char mcc_dig_1 = mcc_i / 100; 
+		unsigned char mcc_dig_2 = (mcc_i / 10) % 10; 
+		unsigned char mcc_dig_3 = mcc_i % 10; 
+		unsigned char mnc_dig_1; 
+		unsigned char mnc_dig_2;
+		unsigned char mnc_dig_3;
+		if(mnc_digits == 2) // 01
+		{
+			mnc_dig_1 = 0x0F;
+			mnc_dig_2 = mnc_i / 10;
+		}
+		else
+		{
+			mnc_dig_1 = mnc_i / 100;
+			mnc_dig_2 = (mnc_i / 10) % 10; 
+		}
+		mnc_dig_3 = mnc_i % 10;
+		config->plmns[count-1].idx[0] = (mcc_dig_2 << 4) | (mcc_dig_1);
+		config->plmns[count-1].idx[1] = (mnc_dig_1 << 4) | (mcc_dig_3);
+		config->plmns[count-1].idx[2] = (mnc_dig_3 << 4) | (mnc_dig_2);
+        config->plmns[count-1].mnc_digits = mnc_digits;
+		log_msg(LOG_INFO, "Configured plmn %x %x %x", config->plmns[count-1].idx[0], config->plmns[count-1].idx[1], config->plmns[count-1].idx[2]); 
+		count++;
+	}
+	config->num_plmns = count - 1;
+
 	return SUCCESS;
+}
+
+static int
+get_mcc_mnc(char *plmn, uint16_t *mcc_i, uint16_t *mnc_i, uint16_t *mnc_digits)
+{
+	char *token = ",";
+	char *saved_comma=NULL;
+	char *mcc = strtok_r(plmn, token, &saved_comma);
+	char *mnc = strtok_r(NULL, token, &saved_comma);
+
+	char *saved_e=NULL;
+	char *token_e = "=";
+	char *mcc_f = strtok_r(mcc, token_e, &saved_e);
+	mcc_f = strtok_r(NULL, token_e, &saved_e);
+	*mcc_i = atoi(mcc_f);
+
+	saved_e=NULL;
+	char *mnc_f = strtok_r(mnc, token_e, &saved_e);
+	mnc_f = strtok_r(NULL, token_e, &saved_e);
+    *mnc_digits = strlen(mnc_f);
+	*mnc_i = atoi(mnc_f);
+	return 0;
 }

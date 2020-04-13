@@ -25,7 +25,6 @@
 #include "message_queues.h"
 
 extern ipc_handle ipcHndl_taursp;
-extern s1ap_config g_s1ap_cfg;
 
 /*Making global just to avoid stack passing*/
 static char buf[S1AP_TAURESP_BUF_SIZE];
@@ -127,6 +126,7 @@ s1ap_tau_rsp_processing(void)
 	uint8_t mac_data_pos;
 	uint8_t datalen;
 	uint8_t u8value;
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
 
     if(tau_resp->status != 0)
     {
@@ -316,10 +316,10 @@ s1ap_tau_rsp_processing(void)
 
 	buffer_copy(&g_buffer, &tau_resp->tai.plmn_id, 3);
 
-	uint16_t grpid = htons(g_s1ap_cfg.mme_group_id);
+	uint16_t grpid = htons(s1ap_cfg->mme_group_id);
 	buffer_copy(&g_buffer, &grpid, sizeof(grpid)); 
 
-	u8value = g_s1ap_cfg.mme_code;
+	u8value = s1ap_cfg->mme_code;
 	buffer_copy(&g_buffer, &u8value, sizeof(u8value));
 
 	uint32_t mtmsi = htonl(tau_resp->m_tmsi); 
