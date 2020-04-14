@@ -91,7 +91,7 @@ init_gtpv2()
 	struct in_addr mme_local_addr = {g_s11_cfg.local_egtp_ip};
 	fprintf(stderr, "....................local egtp %s\n", inet_ntoa(mme_local_addr));
 	g_client_addr.sin_addr.s_addr = htonl(g_s11_cfg.local_egtp_ip);
-	g_client_addr.sin_port = htons(0); /* TODO: Read value from config */
+	g_client_addr.sin_port = htons(g_s11_cfg.egtp_def_port);
 
 	bind(g_s11_fd, (struct sockaddr *)&g_client_addr, sizeof(g_client_addr));
 	g_client_addr_size = sizeof(g_client_addr);
