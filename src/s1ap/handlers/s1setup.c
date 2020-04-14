@@ -171,8 +171,9 @@ s1_setup_response(int enb_fd, struct PLMN *plmn)
         return E_FAIL;
     }
 
+
     send_sctp_msg_with_fd(enb_fd, buffer, length, 0);
-	log_msg(LOG_INFO, "buffer size is %d\n", length);
+   	log_msg(LOG_INFO, "buffer size is %d\n", length);
     if(buffer)
     {
         free(buffer);
@@ -204,7 +205,7 @@ s1_setup_failure(struct s1ap_common_req_Q_msg* s1ap_setup_failure)
     }
 
     send_sctp_msg_with_fd(enb_fd, buffer, length, 0);
-	log_msg(LOG_INFO, "buffer size is %d\n", length);
+  	log_msg(LOG_INFO, "buffer size is %d\n", length);
     if(buffer)
     {
         free(buffer);
