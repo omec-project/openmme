@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -166,6 +157,8 @@ post_to_next()
 
 	/*s1ap handler to use apn name and tai to generate mcc, mcn appended name*/
 	memcpy(&(icr_msg.apn), &(ue_entry->apn), sizeof(struct apn_name));
+	memcpy(&(icr_msg.selected_apn), &(ue_entry->selected_apn),
+			sizeof(struct apn_name));
 	memcpy(&(icr_msg.pdn_addr), &(ue_entry->pdn_addr), sizeof(struct PAA));
 	memcpy(&(icr_msg.int_key), &(ue_entry->ue_sec_info.int_key),
 			NAS_INT_KEY_SIZE);
