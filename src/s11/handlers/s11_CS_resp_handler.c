@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -29,45 +20,76 @@
 #include "s11.h"
 #include "s11_config.h"
 #include "stage6_info.h"
+#include "gtpV2StackWrappers.h"
 
 /*Globals and externs*/
 extern int g_Q_CSresp_fd;
-
+extern struct GtpV2Stack* gtpStack_gp;
 /*End : globals and externs*/
 
 
 int
-s11_CS_resp_handler(char *message)
+s11_CS_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr)
 {
-	struct s11_proto_IE s1_csr_ies;		
 	struct csr_Q_msg csr_info;
-	struct gtpv2c_header *header = (struct gtpv2c_header*)message;
-
 	/*****Message structure***
 	*/
-	log_msg(LOG_INFO, "Parse S11 CS resp message\n");
-	parse_gtpv2c_IEs((char *)header+1, ntohs(header->gtp.len), &s1_csr_ies);
 
 	/*Check whether has teid flag is set. Also check whether this check is needed for CSR.*/
-	csr_info.ue_idx = ntohl(header->teid.has_teid.teid);
+	csr_info.ue_idx = hdr->teid;
 
-	/*Create CSR Q msg*/
-	memcpy(&(csr_info.s11_sgw_fteid), &(s1_csr_ies.s11_ies[1].data.s11_sgw_fteid), 
-			sizeof(struct fteid));
-	
-	memcpy(&(csr_info.s5s8_pgwc_fteid), &(s1_csr_ies.s11_ies[2].data.s5s8_pgw_c_fteid), 
-			sizeof(struct fteid));
-	
-	memcpy(&(csr_info.s1u_sgw_fteid), &(s1_csr_ies.s11_ies[5].data.bearer.s1u_sgw_teid), 
-			sizeof(struct fteid));
-	
-	memcpy(&(csr_info.s5s8_pgwu_fteid), &(s1_csr_ies.s11_ies[5].data.bearer.s5s8_pgw_u_teid), 
-			sizeof(struct fteid));
+	CreateSessionResponseMsgData msgData;
+	memset(&msgData, 0, sizeof(CreateSessionResponseMsgData));
 
-	csr_info.pdn_addr.pdn_type = 1;//TODO: hardcoding for ipv4 for now
-	memcpy(&(csr_info.pdn_addr.ip_type.ipv4), &(s1_csr_ies.s11_ies[3].data.pdn_addr.ip_type.ipv4), 
-		sizeof(struct in_addr));
+	bool rc = GtpV2Stack_decodeMessage(gtpStack_gp, hdr, message, &msgData);
+	if(rc == false)
+	{
+			log_msg(LOG_ERROR, "s11_CS_resp_handler: "
+								"Failed to decode Create Session Response Msg %d\n",
+								hdr->teid);
+			return E_PARSING_FAILED;
+	}
+
+	csr_info.s11_sgw_fteid.header.iface_type = 11;
+	csr_info.s11_sgw_fteid.header.teid_gre = msgData.senderFTeidForControlPlane.teidGreKey;
+	csr_info.s11_sgw_fteid.header.v4 = 1;
+	csr_info.s11_sgw_fteid.ip.ipv4.s_addr = msgData.senderFTeidForControlPlane.ipV4Address.ipValue;
+
+	csr_info.s5s8_pgwc_fteid.header.iface_type = 7;
+	csr_info.s5s8_pgwc_fteid.header.teid_gre = msgData.pgwS5S8S2bFTeid.teidGreKey;
+	csr_info.s5s8_pgwc_fteid.header.v4 = 1;
+	csr_info.s5s8_pgwc_fteid.ip.ipv4.s_addr = msgData.pgwS5S8S2bFTeid.ipV4Address.ipValue;
+
+	csr_info.s1u_sgw_fteid.header.iface_type = 1;
+	csr_info.s1u_sgw_fteid.header.teid_gre = msgData.bearerContextsCreated[0].s1USgwFTeid.teidGreKey;
+	csr_info.s1u_sgw_fteid.header.v4 = 1;
+	csr_info.s1u_sgw_fteid.ip.ipv4.s_addr = msgData.bearerContextsCreated[0].s1USgwFTeid.ipV4Address.ipValue;
+
+	csr_info.s5s8_pgwu_fteid.header.iface_type = 5;
+	csr_info.s5s8_pgwu_fteid.header.teid_gre = msgData.bearerContextsCreated[0].s5S8UPgwFTeid.teidGreKey;
+	csr_info.s5s8_pgwu_fteid.header.v4 = 1;
+	csr_info.s5s8_pgwu_fteid.ip.ipv4.s_addr = msgData.bearerContextsCreated[0].s5S8UPgwFTeid.ipV4Address.ipValue;
+
+	csr_info.pdn_addr.pdn_type = 1;
+	csr_info.pdn_addr.ip_type.ipv4.s_addr = msgData.pdnAddressAllocation.ipV4Address.ipValue;
 	
+	
+	csr_info.pco_length = 0; 
+	if(msgData.protocolConfigurationOptionsIePresent == true)
+	{
+   	    printf("PCO found in the CSRsp = \n"); 
+		csr_info.pco_length = msgData.protocolConfigurationOptions.pcoValue.count; 
+		memcpy(&csr_info.pco_options[0], &msgData.protocolConfigurationOptions.pcoValue.values[0], msgData.protocolConfigurationOptions.pcoValue.count);
+	}
+else
+	{
+        printf("PCO not found in the CSRsp = \n"); 
+		/* Temporary hardcoding so that UE gets min DNS address.*/
+		char pco_options[27] = {0x80, 0x80, 0x21, 0x10, 0x03, 0x00, 0x00,0x10, 0x81, 0x06, 0x08,0x08,0x08, 0x08,0x83,0x06,0x08,0x08,0x08,0x04,0x00,0x0d, 0x04,0x08,0x08,0x08,0x08};
+		memcpy(&csr_info.pco_options[0], &pco_options[0], 27);
+		csr_info.pco_length = 27;
+	}
+
 	/*Send CS response msg*/
 	write_ipc_channel(g_Q_CSresp_fd, (char *)&csr_info, S11_CSRESP_STAGE6_BUF_SIZE);
 	log_msg(LOG_INFO, "Send CS resp to mme-app stage6.\n");

@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -29,6 +20,13 @@
 #include "s11.h"
 #include "s11_config.h"
 #include "s11_structs.h"
+#include "gtpV2StackWrappers.h"
+
+extern struct GtpV2Stack* gtpStack_gp;
+//int s11_CS_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr);
+//int s11_MB_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr);
+//int s11_DS_resp_handler(MsgBuffer* message, GtpV2MessageHeader* hdr);
+//int s11_Ddn_handler(MsgBuffer* message, GtpV2MessageHeader* hdr);
 
 /*
   Get count of no of IEs in gtpv2c msg
@@ -71,7 +69,7 @@ parse_bearer_ctx(struct bearer_ctx *bearer, char* data, short len)
 
 		switch(header->ie_type){
 		case S11_IE_CAUSE:
-			memcpy(&(bearer->cause), value, sizeof(struct Cause));
+			memcpy(&(bearer->cause), value, sizeof(struct gtp_cause));
 			break;
 
 		case S11_IE_FTEID_C:{
@@ -123,7 +121,7 @@ parse_gtpv2c_IEs(char *msg, int len, struct s11_proto_IE *proto_ies)
 
 		switch(ie->header.ie_type){
 		case S11_IE_CAUSE:
-			memcpy(&(ie->data.cause), data, sizeof(struct Cause));
+			memcpy(&(ie->data.cause), data, sizeof(struct gtp_cause));
 			break;
 
 		case S11_IE_FTEID_C:{
@@ -164,23 +162,37 @@ parse_gtpv2c_IEs(char *msg, int len, struct s11_proto_IE *proto_ies)
 void
 handle_s11_message(void *message)
 {
-	struct gtpv2c_header *header = (struct gtpv2c_header*)message;
-	
 	log_msg(LOG_INFO, "S11 recv msg handler.\n");
 
-	switch(header->gtp.message_type){
+	MsgBuffer* msgBuf_p = (MsgBuffer*)(message);
+	
+	GtpV2MessageHeader msgHeader;
+
+	bool rc = GtpV2Stack_decodeMessageHeader(gtpStack_gp, &msgHeader, msgBuf_p);
+
+	switch(msgHeader.msgType){
 	case S11_GTP_CREATE_SESSION_RESP:
-		s11_CS_resp_handler(message);
+		s11_CS_resp_handler(msgBuf_p, &msgHeader);
 		break;
 
 	case S11_GTP_MODIFY_BEARER_RESP:
-		s11_MB_resp_handler(message);
+		s11_MB_resp_handler(msgBuf_p, &msgHeader);
 		break;
 
 	case S11_GTP_DELETE_SESSION_RESP:
-		s11_DS_resp_handler(message);
+		s11_DS_resp_handler(msgBuf_p, &msgHeader);
 		break;
 
+	case S11_GTP_REL_ACCESS_BEARER_RESP:
+		s11_RABR_resp_handler(msgBuf_p, &msgHeader);
+		break;
+
+	case S11_GTP_DOWNLINK_DATA_NOTIFICATION:
+		s11_Ddn_handler(msgBuf_p, &msgHeader);
+		break;
 	}
+
+	MsgBuffer_free(msgBuf_p);
+
 	return;
 }

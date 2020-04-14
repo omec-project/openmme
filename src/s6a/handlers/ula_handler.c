@@ -1,18 +1,10 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * SPDX-License-Identifier: Apache-2.0
  *
- *	http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 #include <stdlib.h>
@@ -135,29 +127,69 @@ parse_ula_subscription_data(struct avp *avp_ptr, struct ula_Q_msg *ula)
 			/*APN profile has its own child elements, iterate through
 			 * those*/
 			struct avp *apn_cfg_prof_itr = NULL;
-			struct avp_hdr *apn_cfg_element = NULL;
+			struct avp_hdr *apn_cfg_prof_element = NULL;
 
 			CHECK_FCT_DO(fd_msg_browse(next, MSG_BRW_FIRST_CHILD,
 						&apn_cfg_prof_itr, NULL), return);
 
 			/*Iterate through subscription data child avps*/
 			while(NULL != apn_cfg_prof_itr) {
-				fd_msg_avp_hdr(apn_cfg_prof_itr, &apn_cfg_element);
+				fd_msg_avp_hdr(apn_cfg_prof_itr, &apn_cfg_prof_element);
 
 				if(g_fd_dict_data.ctx_id.avp_code ==
-						apn_cfg_element->avp_code) {
+						apn_cfg_prof_element->avp_code) {
 					ula->apn_config_profile_ctx_id =
-						apn_cfg_element->avp_value->u32;
+						apn_cfg_prof_element->avp_value->u32;
 				} else
 				if(g_fd_dict_data.all_APN_configs_included_ind.avp_code ==
-						apn_cfg_element->avp_code) {
+						apn_cfg_prof_element->avp_code) {
 					ula->all_APN_cfg_included_ind =
-						apn_cfg_element->avp_value->i32;
+						apn_cfg_prof_element->avp_value->i32;
 				} else
 				if(g_fd_dict_data.APN_config.avp_code ==
-						apn_cfg_element->avp_code){
+						apn_cfg_prof_element->avp_code){
+
 					//APN configuration list : There is list of elements to read
-					//TODO : Write function to read all elements
+					struct avp *apn_cfg_itr = NULL;
+					struct avp_hdr *apn_cfg_element = NULL;
+
+					CHECK_FCT_DO(fd_msg_browse(apn_cfg_prof_itr,
+							MSG_BRW_FIRST_CHILD, &apn_cfg_itr, NULL), return);
+
+					while(NULL != apn_cfg_itr){
+
+						fd_msg_avp_hdr(apn_cfg_itr, &apn_cfg_element);
+
+						// TODO g_fd_dict_data does not have service_slection
+						// will finish this part in the following patch
+						// service_slection code is 493
+						// if(g_fd_dict_data.service_slection ==
+						if (493 == apn_cfg_element->avp_code){
+
+							log_msg(LOG_INFO, "APN name recvd from hss - %s\n",
+									apn_cfg_element->avp_value->os.data);
+							log_msg(LOG_INFO, "APN length recvd from hss - %lu\n",
+									apn_cfg_element->avp_value->os.len);
+
+							memcpy(ula->selected_apn.val,
+									apn_cfg_element->avp_value->os.data,
+									apn_cfg_element->avp_value->os.len);
+							ula->selected_apn.len =
+									apn_cfg_element->avp_value->os.len;
+						}
+						if (848 == apn_cfg_element->avp_code && ula->static_addr == 0){
+							struct sockaddr_in  temp;
+							int result = fd_dictfct_Address_interpret(apn_cfg_element->avp_value, &temp);
+							log_msg(LOG_INFO, "Served IP address found %d %s \n", result, inet_ntoa(temp.sin_addr)); 
+							ula->static_addr = temp.sin_addr.s_addr; /* network order */ 
+						}
+						apn_cfg_prof_itr = apn_cfg_itr;
+
+						CHECK_FCT_DO(fd_msg_browse(apn_cfg_itr, MSG_BRW_NEXT,
+								&apn_cfg_itr, NULL), return);
+
+					}
+					continue;
 
 				}
 
@@ -188,7 +220,7 @@ ula_resp_callback(struct msg **buf, struct avp *avp_ptr, struct session *sess,
 {
 	int sess_id_len, ue_idx;
 	unsigned char *sess_id= NULL;
-	struct ula_Q_msg ula;
+	struct ula_Q_msg ula = {0};
 	struct avp *subsc_ptr = NULL;
 
 	CHECK_FCT_DO(fd_sess_getsid(sess, &sess_id, (size_t*)&sess_id_len),

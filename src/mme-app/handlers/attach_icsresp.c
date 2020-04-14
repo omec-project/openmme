@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -115,8 +106,19 @@ stage7_processing()
 		(struct initctx_resp_Q_msg *)ics_resp;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ics_res->ue_idx);
 
-	/**validations/checks*/
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Message received for invalid UE in stage7_processing");
+        return E_FAIL;
+    }
 
+	/**validations/checks*/
+	if(SVC_REQ_WF_INIT_CTXT_RESP == ue_entry->ue_state) {
+		
+		ue_entry->ue_state = SVC_REQ_WF_MODIFY_BEARER_RESP;
+
+	}
+	
 	ue_entry->eRAB_id = ics_res->eRAB_id;
 	/*hard code to ipv4 for now. TODO v6 support from s1ap*/
 	ue_entry->s1u_enb_u_fteid.header.v4 = 1;
@@ -139,6 +141,12 @@ post_to_next()
 	struct initctx_resp_Q_msg *ics_resp_info =
 				(struct initctx_resp_Q_msg *)ics_resp;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ics_resp_info->ue_idx);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Message received for invalid UE in post_to_next");
+        return E_FAIL;
+    }
 	struct MB_Q_msg mb_msg;
 
 	mb_msg.ue_idx = ((struct initctx_resp_Q_msg *)ics_resp_info)->ue_idx;

@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -112,6 +103,11 @@ stage5_processing()
 	/*Parse and validate  the buffer*/
 	struct esm_resp_Q_msg *esm_resp = (struct esm_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(esm_resp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Ignore Stage5_processing for invalid UE . Index ", esm_resp->ue_idx);
+        return E_FAIL;
+    }
 
 	ue_entry->ul_seq_no++;
 
@@ -128,8 +124,7 @@ stage5_processing()
 	}
 
 	memcpy(&(ue_entry->apn), &(esm_resp->apn), sizeof(struct apn_name));
-
-	log_msg(LOG_INFO, "APN name recvd - %s\n", ue_entry->apn.val);
+	log_msg(LOG_INFO, "ESM information  response has APN - %s\n", ue_entry->apn.val);
 
 	return SUCCESS;
 }
@@ -143,12 +138,18 @@ post_to_next()
 	/*Information to pass S11 application for create session*/
 	struct esm_resp_Q_msg *esm_resp = (struct esm_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(esm_resp->ue_idx);
-	struct CS_Q_msg cs_msg;
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Ignore post_to_next for invalid UE . Index ", esm_resp->ue_idx);
+        return E_FAIL;
+    }
+	struct CS_Q_msg cs_msg = {0};
 
 	cs_msg.ue_idx = esm_resp->ue_idx;
 	memcpy(cs_msg.IMSI, ue_entry->IMSI, BINARY_IMSI_LEN);
 
-	memcpy(&(cs_msg.apn), &(ue_entry->apn),
+	// The selected apn by mme used for create session.
+	memcpy(&(cs_msg.selected_apn), &(ue_entry->selected_apn),
 		sizeof(struct apn_name));
 
 	memcpy(&(cs_msg.tai), &(ue_entry->tai),
@@ -159,9 +160,13 @@ post_to_next()
 
 	cs_msg.max_requested_bw_dl = ue_entry->ambr.max_requested_bw_dl;
 	cs_msg.max_requested_bw_ul = ue_entry->ambr.max_requested_bw_ul;
+	cs_msg.paa_v4_addr = ue_entry->pdn_addr.ip_type.ipv4.s_addr; /* host order */
 
 	memset(cs_msg.MSISDN, 0, 10);
 	memcpy(cs_msg.MSISDN,ue_entry->MSISDN,10);
+    memcpy(&cs_msg.pco_options[0], &ue_entry->pco_options[0], sizeof(ue_entry->pco_options));
+    cs_msg.pco_length = ue_entry->pco_length;
+    log_msg(LOG_INFO, "PCO length %d \n", cs_msg.pco_length);
 
 	write_ipc_channel(g_Q_CSreq_fd, (char *)&(cs_msg), S11_CSREQ_STAGE5_BUF_SIZE);
 	log_msg(LOG_INFO, "Posted Create Session message to S11-app - stage 5.\n");

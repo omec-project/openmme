@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -29,6 +20,7 @@
 #include "stage1_s6a_msg.h"
 #include "stage2_info.h"
 #include "sec.h"
+#include "common_proc_info.h"
 
 /************************************************************************
 Current file : Stage 2 handler.
@@ -50,6 +42,9 @@ extern int g_mme_hdlr_status;
 static int g_Q_aia_fd;
 static int g_Q_ula_fd;
 static int g_Q_authreq_fd;
+extern int g_Q_s1ap_common_reject;
+extern pthread_mutex_t s1ap_reject_queue_mutex;
+extern uint32_t attach_reject_counter;
 
 /*Making global just to avoid stack passing*/
 static char aia[S6A_AIA_STAGE2_BUF_SIZE];
@@ -95,8 +90,13 @@ process_aia_resp()
 {
 	struct aia_Q_msg *aia_msg = (struct aia_Q_msg *)aia;
 	struct UE_info *ue_entry = GET_UE_ENTRY(aia_msg->ue_idx);;
-	log_msg(LOG_INFO, "AIA for UE idx = %d\n", aia_msg->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_aia_resp for bad UE at index %d ", aia_msg->ue_idx);
+        return E_FAIL;
+    }
 
+	log_msg(LOG_INFO, "AIA for UE idx = %d\n", aia_msg->ue_idx);
 	if(NULL == ue_entry->aia_sec_info) {
 		ue_entry->aia_sec_info = calloc(sizeof(struct E_UTRAN_sec_vector), 1);
 		if(NULL == ue_entry->aia_sec_info) {
@@ -104,6 +104,13 @@ process_aia_resp()
 			exit(0);
 		}
 	}
+
+    if(S6A_AIA_FAILED == aia_msg->res)
+    {
+        /* send attach reject and release UE */
+		ue_entry->ue_state = STAGE1_AIA_FAIL;
+        return aia_msg->ue_idx;
+    }
 
 	memcpy(ue_entry->aia_sec_info,
 		&(aia_msg->sec),
@@ -125,6 +132,12 @@ process_ula_resp()
 {
 	struct ula_Q_msg *ula_msg = (struct ula_Q_msg *)ula;
 	struct UE_info *ue_entry = GET_UE_ENTRY(ula_msg->ue_idx);;
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_ula_resp for bad UE at index %d ", ula_msg->ue_idx);
+        return E_FAIL;
+    }
+
 	log_msg(LOG_INFO, "ULA for UE idx = %d\n", ula_msg->ue_idx);
 
 	memcpy(ue_entry->MSISDN, ula_msg->MSISDN, MSISDN_STR_LEN);
@@ -135,6 +148,17 @@ process_ula_resp()
 	ue_entry->access_restriction_data = ula_msg->access_restriction_data;
 	ue_entry->ambr.max_requested_bw_dl = ula_msg->max_requested_bw_dl;
 	ue_entry->ambr.max_requested_bw_ul = ula_msg->max_requested_bw_ul;
+	ue_entry->pdn_addr.pdn_type =  1;
+	ue_entry->pdn_addr.ip_type.ipv4.s_addr = ntohl(ula_msg->static_addr); // network byte order 
+	log_msg(LOG_INFO, "PAA address - %s\n", inet_ntoa(ue_entry->pdn_addr.ip_type.ipv4));
+
+	ue_entry->selected_apn.len = ula_msg->selected_apn.len;
+	log_msg(LOG_INFO, "APN length from ula msg is - %d\n",
+			ula_msg->selected_apn.len);
+	memcpy(ue_entry->selected_apn.val, ula_msg->selected_apn.val,
+			ula_msg->selected_apn.len);
+	log_msg(LOG_INFO, "APN name from ula msg is - %s\n",
+			ula_msg->selected_apn.val);
 
 	if(STAGE1_AIA_DONE == ue_entry->ue_state) {
 		ue_entry->ue_state = ATTACH_STAGE2;
@@ -236,6 +260,13 @@ static int
 post_to_next(int ue_index)
 {
 	struct UE_info *ue_entry = GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "post_to_next for bad UE at index %d ", ue_index);
+        return E_FAIL;
+    }
+
 	if(ue_entry->ue_state == ATTACH_STAGE2) {
 
 		/* Create integrity key */
@@ -264,7 +295,30 @@ post_to_next(int ue_index)
 
 		/*TODO free g_UE_list[][].aia_sec_info??*/
 	}
-	return SUCCESS;
+    else if (STAGE1_AIA_FAIL == ue_entry->ue_state)
+    {
+        char imsiStr[16] = {0};
+        imsi_bin_to_str(ue_entry->IMSI, imsiStr);
+        log_msg(LOG_ERROR, "Error AIA from HSS. Send Attach Reject & \
+                Release UE session. UE IMSI: %s. \n", imsiStr);
+   	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+        s1ap_rej.IE_type = S1AP_ATTACH_REJ;
+        s1ap_rej.ue_idx = ue_index;
+        s1ap_rej.mme_s1ap_ue_id = ue_index;
+        s1ap_rej.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+        s1ap_rej.enb_fd = ue_entry->enb_fd;
+        s1ap_rej.cause.present = s1apCause_PR_misc;
+        s1ap_rej.cause.choice.misc = s1apCauseMisc_unknown_PLMN;
+		
+        pthread_mutex_lock(&s1ap_reject_queue_mutex);
+        write_ipc_channel(g_Q_s1ap_common_reject, 
+                          (char *)&(s1ap_rej),
+				          S1AP_COMMON_REQ_BUF_SIZE);
+        pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+        release_ue_entry(ue_entry); 
+    }
+	
+    return SUCCESS;
 }
 
 /**

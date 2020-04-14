@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -26,6 +17,7 @@
 
 #include "log.h"
 #include "sctp_conn.h"
+#include "s1apContextWrapper_c.h"
 #define ENB_PORT 62324
 #define S1AP_PPID 18
 
@@ -101,6 +93,14 @@ int recv_sctp_msg(int connSock, unsigned char *buffer, size_t len)
 }
 
 int send_sctp_msg(int connSock, unsigned char *buffer, size_t len, uint16_t stream_no)
+{
+	uint32_t ppid = S1AP_PPID;
+    uint32_t enb_fd = getEnbFdWithCbIndex(connSock);
+	return sctp_sendmsg(enb_fd, (void *)buffer, len,
+			NULL, 0, htonl(ppid), 0, stream_no, 0, 0);
+}
+
+int send_sctp_msg_with_fd(int connSock, unsigned char *buffer, size_t len, uint16_t stream_no)
 {
 	uint32_t ppid = S1AP_PPID;
 	return sctp_sendmsg(connSock, (void *)buffer, len,

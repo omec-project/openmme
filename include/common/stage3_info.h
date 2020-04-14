@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __STAGE3_INFO_H_
@@ -35,7 +26,8 @@ struct authresp_Q_msg {
 struct sec_mode_Q_msg {
 	int ue_idx;
 	int enb_s1ap_ue_id;
-	struct UE_net_capab ue_network;
+	struct UE_net_capab  ue_network;
+	struct MS_net_capab  ms_net_capab;
 	struct KASME key;
 	uint8_t int_key[NAS_INT_KEY_SIZE];
 	uint32_t dl_seq_no;

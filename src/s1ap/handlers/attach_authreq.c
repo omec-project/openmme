@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -119,9 +110,9 @@ get_authreq_protoie_value(struct proto_IE *value)
 	value->data[2].val.nas.elements = (nas_pdu_elements *)
 			malloc(AUTH_REQ_NO_OF_NAS_IES * sizeof(nas_pdu_elements));
 
-	memcpy(value->data[2].val.nas.elements[0].rand,
+	memcpy(value->data[2].val.nas.elements[0].pduElement.rand,
 			g_authreqInfo->rand, NAS_RAND_SIZE);
-	memcpy(value->data[2].val.nas.elements[1].autn,
+	memcpy(value->data[2].val.nas.elements[1].pduElement.autn,
 			g_authreqInfo->autn, NAS_AUTN_SIZE);
 
 
@@ -132,6 +123,7 @@ get_authreq_protoie_value(struct proto_IE *value)
 /**
 * Stage specific message processing.
 */
+// once HSS ULR/A, AIR/A is done we do authentication towards UE
 static int
 authreq_processing()
 {
@@ -229,14 +221,16 @@ authreq_processing()
 	buffer_copy(&g_nas_buffer, &nas->header.nas_security_param,
 						sizeof(nas->header.nas_security_param));
 
-	buffer_copy(&g_nas_buffer, &nas->elements[0].rand,
-						sizeof(nas->elements[0].rand));
+	buffer_copy(&g_nas_buffer, 
+	     &nas->elements[0].pduElement.rand,
+	     sizeof(nas->elements[0].pduElement.rand));
 
 	datalen = 16;
 	buffer_copy(&g_nas_buffer, &datalen, sizeof(datalen));
 
-	buffer_copy(&g_nas_buffer, &nas->elements[1].autn,
-						sizeof(nas->elements[1].autn));
+	buffer_copy(&g_nas_buffer, 
+	   &nas->elements[1].pduElement.autn,
+	   sizeof(nas->elements[1].pduElement.autn));
 
 	datalen = g_nas_buffer.pos + 1;
 	buffer_copy(&g_value_buffer, &datalen,
@@ -267,6 +261,7 @@ authreq_processing()
 static int
 post_to_next()
 {
+	// HSS ULR/A and AIR/A is done and we are sending message to UE. 
 	send_sctp_msg(g_authreqInfo->enb_fd, g_buffer.buf, g_buffer.pos, 1);
 	log_msg(LOG_INFO, "\n-----Stage2 completed.---\n");
 	return SUCCESS;

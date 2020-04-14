@@ -1,0 +1,367 @@
+{
+"DataStore":
+	{
+	"DataGroups":[
+        	{
+		"DgName":"SubscriberData",
+		"PoolSize":"8000",
+         	"DataBlocks":[
+            		{
+			"BlockName":"UEContext",
+            		"BlockType":"Permanent",
+            		"Parent":"None",
+            		"Children":["MmContext", "SessionContext"],
+            		"PoolSize":"8000",
+            		"Cardinality":"1",
+            		"Data":[
+                		{
+				"Name": "enbFd",
+                		"Type": "int",
+				"Key":"No"
+				},
+                		{
+				"Name": "s1apEnbUeId",
+                		"Type": "int",
+				"Key":"No"
+				},
+                		{
+				"Name": "subscriptionStatus",
+                		"Type": "int",
+				"Key":"No"
+				},
+                		{	
+				"Name": "netAccessMode",
+                		"Type": "int",
+				"Key":"No"
+				},
+                		{
+				"Name": "contextID",
+                		"Type": "uint32_t",
+				"Key":"No"
+				},
+                		{
+				"Name": "rauTauTimer",
+                		"Type": "unsigned int",
+				"Key":"No"
+				},
+                		{
+				"Name": "accessRestrictionData",
+                		"Type": "unsigned int",
+				"Key":"No"
+				},
+                		{
+				"Name": "imsi",
+                		"Type": "DigitRegister15",
+				"Key":"Yes"
+				},
+                		{
+				"Name": "msisdn",
+                		"Type": "DigitRegister15",
+				"Key":"No"
+				},
+                		{
+				"Name": "dwnLnkSeqNo",
+                		"Type": "unsigned short",
+				"Key":"No"
+				},
+                		{
+				"Name": "upLnkSeqNo",
+                		"Type": "unsigned short",
+				"Key":"No"
+				},
+                		{
+				"Name": "ueState",
+                		"Type": "UE_State_e",
+				"SubType":"enum",
+				"DefaultVal":"InvalidState",
+				"Key":"No"
+				},
+                		{
+				"Name": "tai",
+                		"Type": "Tai",
+				"Key":"No"
+				},
+                		{
+				"Name": "utranCgi",
+                		"Type": "Cgi",
+				"Key":"No"
+				},
+                		{
+				"Name": "msNetCapab",
+                		"Type": "Ms_net_capab",
+				"Key":"No"
+				},
+                		{
+				"Name": "ueNetCapab",
+                		"Type": "Ue_net_capab",
+				"Key":"No"
+				},
+                		{
+				"Name": "ueSecInfo",
+                		"Type": "Secinfo",
+				"Key":"No"
+				},
+                		{
+				"Name": "ambr",
+                		"Type": "Ambr",
+				"Key":"No"
+				},
+                		{
+				"Name": "aiaSecInfo",
+                		"Type": "E_utran_sec_vector",
+				"Key":"No"
+				},
+				{
+				"Name": "mTmsi",
+                		"Type": "uint32_t",
+				"Key":"Yes"
+				},
+				{
+				"Name": "subscribedApn",
+                		"Type": "Apn_name",
+				"Key":"No"
+				}
+                		]
+			},
+			{
+			"BlockName":"MmContext",
+            		"BlockType":"Permanent",
+            		"Parent":"UEContext",
+            		"Children":[],
+            		"PoolSize":"8000",
+            		"Cardinality":"1",
+            		"Data":[
+                		{
+				"Name": "mmState",
+                		"Type": "EmmState",
+				"SubType":"enum",
+				"DefaultVal":"InvalidState",
+				"Key":"No"
+				},
+				{
+				"Name": "ecmState",
+                		"Type": "EcmState",
+				"SubType":"enum",
+				"DefaultVal":"invalidEcmState_c",
+				"Key":"No"
+				}
+				]
+            		},
+            		{
+			"BlockName":"SessionContext",
+            		"BlockType":"Permanent",
+            		"Parent":"UEContext",
+            		"Children":["BearerContext"],
+            		"PoolSize":"8000",
+            		"Cardinality":"3",
+            		"Data":[
+                	{
+				"Name": "sessionId",
+                		"Type": "uint8_t",
+				"Key" : "No"
+				},
+				{
+				"Name": "s11SgwCtrlFteid",
+                		"Type": "Fteid",
+				"Key":"No"
+				},
+				{
+				"Name": "s5S8PgwCtrlFteid",
+                		"Type": "Fteid",
+				"Key":"No"
+				},
+				{
+				"Name": "pdnAddr",
+                		"Type": "Paa",
+				"Key":"No"
+				},
+				{
+				"Name": "accessPtName",
+                		"Type": "Apn_name",
+				"Key":"No"
+				},
+				{
+				"Name": "apnConfigProfileCtxId",
+                		"Type": "unsigned int",
+				"Key":"No"
+				},
+				{
+				"Name": "pti",
+                		"Type": "uint8_t",
+				"Key":"No"
+				}
+                		]
+            		},
+            		{
+			"BlockName":"BearerContext",
+            		"BlockType":"Permanent",
+            		"Parent":"SessionContext",
+            		"PoolSize":"8000",
+            		"Cardinality":"11",
+            		"Data":[
+				{
+				"Name": "s1uSgwUserFteid",
+                		"Type": "Fteid",
+				"Key":"No"
+				},
+                		{
+				"Name": "s5S8PgwUserFteid",
+				"Type": "Fteid",
+				"Key":"No"
+				},
+                		{
+				"Name": "s1uEnbUserFteid",
+				"Type": "Fteid",
+				"Key":"No"
+				},
+                		{
+				"Name": "bearerId",
+				"Type": "unsigned char",
+				"Key":"No"
+				}
+                		]	
+			},
+			{
+			"BlockName":"MmeProcedureCtxt",
+            		"BlockType":"Temporary",
+            		"PoolSize":"8000",
+            		"Cardinality":"1",
+            		"Data":[
+				{
+				"Name": "ctxtType",
+                		"Type": "ProcedureType",
+				"SubType":"enum",
+				"DefaultVal":"invalidProcedureType_c",
+				"Key":"No"
+				},
+				{
+				"Name": "esmInfoTxRequired",
+                		"Type": "bool",
+				"DefaultVal":"false",
+				"Key":"No"
+				},
+				{
+				"Name": "attachType",
+                		"Type": "AttachType",
+				"SubType":"enum",
+				"DefaultVal":"invalidAttachType_c",				
+				"Key":"No"
+				},
+				{
+				"Name": "pcoOptions",
+                		"Type": "unsigned char",
+				"Cardinality":"256",
+				"Key":"No"
+				},
+				{
+				"Name": "pti",
+                		"Type": "uint8_t",
+				"Key":"No"
+				},
+				{
+				"Name": "mmeErrorCause",
+                		"Type": "MmeErrorCause",
+				"SubType":"enum",
+				"DefaultVal":"noError_c",
+				"Key":"No"
+				},	
+				{
+				"Name": "authRespStatus",
+                		"Type": "int",
+				"Key":"No"
+				},
+				{
+				"Name": "auts",
+                		"Type": "Auts",
+				"Key":"No"
+				},
+				{
+				"Name": "requestedApn",
+                		"Type": "Apn_name",
+				"Key":"No"
+				}				
+                		]
+			},
+			{
+			"BlockName":"MmeDetachProcedureCtxt",
+            		"BlockType":"Temporary",
+			"Parent":"MmeProcedureCtxt",
+            		"PoolSize":"8000",
+            		"Cardinality":"1",
+            		"Data":[
+				{
+				"Name": "detachType",
+                		"Type": "DetachType",
+				"SubType":"enum",
+				"DefaultVal":"invalidDetachType_c",
+				"Key":"No"
+				},
+				{
+				"Name": "cancellationType",
+                		"Type": "CancellationType",
+				"SubType":"enum",
+				"DefaultVal":"INVALID_TYPE",
+				"Key":"No"
+				}
+                		]
+			},			
+            		{
+			"BlockName":"MmeSvcReqProcedureCtxt",
+            		"BlockType":"Temporary",
+			"Parent":"MmeProcedureCtxt",
+            		"PoolSize":"8000",
+            		"Cardinality":"1",
+            		"Data":[
+				{
+				"Name": "ddnSeqNo",
+                		"Type": "uint32_t",
+				"Key":"No"
+				},
+				{
+				"Name": "pagingTrigger",
+                		"Type": "PagingTrigger",
+				"SubType":"enum",
+				"DefaultVal":"none_c",
+				"Key":"No"
+				},
+				{
+				"Name": "epsBearerId",
+                		"Type": "unsigned char",
+				"Key":"No"
+				},
+				{
+				"Name": "arp",
+                		"Type": "Arp",
+				"Key":"No"
+				}			
+				]
+			},
+			{
+			"BlockName":"MmeTauProcedureCtxt",
+            		"BlockType":"Temporary",
+			"Parent":"MmeProcedureCtxt",
+            		"PoolSize":"8000",
+            		"Cardinality":"1",
+            		"Data":[
+				{
+				"Name": "s1apEnbUeId",
+                		"Type": "int",
+				"Key":"No"
+				},
+                		{
+				"Name": "tai",
+                		"Type": "Tai",
+				"Key":"No"
+				},				
+				{
+				"Name": "enbFd",
+                		"Type": "int",
+				"Key":"No"
+				}
+                		]
+			}
+            		]
+        	}
+        	]
+	}
+}

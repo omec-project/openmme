@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -100,6 +91,13 @@ process_purge_resp()
 {
 	struct purge_resp_Q_msg *purge_msg = (struct purge_resp_Q_msg *)purge_resp;
 	struct UE_info *ue_entry = GET_UE_ENTRY(purge_msg->ue_idx);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_purge_resp for bad UE with index %d ", purge_msg->ue_idx);
+        return E_FAIL;
+    }
+
 	log_msg(LOG_INFO, "Purge resp for UE idx = %d\n", purge_msg->ue_idx);
 
 	/*If delete sessoin also done then set flag for deleted*/
@@ -118,6 +116,11 @@ process_ds_resp()
 {
 	struct DS_resp_Q_msg *resp = (struct DS_resp_Q_msg *)ds_resp;
 	struct UE_info *ue_entry = GET_UE_ENTRY(resp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "process_ds_resp for bad UE with index %d ", resp->ue_idx);
+        return E_FAIL;
+    }
 	log_msg(LOG_INFO, "DS resp for UE idx = %d\n", resp->ue_idx);
 
 
@@ -204,6 +207,13 @@ static int
 post_to_next(int ue_index)
 {
 	struct UE_info *ue_entry = GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "post_to_next in detach response processing on bad UE index %d ", ue_index);
+        return E_FAIL;
+    }
+
 	if(ue_entry->ue_state == DETACH_STAGE2) {
 		struct detach_accept_Q_msg req;
 
@@ -223,13 +233,7 @@ post_to_next(int ue_index)
 				S1AP_DTCHACCEPT_STAGE2_BUF_SIZE);
 		log_msg(LOG_INFO, "Detach Stage 2. Posted message to s1ap - Detach accept\n");
 
-		int ret = insert_index_into_list(ue_index);
-		if (ret == -1) {
-			log_msg(LOG_INFO, "List is full. More indexes cannot be added\n");
-		} else {
-			log_msg(LOG_INFO, "Index with %d is added to list\n",ue_index);
-		}
-
+        release_ue_entry(ue_entry); 
 	}
 	return SUCCESS;
 }

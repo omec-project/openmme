@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __MME_APP_H_
@@ -22,6 +13,10 @@
 
 #include "s1ap_structs.h"
 #include "log.h"
+#include "s1ap_emm_message.h"
+#include "s1ap_error.h"
+#include "ue_table.h"
+#include "defines.h"
 
 /**
  * MME main application configuration parameters structures.
@@ -48,6 +43,11 @@ typedef struct mme_config
 
 	unsigned int mme_s1ap_ip;
 	unsigned int mme_egtp_ip;
+	unsigned short mme_group_id;
+	unsigned char mme_code;
+	uint16_t num_plmns;
+	struct PLMN plmns[MAX_PLMN];
+	struct PLMN_C plmn_mcc_mnc[MAX_PLMN];
 } mme_config;
 
 
@@ -65,6 +65,7 @@ void
 check_mme_hdlr_status();
 
 void* stage1_handler(void *);
+void  handle_monitor_processing(void *);
 void* stage2_handler(void *);
 void* stage3_handler(void *);
 void* stage4_handler(void *);
@@ -75,6 +76,18 @@ void* stage8_handler(void *);
 void* detach_stage1_mme_handler(void *);
 void* detach_stage2_handler(void *);
 void* detach_stage3_handler(void *);
+void  guti_attach_post_to_next(int index);
+void *identity_rsp_handler(void *);
+int post_to_hss_stage(int idx);
+int post_ctx_rel_and_clr_uectx(int idx);
+int post_svc_reject(int idx);
+int send_init_ctx_setup_req(int idx);
+void* ddn_handler(void *);
+void* service_request_handler(void *);
+void* s1ap_req_common_mme_handler(void *);
+void* s11_rsp_common_mme_handler(void *);
+void* DDN_handler(void *);
+void *tau_request_handler(void *);
 
 //for testing, delete it
 void
@@ -84,5 +97,11 @@ void stat_init();
 /* Register for config change trigger */
 void register_config_updates(void);
 void mme_parse_config(mme_config *);
+
+int send_emm_info_s1ap_channel_req(struct ue_emm_info *req);
+
+int send_reset_s1ap_channel_req(struct ue_reset_info *req);
+
+int send_reset (struct UE_info *ue_entry, uint32_t cause, uint32_t reset_type);
 
 #endif /*__MME_APP_H_*/

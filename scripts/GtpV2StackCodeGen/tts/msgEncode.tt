@@ -1,0 +1,65 @@
+[% IF ieData.ieCardinality == 1 -%]
+
+// Encode the Ie Header
+header.ieType = [% ieData.ieType %]IeType;
+header.instance = [% ieData.instance %];
+header.length = 0; // We will encode the IE first and then update the length
+GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+startIndex = buffer.getCurrentIndex(); 
+[% ieData.ieType %]Ie [% ieData.ieVarName %]=
+dynamic_cast<
+[% ieData.ieType %]Ie&>(GtpV2IeFactory::getInstance().getIeObject([% ieData.ieType %]IeType));
+[% IF ieData.grouped == 'Yes'-%]
+[% ieData.grpIeInstClassName %] groupedIeInstance =
+dynamic_cast<
+[% ieData.grpIeInstClassName %]&>([% ieData.ieVarName %].getGroupedIe(msgType, [% ieData.instance %]));
+rc = groupedIeInstance.encode[% ieData.grpIeInstClassName %](buffer, data.[% ieData.ieVarName %]);
+[% ELSE -%]
+rc = [% ieData.ieVarName %].encode[% ieData.ieType %]Ie(buffer, data.[% ieData.ieVarName %]);
+[% END -%]
+endIndex = buffer.getCurrentIndex();
+length = endIndex - startIndex;
+
+// encode the length value now
+buffer.goToIndex(startIndex - 3);
+buffer.writeUint16(length, false);
+buffer.goToIndex(endIndex);
+[% ELSE -%]
+// First validate if the applicatoin provided more than the expected cardinality
+if (data.[% ieData.ieVarName %]Count > [% ieData.ieCardinality %])
+{
+    errorStream.add((char *)"Number of entries of [% ieData.ieVarName %] exceeded\n");
+    errorStream.add((char *)"Expected count: [% ieData.ieCardinality %] Received count: ");
+    errorStream.add((char *)"data.[% ieData.ieVarName %]Count");
+    errorStream.endOfLine();
+    return false;
+}
+for (Uint8 i = 0; i < data.[% ieData.ieVarName %]Count; i++)
+{
+	// Encode the Ie Header
+    header.ieType = [% ieData.ieType %]IeType;
+    header.instance = [% ieData.instance %];
+    header.length = 0; // We will encode the IE first and then update the length
+    GtpV2Ie::encodeGtpV2IeHeader(buffer, header);
+    startIndex = buffer.getCurrentIndex(); 
+    [% ieData.ieType %]Ie [% ieData.ieVarName %]=
+    dynamic_cast<
+    [% ieData.ieType %]Ie&>(GtpV2IeFactory::getInstance().
+    getIeObject([% ieData.ieType %]IeType));
+[% IF ieData.grouped == 'Yes'-%]
+    [% ieData.grpIeInstClassName %] groupedIeInstance = 
+	dynamic_cast<
+	[% ieData.grpIeInstClassName %]&>([% ieData.ieVarName %].getGroupedIe(msgType, [% ieData.instance %]));
+    rc = groupedIeInstance.encode[% ieData.grpIeInstClassName %](buffer, data.[% ieData.ieVarName %][i]);
+[% ELSE -%]
+    rc = [% ieData.ieVarName %].encode[% ieData.ieType %]Ie(buffer, data.[% ieData.ieVarName %][i]);
+[% END -%]
+    endIndex = buffer.getCurrentIndex();
+    length = endIndex - startIndex;
+
+    // encode the length value now
+    buffer.goToIndex(startIndex - 3);
+    buffer.writeUint16(length, false);
+    buffer.goToIndex(endIndex);
+}
+[% END -%]

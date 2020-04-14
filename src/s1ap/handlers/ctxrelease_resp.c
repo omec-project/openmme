@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -36,16 +27,26 @@ extern int g_enb_fd;
 extern ipc_handle ipcHndl_ctx_release_complete;
 
 int
-s1_ctx_release_resp_handler(InitiatingMessage_t *msg)
+s1_ctx_release_resp_handler(SuccessfulOutcome_t *msg)
 {
 	struct ctx_release_complete_Q_msg release_complete;
 	struct proto_IE s1_ctx_release_ies;
 
-    convertToInitUeProtoIe(msg, &s1_ctx_release_ies);
+    convertUeCtxRelComplToProtoIe(msg, &s1_ctx_release_ies);
 
 	/*TODO: Validate all eNB info*/
-
-	release_complete.ue_idx = s1_ctx_release_ies.data[0].val.mme_ue_s1ap_id;
+    for(int i = 0; i < s1_ctx_release_ies.no_of_IEs; i++)
+    {
+        switch(s1_ctx_release_ies.data[i].IE_type)
+        {
+            case S1AP_IE_MME_UE_ID:
+                {
+	                release_complete.ue_idx = s1_ctx_release_ies.data[i].val.mme_ue_s1ap_id;
+                }break;
+            default:
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_ctx_release_ies.data[i].IE_type);
+        }
+    }
 
 	int i = 0;
 	i = write_ipc_channel(ipcHndl_ctx_release_complete,
