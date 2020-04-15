@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -501,12 +492,26 @@ icsreq_processing()
 			sizeof(ies[3].esm_msg.eps_qos));
 
 	/* apn */
-	char apn_name[25]={};
-	strncpy(apn_name, (char *)ies[3].esm_msg.apn.val, ies[3].esm_msg.apn.len);
-	datalen = ies[3].esm_msg.apn.len;
-	buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
-	buffer_copy(&g_ics_buffer, (char *)ies[3].esm_msg.apn.val, datalen);
-	
+	// There is one category of UE, they do not send not apn to MME.
+	// In this case, the apn length from esm will be 0.
+	// Then MME will use the selected apn name from HSS-DB.
+	if (ies[3].esm_msg.apn.len == 0 ) {
+		datalen = (int) g_icsReqInfo->selected_apn.len + 1;
+		buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
+		unsigned char selected_apn_len[25] = {};
+		selected_apn_len[0] = g_icsReqInfo->selected_apn.len;
+		selected_apn_len[1] = '\0';
+		buffer_copy(&g_ics_buffer, strcat(selected_apn_len,
+                    g_icsReqInfo->selected_apn.val), datalen);
+
+	}else {
+		// Return the same apn sent by UE
+		datalen = ies[3].esm_msg.apn.len;
+		buffer_copy(&g_ics_buffer, &datalen, sizeof(datalen));
+		buffer_copy(&g_ics_buffer, (char *)ies[3].esm_msg.apn.val, datalen);
+	}
+
+
 	/* pdn address */
 	//datalen = sizeof(ies[3].esm_msg.pdn_addr);
 	datalen = 5; //sizeof(ies[3].esm_msg.pdn_addr);

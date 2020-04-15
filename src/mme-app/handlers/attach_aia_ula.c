@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -135,6 +126,12 @@ process_ula_resp()
 	ue_entry->access_restriction_data = ula_msg->access_restriction_data;
 	ue_entry->ambr.max_requested_bw_dl = ula_msg->max_requested_bw_dl;
 	ue_entry->ambr.max_requested_bw_ul = ula_msg->max_requested_bw_ul;
+
+	ue_entry->selected_apn.len = ula_msg->selected_apn.len;
+	memcpy(ue_entry->selected_apn.val, ula_msg->selected_apn.val,
+			ula_msg->selected_apn.len);
+	log_msg(LOG_INFO, "APN name and length from ula msg is - %s-%d\n",
+			ula_msg->selected_apn.val, ula_msg->selected_apn.len);
 
 	if(STAGE1_AIA_DONE == ue_entry->ue_state) {
 		ue_entry->ue_state = ATTACH_STAGE2;

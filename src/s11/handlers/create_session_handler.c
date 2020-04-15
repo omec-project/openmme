@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -251,10 +242,13 @@ create_session_processing()
 
 
 	ies[ieCount].type = IE_APN;
-	ies[ieCount].length = htons(g_csReqInfo->apn.len);
+	ies[ieCount].length = htons(g_csReqInfo->selected_apn.len + 1);
 	ies[ieCount].instance = INSTANCE_ZERO;
-	memcpy(ies[ieCount].value, g_csReqInfo->apn.val,
-			g_csReqInfo->apn.len);
+	unsigned char apn_len[25] = {};
+	apn_len[0] = g_csReqInfo->selected_apn.len;
+	apn_len[1] = '\0';
+	memcpy(ies[ieCount].value, strcat(apn_len, g_csReqInfo->selected_apn.val),
+			(int)(g_csReqInfo->selected_apn.len) + 1);
 	ieCount++;
 
 	uint32_t ambr_uplink = htonl(g_csReqInfo->max_requested_bw_ul);
