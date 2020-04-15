@@ -28,6 +28,8 @@ parse_s1ap_conf(s1ap_config_t *config)
 	char  mnc_dig2;
 	char  mnc_dig3;
 
+    config->rel_cap = 10;
+
 	/*s1ap information*/
 	config->mme_name = get_string_scalar("mme.name");
 	if(NULL == config->mme_name) return -1;
