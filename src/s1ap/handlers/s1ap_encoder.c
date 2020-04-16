@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -630,9 +621,9 @@ int s1ap_mme_encode_paging_request(
         return -1;
     }
 
-    uint32_t ue_idx = htonl(s1apPDU->ue_idx);
-    memcpy(pagingId.choice.s_TMSI->m_TMSI.buf, &ue_idx, sizeof(uint32_t));
-    pagingId.choice.s_TMSI->m_TMSI.size = sizeof(uint32_t);
+    unsigned int m_tmsi = htonl(s1apPDU->m_tmsi);
+    memcpy(pagingId.choice.s_TMSI->m_TMSI.buf, &m_tmsi, sizeof(unsigned int));
+    pagingId.choice.s_TMSI->m_TMSI.size = sizeof(unsigned int);
     memcpy(&val[1].value.choice.UEPagingID, &pagingId, sizeof(UEPagingID_t));
 
     log_msg(LOG_INFO, "Encoding CNDomain\n");
