@@ -1,4 +1,10 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
  * arpIe.cpp
  *
  * Revisit header later
@@ -62,6 +68,13 @@ bool ArpIe::decodeArpIe(MsgBuffer &buffer, ArpIeData &data, Uint16 length)
         return false;
     }
     data.pl = buffer.readBits(4);
+    // confirm that we are not reading beyond the IE boundary
+    if (buffer.getCurrentIndex() > ieBoundary)
+    {
+        errorStream.add("Attempt to read beyond IE boundary: pl\n");
+        return false;
+    }
+    buffer.skipBits(1);
     // confirm that we are not reading beyond the IE boundary
     if (buffer.getCurrentIndex() > ieBoundary)
     {
