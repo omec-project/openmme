@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 
@@ -658,6 +649,23 @@ int s1ap_mme_encode_paging_request(
     log_msg(LOG_DEBUG,"TAI List - Encode PLMN ID\n");
     tai_item.value.choice.TAIItem.tAI.pLMNidentity.size = 3;
     tai_item.value.choice.TAIItem.tAI.pLMNidentity.buf = calloc(3, sizeof(uint8_t));
+
+    // plmnId stored in ue info is for s6a/s11/nas interfaces.
+    // For s1ap interface, we need to encode the plmn from 216354 to 214365.
+    {
+          unsigned char plmn_byte2 = s1apPDU->tai.plmn_id.idx[1]; //63
+          unsigned char plmn_byte3 = s1apPDU->tai.plmn_id.idx[2]; //54
+          unsigned char mnc3 = plmn_byte2 >> 4; // mnc3
+          unsigned char mnc2 = plmn_byte3 >> 4; // mnc2
+          unsigned char mnc1 = plmn_byte3 & 0xf; // mnc1
+          unsigned char mcc3 = plmn_byte2 & 0xf; // mcc3
+          // First byte we are not changing         mcc2 mcc1
+
+          plmn_byte2 = (mnc1 << 4) | mcc3; // 2nd byte on S1AP - <mnc1 mcc3>
+          plmn_byte3 = (mnc3 << 4) | mnc2; // 3rd byte on S1AP - <mnc3 mnc2>
+          s1apPDU->tai.plmn_id.idx[1] = plmn_byte2;
+          s1apPDU->tai.plmn_id.idx[2] = plmn_byte3;
+    }
     memcpy(tai_item.value.choice.TAIItem.tAI.pLMNidentity.buf, &s1apPDU->tai.plmn_id.idx, 3);
 
     log_msg(LOG_DEBUG,"TAI List - Encode TAC\n");
