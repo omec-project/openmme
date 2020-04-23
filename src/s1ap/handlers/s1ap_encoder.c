@@ -621,9 +621,9 @@ int s1ap_mme_encode_paging_request(
         return -1;
     }
 
-    uint32_t ue_idx = htonl(s1apPDU->ue_idx);
-    memcpy(pagingId.choice.s_TMSI->m_TMSI.buf, &ue_idx, sizeof(uint32_t));
-    pagingId.choice.s_TMSI->m_TMSI.size = sizeof(uint32_t);
+    unsigned int m_tmsi = htonl(s1apPDU->m_tmsi);
+    memcpy(pagingId.choice.s_TMSI->m_TMSI.buf, &m_tmsi, sizeof(unsigned int));
+    pagingId.choice.s_TMSI->m_TMSI.size = sizeof(unsigned int);
     memcpy(&val[1].value.choice.UEPagingID, &pagingId, sizeof(UEPagingID_t));
 
     log_msg(LOG_INFO, "Encoding CNDomain\n");
