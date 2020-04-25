@@ -155,6 +155,7 @@ post_to_next(int ue_idx)
     req.enb_fd = ue_entry->enb_fd;
     req.ue_idx = ue_idx;
     req.cn_domain = CN_DOMAIN_PS;
+    req.m_tmsi = ue_entry->m_tmsi;
     memcpy(req.imsi, ue_entry->IMSI, BINARY_IMSI_LEN);
     memcpy(&req.tai, &ue_entry->tai, sizeof(struct TAI));
 

@@ -35,6 +35,7 @@ struct s1ap_common_req_Q_msg {
 	int mme_s1ap_ue_id;
     enum s1ap_cn_domain cn_domain;
     unsigned char imsi[BINARY_IMSI_LEN];
+    unsigned int m_tmsi;
 	struct TAI      tai;//TODO: will be list of 16 TAI's for UE.
 	s1apCause_t cause;
 
