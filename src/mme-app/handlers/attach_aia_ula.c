@@ -160,6 +160,12 @@ process_ula_resp()
 	log_msg(LOG_INFO, "APN name from ula msg is - %s\n",
 			ula_msg->selected_apn.val);
 
+	ue_entry->selected_apn.len = ula_msg->selected_apn.len;
+	memcpy(ue_entry->selected_apn.val, ula_msg->selected_apn.val,
+			ula_msg->selected_apn.len);
+	log_msg(LOG_INFO, "APN name and length from ula msg is - %s-%d\n",
+			ula_msg->selected_apn.val, ula_msg->selected_apn.len);
+
 	if(STAGE1_AIA_DONE == ue_entry->ue_state) {
 		ue_entry->ue_state = ATTACH_STAGE2;
 		attach_stage2_counter++;
