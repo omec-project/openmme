@@ -1,23 +1,15 @@
 #
+# Copyright 2019-present Open Networking Foundation
 # Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
 # Copyright (c) 2017 Intel Corporation
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 #
 ifndef ROOT
 include ../../build-config
 ROOT=../..
-LIB_PATH +=-L../common/
+LIB_PATH +=-L../common/ \
+	   -L../../build/libs/
 TARGET_DIR := $(ROOT)/target
 endif
 SRCDIR := .
@@ -41,22 +33,26 @@ ifeq ($(DEBUG),false)
 	CFLAGS += -O3
 endif
 
-INCS := $(INC_DIRS)
+INCS := $(INC_DIRS) \
+	-I../gtpV2Codec -I../cmn \
 
 LIBS := -lpthread	\
-	-lsctp
+	-lsctp \
+	-lgtpV2Codec \
+    -lmonitor_config \
+	-lcmnUtils
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
 	@mkdir -p $(BUILDDIR)/handlers
 	@mkdir -p $(BUILDDIR)/message_handlers
 	#@echo " $(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface $(LIBS)";
-	$(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson $(LIBS)
+	g++ $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson -lmonitor_config $(LIBS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)/handlers
 	@mkdir -p $(BUILDDIR)/message_handlers
-	@echo " $(CC) $(CFLAGS) $(INCS) -c -o $@ $<"; $(CC) $(CFLAGS) $(INCS) -c -o $@ $<
+	@echo " $(CC) $(CFLAGS) $(INCS) -c -o $@ $<"; gcc $(CFLAGS) $(INCS) -c -o $@ $<
 
 all:$(TARGET)
 

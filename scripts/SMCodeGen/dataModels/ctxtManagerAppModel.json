@@ -1,0 +1,37 @@
+{
+"DataStore":
+	{
+	"DataGroups":[
+        	{
+		"DgName":"SubscriberData",
+		"PoolSize":"8000",
+         	"DataBlocks":[
+                    {
+			"BlockName":"EnbContext",
+            		"BlockType":"Permanent",
+            		"Parent":"None",
+            		"PoolSize":"8000",
+            		"Cardinality":"1",
+            		"Data":[
+                        {
+				"Name": "enbFd",
+                		"Type": "int",
+				"Key":"Yes"
+				},
+                {
+				"Name": "s1apEnbUeId",
+                		"Type": "int",
+				"Key":"No"
+				},
+                {
+				"Name": "tai",
+                		"Type": "Tai",
+				"Key":"No"
+                }
+                ]
+			}
+            ]
+        }
+        ]
+	}
+}

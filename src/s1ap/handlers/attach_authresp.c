@@ -63,11 +63,11 @@ s1_auth_resp_handler(struct proto_IE *s1_auth_resp_ies)
                     }
 
                     memcpy(&(auth_resp.res), 
-                           &(s1_auth_resp_ies->data[i].val.nas.elements[0].auth_resp),
+                           &(s1_auth_resp_ies->data[i].val.nas.elements[0].pduElement.auth_resp),
                            sizeof(struct XRES));
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_auth_resp_ies->data[i].IE_type);
         }
     }
 
@@ -109,11 +109,11 @@ s1_auth_fail_handler(struct proto_IE *s1_auth_resp_ies)
                 {
                     auth_resp.status = S1AP_AUTH_FAILED;//Error in authentication
 	                memcpy(&(auth_resp.auts), 
-                           &(s1_auth_resp_ies->data[i].val.nas.elements[0].auth_fail_resp),
+                           &(s1_auth_resp_ies->data[i].val.nas.elements[0].pduElement.auth_fail_resp),
 		                   sizeof(struct AUTS));
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_auth_resp_ies->data[i].IE_type);
         }
     }
 	

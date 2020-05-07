@@ -18,6 +18,8 @@
 
 struct detach_req_Q_msg {
 	int ue_idx;
+	int ue_m_tmsi;
+	int s1ap_enb_ue_id;
 };
 
 struct DS_Q_msg {

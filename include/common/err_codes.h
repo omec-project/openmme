@@ -15,17 +15,21 @@ Common error codes across MME
 
 enum ERROR_CODES{
 	SUCCESS = 0,
-	/*Generic error codes 0-100*/
-	E_FAIL,
+    SUCCESS_1 = 1, 
+	/*Generic error codes 101-200*/
+	E_FAIL = 101,
 	E_FAIL_INIT, /*Failed in initialization*/
 	E_ALLOC_FAILED,
 	E_PARSING_FAILED,
+    E_MAPPING_FAILED,
+    E_SKIP,
 
-	/*S1AP error codes 200-300 */
+	/*S1AP error codes 201-300 */
 	S1AP_AUTH_FAILED = 201,
 	S1AP_SECMODE_FAILED,
+	S1AP_IDENTITY_FAILED,
 
-	/*S6a error codes 300-500*/
+	/*S6a error codes 301-500*/
 	S6A_AIA_FAILED = 301,
 	S6A_FD_ERROR,
 	S6A_FD_CORE_INIT_FAILED,

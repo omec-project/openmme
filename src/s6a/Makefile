@@ -1,4 +1,5 @@
 #
+# Copyright 2019-present Open Networking Foundation
 # Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
 # Copyright (c) 2017 Intel Corporation
 #
@@ -41,7 +42,7 @@ $(TARGET): $(OBJECTS)
 	@echo " Linking..."
 	@mkdir -p $(BUILDDIR)/handlers
 	#@echo " $(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface $(LIBS)";
-	$(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson $(LIBS)
+	$(CC) $(LFLAGS) $^ -o $(TARGET) $(LIB_PATH) -linterface -llog -lthreadpool -ljson -lmonitor_config $(LIBS)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)/handlers

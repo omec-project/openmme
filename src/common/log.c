@@ -62,8 +62,6 @@ void set_logging_level(char *log_level)
 void log_message(int l, const char *file, int line, const char *fmt, ...)
 {
 	va_list arg;
-	if (g_nolog) return;
-	if(g_log_level > l) return;
 
 	fprintf(stderr,"%s-%s:%d:", log_level_name[l], file, line);
 	va_start(arg, fmt);

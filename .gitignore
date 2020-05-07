@@ -9,3 +9,5 @@
 .project
 .cproject
 .settings
+tags
+cscope.files

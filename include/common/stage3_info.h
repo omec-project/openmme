@@ -26,7 +26,8 @@ struct authresp_Q_msg {
 struct sec_mode_Q_msg {
 	int ue_idx;
 	int enb_s1ap_ue_id;
-	struct UE_net_capab ue_network;
+	struct UE_net_capab  ue_network;
+	struct MS_net_capab  ms_net_capab;
 	struct KASME key;
 	uint8_t int_key[NAS_INT_KEY_SIZE];
 	uint32_t dl_seq_no;

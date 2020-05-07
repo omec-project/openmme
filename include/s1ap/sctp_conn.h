@@ -26,6 +26,7 @@ int recv_sctp_msg(int sockfd, unsigned char *buf, size_t len);
 
 int send_sctp_msg(int connSock, unsigned char *buffer, size_t len, uint16_t stream_no);
 
+int send_sctp_msg_with_fd(int connSock, unsigned char *buffer, size_t len, uint16_t stream_no);
 int close_sctp_socket(int sockfd);
 
 #endif /*__S1AP_SCTP_CONN_H*/

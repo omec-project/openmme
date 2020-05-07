@@ -58,13 +58,13 @@ s1_esm_resp_handler(struct proto_IE *s1_esm_resp_ies)
                     else
                     {
                         esm_resp.status = SUCCESS;
-	                    memcpy(&(esm_resp.apn), &(s1_esm_resp_ies->data[i].val.nas.elements[0].apn),
+	                    memcpy(&(esm_resp.apn), &(s1_esm_resp_ies->data[i].val.nas.elements[0].pduElement.apn),
 		                       sizeof(struct apn_name));
                     }
 
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_esm_resp_ies->data[i].IE_type);
         }
     }
 
