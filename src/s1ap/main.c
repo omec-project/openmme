@@ -29,8 +29,9 @@
 #include "f9.h"
 
 
+s1ap_instance_t *s1ap_inst;
+
 /*Global and externs **/
-extern s1ap_config g_s1ap_cfg;
 pthread_t s1ap_iam_t;
 
 int g_enb_fd = 0;
@@ -44,13 +45,24 @@ ipc_handle ipcHndl_esmresp;
 ipc_handle ipcHndl_icsresp;
 ipc_handle ipcHndl_attachomplete;
 ipc_handle ipcHndl_detach;
+ipc_handle ipcHndl_service_req;
 ipc_handle ipcHndl_ctx_release_complete;
+ipc_handle ipcHndl_s1ap_reject;
+ipc_handle ipcHndl_identityresp;
+ipc_handle ipcHndl_s1ap_msgs;
+ipc_handle ipcHndl_taureq;
+ipc_handle ipcHndl_taursp;
+ipc_handle ipcHndl_emm_inforeq;
+ipc_handle ipcHndl_reset_message;
+
 
 ipc_handle ipcHndl_auth;
 ipc_handle ipcHndl_smc;
 ipc_handle ipcHndl_esm;
 ipc_handle ipcHndl_ics;
 ipc_handle ipcHndl_detach_accept;
+ipc_handle ipcHndl_paging;
+ipc_handle ipcHndl_mme_to_s1ap_msg;
 
 ipc_handle ipcHndl_sctpsend_reader;
 ipc_handle ipcHndl_sctpsend_writer;
@@ -61,6 +73,15 @@ pthread_t esmReq_t;
 pthread_t icsReq_t;
 pthread_t detachAcpt_t;
 pthread_t acceptSctp_t;
+
+pthread_t attachRej_t;
+pthread_t attachIdReq_t;
+pthread_t paging_t;
+pthread_t mme_to_s1ap_msg_t;
+pthread_t tau_rsp_msg_t;
+pthread_t emm_info_req_msg_t;
+pthread_t send_reset_eNB_msg_t;
+
 
 struct time_stat g_attach_stats[65535];
 /**End: global and externs**/
@@ -261,11 +282,14 @@ accept_sctp(void *data)
 			sd = enb_socket[i];
 
 			if (FD_ISSET(sd, &readfds)) {
-				if ((valread = recv_sctp_msg(sd, buffer, SCTP_BUF_SIZE)) == 0) {
+				if ((valread = recv_sctp_msg(sd, buffer, SCTP_BUF_SIZE)) <= 0) {
 
 					log_msg(LOG_INFO, "Host Disconnected\n");
 					close(sd);
 					enb_socket[i] = 0;
+                    /* MME-app should get notificaiton that peer is down ? 
+                     * what MME will do with existing subscribers with the
+                     * same eNB ? */
 
 				} else {
 
@@ -294,11 +318,13 @@ accept_sctp(void *data)
 int
 init_sctp()
 {
+	s1ap_config_t *s1ap_cfg = get_s1ap_config();
+	
 	log_msg(LOG_INFO, "Create sctp sock, ip:%d, port:%d\n",
-			g_s1ap_cfg.s1ap_local_ip, g_s1ap_cfg.sctp_port);
+			s1ap_cfg->s1ap_local_ip, s1ap_cfg->sctp_port);
 	/*Create MME sctp listned socket*/
-	g_sctp_fd = create_sctp_socket(g_s1ap_cfg.s1ap_local_ip,
-					g_s1ap_cfg.sctp_port);
+	g_sctp_fd = create_sctp_socket(s1ap_cfg->s1ap_local_ip,
+					s1ap_cfg->sctp_port);
 
 	if (g_sctp_fd == -1) {
 		log_msg(LOG_ERROR, "Error in creating sctp socket. \n");
@@ -360,6 +386,30 @@ init_writer_ipc()
 			S1AP_CTXRELRESP_STAGE3_QUEUE, IPC_WRITE)) == -E_FAIL)
 		return -E_FAIL;
 
+
+	if ((ipcHndl_identityresp  = open_ipc_channel(
+			S1AP_ID_RSP_QUEUE, IPC_WRITE)) == -E_FAIL)
+    return -E_FAIL;
+
+	if ((ipcHndl_taureq = open_ipc_channel(
+			S1AP_TAUREQ_QUEUE, IPC_WRITE)) == -E_FAIL)
+		return -E_FAIL;
+
+	if ((ipcHndl_taursp = open_ipc_channel(
+			S1AP_TAURSP_QUEUE, IPC_READ)) == -E_FAIL)
+		return -E_FAIL;
+
+
+
+  
+	if ((ipcHndl_s1ap_msgs = open_ipc_channel(
+			S1AP_MME_QUEUE, IPC_WRITE)) == -E_FAIL)
+		return -E_FAIL;
+
+	if ((ipcHndl_service_req = open_ipc_channel(
+			S1AP_SERVICEREQ_QUEUE, IPC_WRITE)) == -E_FAIL)
+		return -E_FAIL;
+
 	log_msg(LOG_INFO, "Writer IPCs initialized\n");
 
 	return SUCCESS;
@@ -383,6 +433,13 @@ start_mme_resp_handlers()
 	pthread_create(&esmReq_t, &attr, &esmreq_handler, NULL);
 	pthread_create(&icsReq_t, &attr, &icsreq_handler, NULL);
 	pthread_create(&detachAcpt_t, &attr, &detach_accept_handler, NULL);
+	pthread_create(&attachRej_t, &attr, &s1ap_reject_handler, NULL);
+	pthread_create(&attachIdReq_t, &attr, &s1ap_attach_id_req_handler, NULL);
+	pthread_create(&paging_t, &attr, &paging_handler, NULL);
+	pthread_create(&mme_to_s1ap_msg_t, &attr, &mme_to_s1ap_msg_handler, NULL);
+	pthread_create(&tau_rsp_msg_t, &attr, &tau_response_handler, NULL);
+	pthread_create(&emm_info_req_msg_t, &attr, &emm_info_req_handler, NULL);
+  pthread_create(&send_reset_eNB_msg_t, &attr, &gen_reset_request_handler, NULL);
 
 	pthread_attr_destroy(&attr);
 	return SUCCESS;
@@ -438,10 +495,14 @@ start_sctp_threads()
 int
 main(int argc, char **argv)
 {
+	s1ap_inst = (s1ap_instance_t *) calloc(1, sizeof(s1ap_instance_t));
+	s1ap_inst->s1ap_config = (s1ap_config_t *) calloc(1, sizeof(s1ap_config_t));
+
+    init_backtrace(argv[0]); 
+
 	parse_args(argc, argv);
 
-	init_parser("conf/s1ap.json");
-	parse_s1ap_conf();
+	s1ap_parse_config(s1ap_inst->s1ap_config);
 
 	if (init_writer_ipc() != SUCCESS) {
 		log_msg(LOG_ERROR, "Error in initializing writer ipc.\n");
@@ -467,19 +528,26 @@ main(int argc, char **argv)
 		log_msg(LOG_ERROR, "Error in initializing sctp server.\n");
 		return -E_FAIL_INIT;
 	}
-
-	log_msg(LOG_INFO, "Connection accespted from enb \n");
+	log_msg(LOG_INFO, "SCTP socket open - success \n");
 
 	if (start_sctp_threads() != SUCCESS) {
 		log_msg(LOG_ERROR, "Error in creating sctp reader/writer thread.\n");
 		return -E_FAIL_INIT;
 	}
-
 	log_msg(LOG_INFO, "sctp reader/writer thread started.\n");
+
+	register_config_updates();
 
 	while (1) {
 		sleep(10);
 	}
 
 	return SUCCESS;
+}
+
+void s1ap_parse_config(s1ap_config_t *config)
+{
+	/*Read MME configurations*/
+	init_parser("conf/s1ap.json");
+	parse_s1ap_conf(config);
 }

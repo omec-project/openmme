@@ -17,6 +17,7 @@
 #include "message_queues.h"
 #include "ipc_api.h"
 #include "stage8_info.h"
+#include "s1ap_error.h"
 
 /************************************************************************
 Current file : Stage 7 handler.
@@ -79,16 +80,52 @@ process_MB_resp()
 	struct MB_resp_Q_msg *mbr_msg =
 		(struct MB_resp_Q_msg *)MB_resp;
 	struct UE_info*ue_entry = GET_UE_ENTRY(mbr_msg->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "MBResponse received for bad UE %d \n", mbr_msg->ue_idx);
+        return E_FAIL;
+    }
 
 	log_msg(LOG_INFO, "Modify beader for UE idx = %d\n", mbr_msg->ue_idx);
 
-	if(STAGE8_NAS_ATCH_DONE == ue_entry->ue_state){
+	if (SVC_REQ_WF_MODIFY_BEARER_RESP == ue_entry->ue_state)
+	{
 		ue_entry->ue_state = ATTACH_DONE;
+		ue_entry->ecm_state =  ECM_CONNECTED;
+		ue_entry->ue_curr_proc =  UNKNOWN_PROC;
+		log_msg(LOG_ERROR, "=====SERVICE_REQ COMPLETE UE - %d======\n", mbr_msg->ue_idx);
+
+	} else if(STAGE8_NAS_ATCH_DONE == ue_entry->ue_state)
+	{
+		ue_entry->ue_state = ATTACH_DONE;
+		ue_entry->ecm_state =  ECM_CONNECTED;
+		ue_entry->ue_curr_proc =  UNKNOWN_PROC;
 		attach_stage8_counter++;
 		log_msg(LOG_ERROR, "=====ATTACH COMPLETE UE - %d======\n", mbr_msg->ue_idx);
 	}
 	else
 		ue_entry->ue_state = STAGE8_MBR_DONE;
+
+    /* Generate EMM info message */
+    struct ue_emm_info temp = {0};
+    temp.enb_fd = ue_entry->enb_fd; 
+    temp.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+    temp.mme_s1ap_ue_id = ue_entry->ue_index;
+	temp.dl_seq_no = ue_entry->dl_seq_no++;
+    /*Logically MME should have TAC database. and based on TAC 
+     * MME can send different name. For now we are sending Aether for
+     * all TACs
+     */
+    strcpy(temp.short_network_name, "Aether");
+    strcpy(temp.full_network_name, "Aether");
+	memcpy(&(temp.int_key), &(ue_entry->ue_sec_info.int_key), NAS_INT_KEY_SIZE);
+    send_emm_info_s1ap_channel_req(&temp); 
+	log_msg(LOG_ERROR, "=====Generate EMM info enb_fd = %d %d \n", temp.enb_fd, ue_entry->enb_fd);
+
+#ifdef DEBUG_RESET
+    // added just for testing 
+    send_reset(ue_entry, 15, 0); 
+#endif
 
 	return mbr_msg->ue_idx;
 }
@@ -99,6 +136,11 @@ process_att_complete_resp()
 	struct attach_complete_Q_msg *atch_msg =
 		(struct attach_complete_Q_msg *)attach_complete;
 	struct UE_info *ue_entry = GET_UE_ENTRY(atch_msg->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "Process attach complete received on bad UE %d \n", atch_msg->ue_idx);
+        return E_FAIL;
+    }
 
 	ue_entry->ul_seq_no++;
 
@@ -106,6 +148,7 @@ process_att_complete_resp()
 
 	if(STAGE8_MBR_DONE == ue_entry->ue_state) {
 		ue_entry->ue_state = ATTACH_DONE;
+		ue_entry->ecm_state =  ECM_CONNECTED;
 		attach_stage8_counter++;
 		log_msg(LOG_ERROR, "=====ATTACH COMPLETE UE - %d======\n", atch_msg->ue_idx);
 	}

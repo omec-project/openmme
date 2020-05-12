@@ -1,0 +1,49 @@
+[%- BLOCK %]
+[%- actionList = [] %]
+[%- PYTHON %]
+procedure = [% TemplateInputVar %]
+actionNames = []
+import utils
+for state in procedure['States']:
+    for event in state['Events']:
+        for action in event['Actions']:
+            rc = utils.searchWordInDir(utils.outputDir, action.lower()) 
+            if rc is False:
+                actionNames.append(action.lower())
+flag =  utils.isFileEmpty(utils.outputDir, utils.outputFileName)
+stash.set('actionList', actionNames)
+stash.set('includeHeader', flag)
+[%- END %]
+[%- END %]
+[%- IF includeHeader == 1 -%]
+/*
+ * Copyright 2019-present Infosys Limited
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+ 
+/******************************************************************************
+ *
+ * This file has both generated and manual code.
+ * 
+ * File template used for code generation:
+ * <TOP-DIR/scripts/SMCodeGen/templates/stateMachineTmpls/actionHandlers.cpp.tt>
+ *
+ ******************************************************************************/
+#include "actionHandlers/actionHandlers.h"
+#include "controlBlock.h" 
+
+using namespace mme;
+using namespace SM;
+
+[% END %]
+[%- FOREACH action = actionList -%]
+/***************************************
+* Action handler : [% action %]
+***************************************/
+ActStatus ActionHandlers::[% action %](ControlBlock& cb)
+{
+    return ActStatus::PROCEED;
+}
+
+[% END -%]

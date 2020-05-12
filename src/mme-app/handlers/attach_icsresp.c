@@ -106,8 +106,19 @@ stage7_processing()
 		(struct initctx_resp_Q_msg *)ics_resp;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ics_res->ue_idx);
 
-	/**validations/checks*/
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Message received for invalid UE in stage7_processing");
+        return E_FAIL;
+    }
 
+	/**validations/checks*/
+	if(SVC_REQ_WF_INIT_CTXT_RESP == ue_entry->ue_state) {
+		
+		ue_entry->ue_state = SVC_REQ_WF_MODIFY_BEARER_RESP;
+
+	}
+	
 	ue_entry->eRAB_id = ics_res->eRAB_id;
 	/*hard code to ipv4 for now. TODO v6 support from s1ap*/
 	ue_entry->s1u_enb_u_fteid.header.v4 = 1;
@@ -130,6 +141,12 @@ post_to_next()
 	struct initctx_resp_Q_msg *ics_resp_info =
 				(struct initctx_resp_Q_msg *)ics_resp;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(ics_resp_info->ue_idx);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "Message received for invalid UE in post_to_next");
+        return E_FAIL;
+    }
 	struct MB_Q_msg mb_msg;
 
 	mb_msg.ue_idx = ((struct initctx_resp_Q_msg *)ics_resp_info)->ue_idx;
