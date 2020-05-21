@@ -247,17 +247,21 @@ s1_setup_handler(InitiatingMessage_t *msg, int enb_fd)
 					if(geNb->eNB_ID.present == ENB_ID_PR_macroENB_ID) 
 					{
 						log_msg(LOG_DEBUG, "macro eNB id size %d \n", geNb->eNB_ID.choice.macroENB_ID.size);
-                        // Home eNB ID = 28 bits
-                        uint8_t *enb_id_buf = geNb->eNB_ID.choice.homeENB_ID.buf;
-                        /*enbStruct.enbId_m = 
-                            (enb_id_buf[0] << 20) + 
-                            (enb_id_buf[1] << 12) + 
-                            (enb_id_buf[2] << 4) + 
-                            ((enb_id_buf[3] & 0xf0) >> 4);*/
+                        uint8_t *enb_id_buf = geNb->eNB_ID.choice.macroENB_ID.buf;
                         enbStruct.enbId_m = 
                             (enb_id_buf[0] << 12) + 
                             (enb_id_buf[1] << 4) + ((enb_id_buf[2] & 0xf0) >> 4);
 					}
+                    else if (geNb->eNB_ID.present == ENB_ID_PR_homeENB_ID)
+                    {
+						log_msg(LOG_DEBUG, "home eNB id size %d \n", 
+                                  geNb->eNB_ID.choice.homeENB_ID.size);
+                        uint8_t *enb_id_buf = geNb->eNB_ID.choice.homeENB_ID.buf;
+                        enbStruct.enbId_m = (enb_id_buf[0] << 20) + 
+                            (enb_id_buf[1] << 12) + 
+                            (enb_id_buf[2] << 4) + 
+                            ((enb_id_buf[3] & 0xf0) >> 4);
+                    }
 					break;
 				}
 				case ProtocolIE_ID_id_eNBname:
