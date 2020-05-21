@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -72,11 +63,11 @@ s1_auth_resp_handler(struct proto_IE *s1_auth_resp_ies)
                     }
 
                     memcpy(&(auth_resp.res), 
-                           &(s1_auth_resp_ies->data[i].val.nas.elements[0].auth_resp),
+                           &(s1_auth_resp_ies->data[i].val.nas.elements[0].pduElement.auth_resp),
                            sizeof(struct XRES));
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_auth_resp_ies->data[i].IE_type);
         }
     }
 
@@ -118,11 +109,11 @@ s1_auth_fail_handler(struct proto_IE *s1_auth_resp_ies)
                 {
                     auth_resp.status = S1AP_AUTH_FAILED;//Error in authentication
 	                memcpy(&(auth_resp.auts), 
-                           &(s1_auth_resp_ies->data[i].val.nas.elements[0].auth_fail_resp),
+                           &(s1_auth_resp_ies->data[i].val.nas.elements[0].pduElement.auth_fail_resp),
 		                   sizeof(struct AUTS));
                 }break;
             default:
-                log_msg(LOG_WARNING,"Unhandled IE");
+                log_msg(LOG_WARNING,"Unhandled IE %d \n",s1_auth_resp_ies->data[i].IE_type);
         }
     }
 	

@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <title>IMSI LIST</title>
+  </head>
+  <body>
+      <h1>IMSI LIST in MME</h1>
+      {% for acct in accts %}
+      <div><p><a href="/imsiInfo/{{ acct.imsi }}">{{ acct.imsi }}</a></p></div>
+      {% endfor %}
+  </body>
+</html>

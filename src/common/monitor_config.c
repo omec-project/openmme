@@ -3,17 +3,6 @@
 *
 * SPDX-License-Identifier: Apache-2.0
 *
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*  http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
 *
 */
 
@@ -29,20 +18,23 @@
 #include <string.h>
 #include <monitor_config.h>
 #include <log.h>
+#include "time.h"
 
 #define MAX_FILE_PATH 128
-struct entry 
+typedef struct config_watch_entry 
 {
   configCbk    callback;
   char         config_file[MAX_FILE_PATH]; 
   bool         always;
-};
+  bool         handled; /* only 1 event per thread life is provided to application */
+}config_watch_t;
 
 pthread_t  config_monitor_tid;
 
 static bool
-handle_events(int fd, int *wd, struct entry *config)
+handle_events(int fd, int *wd, config_watch_t *config)
 {
+	time_t t = time(NULL);
     bool handled = false;
     /* Some systems cannot read integer variables if they are not
        properly aligned. On other systems, incorrect alignment may
@@ -57,7 +49,7 @@ handle_events(int fd, int *wd, struct entry *config)
     char *ptr;
 
     /* Loop while events can be read from inotify file descriptor. */
-    log_msg(LOG_INFO,"Received file event for %s \n",config->config_file);
+    log_msg(LOG_INFO,"Config - %p - Received file event for %s at time %lu \n",config, config->config_file, t);
     for (;;) {
 
         /* Read some events. */
@@ -89,15 +81,20 @@ handle_events(int fd, int *wd, struct entry *config)
                 log_msg(LOG_DEBUG,"IN_ACCESS : ");
                 continue;
             }
-            if (event->mask & IN_ATTRIB)
-                log_msg(LOG_DEBUG,"IN_ATTRIB: ");
-            if (event->mask & IN_CLOSE_WRITE)
-                log_msg(LOG_DEBUG,"IN_CLOSE_WRITE: ");
+            if (event->mask & IN_OPEN)
+            {
+                log_msg(LOG_DEBUG,"IN_OPEN: skip ");
+                continue;
+            }
             if (event->mask & IN_CLOSE_NOWRITE)
             {
                 log_msg(LOG_DEBUG,"IN_CLOSE_NOWRITE: ");
                 continue;
             }
+            if (event->mask & IN_ATTRIB)
+                log_msg(LOG_DEBUG,"IN_ATTRIB: ");
+            if (event->mask & IN_CLOSE_WRITE)
+                log_msg(LOG_DEBUG,"IN_CLOSE_WRITE: ");
             if (event->mask & IN_CREATE)
                 log_msg(LOG_DEBUG,"IN_CREATE: ");
             if (event->mask & IN_DELETE)
@@ -112,21 +109,16 @@ handle_events(int fd, int *wd, struct entry *config)
                 log_msg(LOG_DEBUG,"IN_MOVED_FROM: ");
             if (event->mask & IN_MOVED_TO)
                 log_msg(LOG_DEBUG,"IN_MOVED_TO: ");
-            if (event->mask & IN_OPEN)
-            {
-                log_msg(LOG_DEBUG,"IN_OPEN: skip ");
-                continue;
-            }
-            if (event->mask & IN_IGNORED)
+           	if (event->mask & IN_IGNORED)
                 log_msg(LOG_DEBUG,"IN_IGNORE: file deleted ");
 
-            if (wd[0] == event->wd) {
+            if (wd[0] == event->wd && config->handled == false) {
                 handled = true;
                 uint32_t flags=0;
+				config->handled=true;
                 config->callback(config->config_file, flags); 
                 break;
             }
-
         }
     }
     return handled;
@@ -157,10 +149,10 @@ config_thread_handler(void *config)
   int poll_num;
   struct pollfd fds[1];
   int wd;
-  struct entry *cfg = (struct entry *)config;
+  config_watch_t *cfg = (config_watch_t *)config;
   int fd = 0 ; 
 
-  log_msg(LOG_INFO, "Thread started for monitoring config file %s \n",cfg->config_file);
+  log_msg(LOG_INFO, "Thread started for monitoring config file %s - Monitoring config object  %p \n",cfg->config_file, cfg);
 
   fd = inotify_init1(IN_NONBLOCK);
   if (fd == -1) 
@@ -217,12 +209,16 @@ config_thread_handler(void *config)
               exit(1);
             }
           }
-          else
-            return NULL; //stop the thread
+          else {
+			break;
+		  }
         }
       }
     }
   }
+
+  log_msg(LOG_INFO, "Thread closing for monitoring config file %s Config-%p \n",cfg->config_file, cfg);
+  free(cfg);
   return NULL;
 }
 
@@ -231,12 +227,12 @@ void watch_config_change(char *config_file, configCbk cbk, bool always)
 {
   pthread_attr_t attr;
 
-  log_msg(LOG_INFO, "Register config change notification %s \n", config_file);
 
-  struct entry *config_entry = (struct entry *) calloc(1, sizeof(struct entry));
+  config_watch_t *config_entry = (config_watch_t *) calloc(1, sizeof(config_watch_t));
   strncpy(config_entry->config_file, config_file, strlen(config_file));
   config_entry->callback = cbk;
   config_entry->always = always;
+  config_entry->handled = false;
 
   pthread_attr_init(&attr);
   /* Create a thread which will monitor changes in the config file */

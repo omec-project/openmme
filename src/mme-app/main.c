@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdlib.h>
@@ -30,6 +21,8 @@
 #include "s6a.h"
 #include "ue_table.h"
 #include "mme_app.h"
+#include "thread_pool.h"
+#include "unix_sock.h"
 #include "hash.h"
 #include "ipc_api.h"
 #include "message_queues.h"
@@ -37,15 +30,22 @@
 /*Globals and externs*/
 mme_config g_mme_cfg;
 
-/*List of UEs attached to MME*/
-struct UE_info* g_UE_list[UE_POOL_SIZE];
+int g_Q_s1ap_common_reject; 
+pthread_mutex_t s1ap_reject_queue_mutex;
 
-/*Counter UE list. Add each element sequentially when UE attaches*/
-int g_UE_cnt = 0;
+int g_unix_fd = 0;
+struct thread_pool *g_tpool;
+pthread_t acceptUnix_t;
 
 pthread_t stage_tid[TOTAL_STAGES];
 
 int g_mme_hdlr_status;
+
+extern void init_backtrace();
+
+extern void open_emm_info_s1ap_stage_init();
+
+extern void open_reset_s1ap_stage_init(void);
 
 /*End globals and externs*/
 
@@ -59,7 +59,7 @@ void
 check_mme_hdlr_status()
 {
 	/*TODO: not thread-safe*/
-	if(!(g_mme_hdlr_status ^ 511)) /*111111111 - 1 bit for init of 1 stage */
+	if(!(g_mme_hdlr_status ^ 131071)) /*1 1111 1111 1111 1111 - 1 bit for init of 1 stage */
 		log_msg(LOG_INFO, "MME setup is ready. Let's dance.\n");
 }
 
@@ -71,25 +71,7 @@ check_mme_hdlr_status()
 static int
 init_mme()
 {
-	/*init UEs arra to 65535 initially*/
-	g_UE_list[0] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
-	if(NULL == g_UE_list[0]) {
-		log_msg(LOG_ERROR, "Allocation failed.\n");
-		exit(-1);
-	}
-/*
-	g_UE_list[1] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
-	if(NULL == g_UE_list[1]) {
-		log_msg(LOG_ERROR, "Allocation failed.\n");
-		exit(-1);
-	}
-	g_UE_list[2] = (struct UE_info*)calloc(sizeof(struct UE_info), UE_POOL_CNT);
-	if(NULL == g_UE_list[2]) {
-		log_msg(LOG_ERROR, "Allocation failed.\n");
-		exit(-1);
-	}
-*/
-	/*Check system requirements*/
+    init_ue_tables();
 
 	/*Create all required IPC files*/
 	log_msg(LOG_INFO, "Creating IPC Queues...\n");
@@ -101,6 +83,15 @@ init_mme()
 
 	unlink(INITUE_STAGE1_QUEUE);
 	create_ipc_channel(INITUE_STAGE1_QUEUE);
+
+	unlink(S1AP_REQ_REJECT_QUEUE);
+	create_ipc_channel(S1AP_REQ_REJECT_QUEUE);
+
+	unlink(S1AP_ID_REQ_QUEUE);
+	create_ipc_channel(S1AP_ID_REQ_QUEUE);
+
+	unlink(S1AP_ID_RSP_QUEUE);
+	create_ipc_channel(S1AP_ID_RSP_QUEUE);
 
 	unlink(S6A_AIA_STAGE2_QUEUE);
 	create_ipc_channel(S6A_AIA_STAGE2_QUEUE);
@@ -172,6 +163,51 @@ init_mme()
 
 	unlink(S1AP_CTXRELRESP_STAGE3_QUEUE);
 	create_ipc_channel(S1AP_CTXRELRESP_STAGE3_QUEUE);
+
+    unlink(S11_DDN_QUEUE);
+	create_ipc_channel(S11_DDN_QUEUE);
+
+	unlink(S1AP_PAGING_QUEUE);
+	create_ipc_channel(S1AP_PAGING_QUEUE);
+	
+	unlink(S1AP_MME_QUEUE);
+	create_ipc_channel(S1AP_MME_QUEUE);
+   
+	unlink(S11_SEND_REQ_STAGE_QUEUE);
+	create_ipc_channel(S11_SEND_REQ_STAGE_QUEUE);
+   
+	unlink(S11_RECV_RSP_STAGE_QUEUE);
+	create_ipc_channel(S11_RECV_RSP_STAGE_QUEUE);
+   
+	unlink(S1AP_MME_TO_S1AP_QUEUE);
+	create_ipc_channel(S1AP_MME_TO_S1AP_QUEUE);
+
+	unlink(S11_DDN_ACK_QUEUE);
+	create_ipc_channel(S11_DDN_ACK_QUEUE);
+
+	unlink(S11_DDN_FAIL_QUEUE);
+        create_ipc_channel(S11_DDN_FAIL_QUEUE);
+	
+	//Service Request
+	unlink(S1AP_SERVICEREQ_QUEUE);
+	create_ipc_channel(S1AP_SERVICEREQ_QUEUE);
+ 
+	//TAU Request
+	unlink(S1AP_TAUREQ_QUEUE);
+	create_ipc_channel(S1AP_TAUREQ_QUEUE);
+
+	//TAU Response
+	unlink(S1AP_TAURSP_QUEUE);
+	create_ipc_channel(S1AP_TAURSP_QUEUE);
+
+    //EMM INFO S1AP
+    unlink(EMM_INFOREQ_QUEUE);
+    create_ipc_channel(EMM_INFOREQ_QUEUE);
+
+    //RESET S1AP
+    unlink(S1AP_GEN_RESET_QUEUE);
+    create_ipc_channel(S1AP_GEN_RESET_QUEUE);
+
 	return SUCCESS;
 }
 
@@ -201,6 +237,26 @@ init_stage_handlers()
 	pthread_create(&stage_tid[8], &attr, &detach_stage1_mme_handler, NULL);
 	pthread_create(&stage_tid[9], &attr, &detach_stage2_handler, NULL);
 	pthread_create(&stage_tid[10], &attr, &detach_stage3_handler, NULL);
+	pthread_create(&stage_tid[11], &attr, &DDN_handler, NULL);
+	pthread_create(&stage_tid[12], &attr, &s1ap_req_common_mme_handler, NULL);
+	pthread_create(&stage_tid[13], &attr, &s11_rsp_common_mme_handler, NULL);
+	pthread_create(&stage_tid[14], &attr, &service_request_handler, NULL);
+	pthread_create(&stage_tid[15], &attr, &identity_rsp_handler, NULL);
+	pthread_create(&stage_tid[16], &attr, &tau_request_handler, NULL);
+
+	/* Just open a pipe. Just one way message, there is no response for this message */
+	open_emm_info_s1ap_stage_init();
+  
+    /* Just open a pipe. Just one way message we dont want to handle response */
+    open_reset_s1ap_stage_init();
+
+	if ((g_Q_s1ap_common_reject  = open_ipc_channel(S1AP_MME_TO_S1AP_QUEUE,
+						IPC_WRITE)) == -1){
+		log_msg(LOG_ERROR, "Error in opening MME to S1AP write IPC channel.\n");
+		pthread_exit(NULL);
+	}
+
+    pthread_mutex_init(&s1ap_reject_queue_mutex, NULL);
 	pthread_attr_destroy(&attr);
 	return SUCCESS;
 }
@@ -211,8 +267,11 @@ init_stage_handlers()
  * @param None
  * @return int as SUCCESS or FAIL
  */
-int main()
+int main(int argc, char *argv[])
 {
+    init_backtrace(argv[0]);
+    srand(time(0));
+
 	/*Read MME configurations*/
     mme_parse_config(&g_mme_cfg); 
 
@@ -225,6 +284,21 @@ int main()
 #ifdef  STATS
 	stat_init();
 #endif
+	/* Initialize thread pool for sctp request parsers */
+	g_tpool = thread_pool_new(THREADPOOL_SIZE);
+
+	if (g_tpool == NULL) {
+		log_msg(LOG_ERROR, "Error in creating thread pool. \n");
+		return -E_FAIL_INIT;
+	}
+	log_msg(LOG_INFO, "monitor Listener theadpool initalized.\n");
+
+	if (init_sock() != SUCCESS) {
+		log_msg(LOG_ERROR, "Error in initializing unix domain socket server.\n");
+		return -E_FAIL_INIT;
+	}
+
+	log_msg(LOG_INFO, "socket started in listen mode \n");
 
 	log_msg(LOG_INFO, "Register for config Triggers \n");
     register_config_updates();
@@ -247,4 +321,5 @@ void mme_parse_config(mme_config *config)
     /* Lets apply logging setting */
     set_logging_level(config->logging);
 }
+
 

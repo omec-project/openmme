@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __GTPV2C_H_
@@ -33,6 +24,10 @@
 #define GTP_MODIFY_BEARER_RSP                                35
 #define GTP_DELETE_SESSION_REQ                               36
 #define GTP_DELETE_SESSION_RSP                               37
+#define GTP_RABR_REQ                                        170
+#define GTP_RABR_RSP                                        171
+#define GTP_DOWNLINK_DATA_NOTIFICATION_ACK 					177
+#define GTP_DOWNLINK_DATA_NOTIFICATION_FAILURE_IND 			178
 
 
 enum gtpv2c_interfaces {

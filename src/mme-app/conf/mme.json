@@ -7,6 +7,8 @@
 		"sctp_port": 36412,
 		"name": "vmmestandalone",
 		"egtp_default_hostname": "sutlej.ccin.ccpu.com",
+		"group_id": 1,
+		"code": 1,
 		"__comment__": "Here is comment",
 		"mcc": {
 			"dig1": 2,
@@ -17,7 +19,11 @@
 			"dig1": 0,
 			"dig2": 1,
 			"dig3": -1
-		}
+		},
+        "plmnlist": { 
+			"plmn1": "mcc=315,mnc=010",
+			"plmn2": "mcc=208,mnc=01"
+        }
 	},
 	"enb": {
 		"enb_addr": "10.0.10.1",

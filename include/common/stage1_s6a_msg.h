@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 /*Information to send from mme app to s6a for AIR and ULR*/
 #ifndef __STAGE1_S6A_MSG_H_
@@ -60,6 +51,8 @@ struct ula_Q_msg {
 	unsigned int apn_config_profile_ctx_id;
 	int all_APN_cfg_included_ind;
 	char MSISDN[MSISDN_STR_LEN];
+	struct apn_name selected_apn;
+	uint32_t static_addr;
 };
 
 #define S6A_REQ_Q_MSG_SIZE sizeof(struct s6a_Q_msg)

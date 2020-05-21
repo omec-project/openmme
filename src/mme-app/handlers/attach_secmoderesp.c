@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -28,6 +19,8 @@
 #include "ipc_api.h"
 #include "stage4_info.h"
 #include "stage5_s11_info.h"
+#include "stage6_info.h"
+#include "common_proc_info.h"
 
 /************************************************************************
 Current file : Stage 4 handler.
@@ -49,9 +42,9 @@ extern int g_mme_hdlr_status;
 static int g_Q_secmoderesp_fd;
 static int g_Q_esmreq_fd;
 extern int g_Q_CSreq_fd;
-
-/*Making global just to avoid stack passing*/
-static char buf[S1AP_SECRESP_STAGE4_BUF_SIZE];
+extern int g_Q_s1ap_common_reject;
+extern pthread_mutex_t s1ap_reject_queue_mutex;
+static int g_Q_s1ap_service_reject;
 
 extern uint32_t attach_stage4_counter;
 extern uint32_t attach_stage5_counter;
@@ -71,6 +64,7 @@ init_stage()
 	}
 	log_msg(LOG_INFO, "Stage 4 reader - s1ap Security mode response : Connected\n");
 
+	log_msg(LOG_INFO, "MME to S1AP write IPC Connected\n");
 	/*Open destination queue for writing. It is AIR, ULR Q in this stage*/
 	log_msg(LOG_INFO, "Stage 4 writer  - s1ap ESM info req: waiting\n");
 	g_Q_esmreq_fd = open_ipc_channel(S1AP_ESMREQ_STAGE4_QUEUE, IPC_WRITE);
@@ -79,6 +73,13 @@ init_stage()
 		pthread_exit(NULL);
 	}
 	log_msg(LOG_INFO, "Stage 4 writer - s1ap ESM info request: Connected\n");
+	g_Q_s1ap_service_reject = open_ipc_channel(S1AP_REQ_REJECT_QUEUE, IPC_WRITE);
+	if (g_Q_s1ap_service_reject == -1) {
+		log_msg(LOG_ERROR, "Error in opening Writer IPC channel: S1AP Reject Queue \n");
+		pthread_exit(NULL);
+	}
+	log_msg(LOG_INFO, "S1AP reject Pipe : Connected\n");
+ 
 	return;
 }
 
@@ -86,7 +87,7 @@ init_stage()
 * Read next message from stage Q for processing.
 */
 static int
-read_next_msg()
+read_next_msg(char *buf)
 {
 	int bytes_read=0;
 
@@ -110,11 +111,17 @@ read_next_msg()
 * Stage specific message processing.
 */
 static int
-stage4_processing()
+stage4_processing(char *buf)
 {
 	/*Parse and validate  the buffer*/
 	struct secmode_resp_Q_msg *secmode_resp = (struct secmode_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(secmode_resp->ue_idx);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "stage4_processing skipped for invalid UE index %d \n", secmode_resp->ue_idx);
+        return E_FAIL;
+    }
 
 	ue_entry->ul_seq_no = 0;
 
@@ -127,6 +134,7 @@ stage4_processing()
 	else {
 		log_msg(LOG_INFO, "Sec mode failed. UE-%d\n",
 			secmode_resp->ue_idx);
+        ue_entry->ue_state = STAGE4_FAIL;
 		//Do something ue_entry->ue_state = STAGE4_WAITING;
 	}
 
@@ -137,11 +145,59 @@ stage4_processing()
 * Post message to next handler of the stage
 */
 static int
-post_to_next()
+post_to_next(char *buf)
 {
 	struct esm_req_Q_msg esm_req;
 	struct secmode_resp_Q_msg *secmode_resp = (struct secmode_resp_Q_msg*)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(secmode_resp->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_ERROR, "post_to_next on invalid UE index %d ", secmode_resp->ue_idx);
+        return E_FAIL;
+    }
+    log_msg(LOG_INFO, "Stiching stage 1 to stage 4 - 1 \n");
+
+    if(SERVICE_REQ_PROC == ue_entry->ue_curr_proc)
+    {
+        if(STAGE4_FAIL == ue_entry->ue_state)
+        {
+            log_msg(LOG_DEBUG, "Sec mode cmd failed in service req proc. \
+                                    Send service reject and clear context");
+            post_svc_reject(secmode_resp->ue_idx);
+            post_ctx_rel_and_clr_uectx(secmode_resp->ue_idx);
+			return SUCCESS;
+        }
+        log_msg(LOG_DEBUG, "Security Done after Service Request. \
+                                  Send Initial Ctx setup request");
+		ue_entry->ue_curr_proc =  UNKNOWN_PROC;
+        return send_init_ctx_setup_req(secmode_resp->ue_idx);
+    }
+    else if ((ATTACH_PROC == ue_entry->ue_curr_proc)
+             &&(STAGE4_FAIL == ue_entry->ue_state))
+    {
+        char imsiStr[16] = {0};
+        imsi_bin_to_str(ue_entry->IMSI, imsiStr);
+        log_msg(LOG_DEBUG, "Sec mode cmd failed in attach req proc. \
+                           Send attach reject and clear context. UE IMSI: %s", 
+                           imsiStr);
+	    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+        s1ap_rej.IE_type = S1AP_ATTACH_REJ;
+        s1ap_rej.ue_idx = secmode_resp->ue_idx;
+        s1ap_rej.mme_s1ap_ue_id = secmode_resp->ue_idx;
+        s1ap_rej.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+        s1ap_rej.enb_fd = ue_entry->enb_fd;
+        s1ap_rej.cause.present = s1apCause_PR_misc;
+        s1ap_rej.cause.choice.misc = s1apCauseMisc_unknown_PLMN;
+		
+        pthread_mutex_lock(&s1ap_reject_queue_mutex);
+        write_ipc_channel(g_Q_s1ap_common_reject, 
+                          (char *)&(s1ap_rej),
+				          S1AP_COMMON_REQ_BUF_SIZE);
+        pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+        post_ctx_rel_and_clr_uectx(secmode_resp->ue_idx);
+		ue_entry->ue_curr_proc =  UNKNOWN_PROC;
+		return SUCCESS;
+    }
 
 	if(ue_entry->esm_info_tx_required) {
 		esm_req.enb_fd = ue_entry->enb_fd;
@@ -158,14 +214,14 @@ post_to_next()
 		log_msg(LOG_INFO, "ESM msg posted to s1ap Q UE-%d.\n", esm_req.ue_idx);
 		attach_stage4_counter++;
 	} else {
-		struct CS_Q_msg cs_msg;
+		struct CS_Q_msg cs_msg = {0} ;
 
 		cs_msg.ue_idx = secmode_resp->ue_idx;
 		memcpy(cs_msg.IMSI, ue_entry->IMSI, BINARY_IMSI_LEN);
 
-		/*Where to get apn_name from? esm_info step is skipped here, which get
-		 * apn_name to use at this stage.*/
-		memcpy(&(cs_msg.apn), &(ue_entry->apn),
+		// Always use the apn name in hss db for create session request for
+		// default bearer.
+		memcpy(&(cs_msg.selected_apn), &(ue_entry->selected_apn),
 			sizeof(struct apn_name));
 
 		memcpy(&(cs_msg.tai), &(ue_entry->tai),
@@ -176,17 +232,123 @@ post_to_next()
 
 		cs_msg.max_requested_bw_dl = ue_entry->ambr.max_requested_bw_dl;
 		cs_msg.max_requested_bw_ul = ue_entry->ambr.max_requested_bw_ul;
+		cs_msg.paa_v4_addr = ue_entry->pdn_addr.ip_type.ipv4.s_addr; /* host order */
+		log_msg(LOG_INFO, "Posted Create Session message with PAA %x ", cs_msg.paa_v4_addr);
 
 		memset(cs_msg.MSISDN, 0, 10);
 		memcpy(cs_msg.MSISDN,ue_entry->MSISDN,10);
+        memcpy(&cs_msg.pco_options[0], &ue_entry->pco_options[0], sizeof(ue_entry->pco_options));
+        cs_msg.pco_length = ue_entry->pco_length; 
 
+		log_msg(LOG_INFO, "PCO length %d \n", cs_msg.pco_length);
 		write_ipc_channel(g_Q_CSreq_fd, (char *)&(cs_msg),
 				S11_CSREQ_STAGE5_BUF_SIZE);
 
-		log_msg(LOG_INFO, "Posted Create Session message to S11-app - stage 5\n");
-		log_msg(LOG_INFO, "Posted Create Session message to S11-app - stage 5.\n");
+		log_msg(LOG_INFO, "Posted Create Session message to S11-app - stage 5");
 		attach_stage5_counter++;
 	}
+	return SUCCESS;
+}
+
+int send_init_ctx_setup_req(int ue_index)
+{
+    log_msg(LOG_DEBUG,"create and send Init ctx setup request");
+    struct s1ap_common_req_Q_msg icr_msg;
+
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      ue_index);
+		return -1;
+	}
+
+	log_msg(LOG_INFO, "Post for s1ap processing - service_req_wf_initctxt_resp.\n");
+
+	/* create KeNB key */
+	/* TODO: Generate nas_count from ul_seq_no */
+	uint32_t nas_count = 0;
+	create_kenb_key(ue_entry->aia_sec_info->kasme.val, ue_entry->ue_sec_info.kenb_key, nas_count);
+	icr_msg.IE_type = S1AP_INIT_CTXT_SETUP_REQ;
+	icr_msg.ue_idx = ue_index;
+	icr_msg.enb_fd = ue_entry->enb_fd;
+	icr_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+	icr_msg.mme_s1ap_ue_id = ue_index;
+	icr_msg.ueag_max_dl_bitrate = ue_entry->ambr.max_requested_bw_dl;
+	icr_msg.ueag_max_ul_bitrate = ue_entry->ambr.max_requested_bw_ul;
+	icr_msg.bearer_id = ue_entry->bearer_id;
+	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
+	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key), KENB_SIZE);
+	ue_entry->ue_state = SVC_REQ_WF_INIT_CTXT_RESP;
+
+	//opened for write by s1 rel thread
+    pthread_mutex_lock(&s1ap_reject_queue_mutex);
+	write_ipc_channel(g_Q_s1ap_common_reject, (char *)&(icr_msg), S1AP_COMMON_REQ_BUF_SIZE);
+    pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+
+	log_msg(LOG_INFO, "Post for service_req_wf_initctxt_resp processing. SUCCESS\n");
+    return SUCCESS;
+}
+
+/*
+* Post message to s1ap handler about the failure of this stage 
+*/
+int
+post_svc_reject(int ue_index)
+{
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
+    struct s1ap_common_req_Q_msg s1ap_rej = {0};
+    
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      ue_index);
+		return -1;
+	}
+    
+    log_msg(LOG_INFO, "Sending Service Rej after Sec mod failure\n");
+    s1ap_rej.IE_type = S1AP_SERVICE_REJ;
+    s1ap_rej.ue_idx = ue_index;
+    s1ap_rej.mme_s1ap_ue_id = ue_index;
+    s1ap_rej.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+    s1ap_rej.enb_fd = ue_entry->enb_fd;
+    s1ap_rej.emm_cause = emmCause_ue_id_not_derived_by_network;
+
+    pthread_mutex_lock(&s1ap_reject_queue_mutex);
+    write_ipc_channel(g_Q_s1ap_common_reject, 
+                      (char *)&(s1ap_rej),
+                      S1AP_COMMON_REQ_BUF_SIZE);
+    pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+    return SUCCESS;
+}
+
+int
+post_ctx_rel_and_clr_uectx(int ue_index)
+{
+	struct s1ap_common_req_Q_msg ctx_rel = {0};
+	log_msg(LOG_INFO, "Sending ctx release \n");
+	struct UE_info *ue_entry =  GET_UE_ENTRY(ue_index);
+
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+	{
+		log_msg(LOG_INFO, "Failed to retrieve UE context for idx %d\n",
+					      ue_index);
+		return -1;
+    }
+    
+    ctx_rel.IE_type = S1AP_CTX_REL_CMD;
+    ctx_rel.enb_fd = ue_entry->enb_fd;
+    ctx_rel.mme_s1ap_ue_id = ue_index;
+    ctx_rel.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
+    ctx_rel.cause.present = s1apCause_PR_nas;
+    ctx_rel.cause.choice.nas = s1apCauseNas_normal_release; 
+    pthread_mutex_lock(&s1ap_reject_queue_mutex);
+    write_ipc_channel(g_Q_s1ap_common_reject, (char *)(&ctx_rel), 
+                      S1AP_COMMON_REQ_BUF_SIZE );
+    
+    pthread_mutex_unlock(&s1ap_reject_queue_mutex);
+    release_ue_entry(ue_entry); 
 	return SUCCESS;
 }
 
@@ -198,6 +360,7 @@ shutdown_stage4()
 {
 	close_ipc_channel(g_Q_secmoderesp_fd);
 	close_ipc_channel(g_Q_esmreq_fd);
+	close_ipc_channel(g_Q_s1ap_service_reject);
 	log_msg(LOG_INFO, "Shutdown Stage 4 handler \n");
 	pthread_exit(NULL);
 	return;
@@ -209,6 +372,7 @@ shutdown_stage4()
 void*
 stage4_handler(void *data)
 {
+        static char buf[S1AP_SECRESP_STAGE4_BUF_SIZE];
 	init_stage();
 	log_msg(LOG_INFO, "Stage 4 ready.\n");
 	g_mme_hdlr_status <<= 1;
@@ -216,12 +380,28 @@ stage4_handler(void *data)
 	check_mme_hdlr_status();
 
 	while(1){
-		read_next_msg();
+		read_next_msg(buf);
 
-		stage4_processing();
+		stage4_processing(buf);
 
-		post_to_next();
+		post_to_next(buf);
 	}
 
 	return NULL;
 }
+
+/* Initial Attach Stage1 might want to jump to stage 5 if GUTI attach... 
+ */
+void 
+guti_attach_post_to_next(int ue_index )
+{
+  static char buf[S1AP_SECRESP_STAGE4_BUF_SIZE];
+  memset(buf, 0, S1AP_SECRESP_STAGE4_BUF_SIZE);
+  struct secmode_resp_Q_msg *secmode_resp = (struct secmode_resp_Q_msg*)(&buf[0]);
+  secmode_resp->ue_idx = ue_index;
+  secmode_resp->status =  SUCCESS;
+  log_msg(LOG_INFO, "Stiching stage 1 to stage 4 \n");
+  post_to_next(buf);
+  return;
+}
+

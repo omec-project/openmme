@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -29,6 +20,7 @@
 #include "gtpv2c.h"
 #include "gtpv2c_ie.h"
 #include "detach_stage1_info.h"
+#include "gtpV2StackWrappers.h"
 
 /************************************************************************
 Current file : Stage 1 handler.
@@ -51,10 +43,10 @@ static char buf[S11_DTCHREQ_STAGE1_BUF_SIZE];
 
 struct thread_pool *g_tpool;
 
-static uint8_t g_udp_buf[4096];
-static uint32_t g_udp_buf_size;
-
+extern struct GtpV2Stack* gtpStack_gp;
 extern volatile uint32_t g_s11_sequence;
+
+struct MsgBuffer*  dsReqMsgBuf_p = NULL;
 
 /****Global and externs end***/
 
@@ -97,6 +89,8 @@ read_next_msg()
 	int bytes_read=0;
 
 	memset(buf, 0, S11_DTCHREQ_STAGE1_BUF_SIZE);
+	MsgBuffer_reset(dsReqMsgBuf_p);
+
 	while (bytes_read < S11_DTCHREQ_STAGE1_BUF_SIZE) {//TODO : Recheck condition
 		if ((bytes_read = read_ipc_channel(
 				g_Q_DS_fd, buf,
@@ -120,40 +114,22 @@ delete_session_processing()
 {
 	struct DS_Q_msg *ds_msg = (struct DS_Q_msg *) buf;
 
-	uint32_t ieCount = 0;
+	GtpV2MessageHeader gtpHeader;
+	gtpHeader.msgType = GTP_DELETE_SESSION_REQ;
+	gtpHeader.sequenceNumber = g_s11_sequence;
+	gtpHeader.teidPresent = true;
+	gtpHeader.teid = ds_msg->s11_sgw_c_fteid.header.teid_gre;
 
-	struct gtpv2c_header *gtpv2c_s11_tx =
-			(struct gtpv2c_header *)g_udp_buf;
+	DeleteSessionRequestMsgData msgData;
+	memset(&msgData, 0, sizeof(DeleteSessionRequestMsgData));
 
-	set_gtpv2c_header(gtpv2c_s11_tx, GTP_DELETE_SESSION_REQ,
-			ds_msg->s11_sgw_c_fteid.header.teid_gre,
-			g_s11_sequence);
+	msgData.indicationFlagsIePresent = true;
+	msgData.indicationFlags.iOI = true;
 
-	/*Only 2 mandatory IEs for MB*/
+	msgData.linkedEpsBearerIdIePresent = true;
+	msgData.linkedEpsBearerId.epsBearerId = ds_msg->bearer_id;
 
-	gtpv2c_ie ies[2];
-
-	ies[ieCount].type = IE_EBI;
-	ies[ieCount].length = htons(sizeof(ds_msg->bearer_id));
-	ies[ieCount].instance = INSTANCE_ZERO;
-	memcpy(ies[ieCount].value, &ds_msg->bearer_id,
-			sizeof(ds_msg->bearer_id));
-	ieCount++;
-
-	ies[ieCount].type = IE_INDICATION;
-	ies[ieCount].length = htons(sizeof(ds_msg->indication));
-	ies[ieCount].instance = INSTANCE_ZERO;
-	memcpy(ies[ieCount].value, ds_msg->indication,
-			sizeof(ds_msg->indication));
-	ieCount++;
-
-	g_udp_buf_size = ntohs(gtpv2c_s11_tx->gtp.len) + 4;
-	for (int i=0; i<ieCount; i++) {
-		memcpy(g_udp_buf + g_udp_buf_size, &ies[i], ntohs(ies[i].length) +4);
-		g_udp_buf_size += ntohs(ies[i].length) + 4;
-	}
-
-	gtpv2c_s11_tx->gtp.len = htons(g_udp_buf_size - 4);
+	GtpV2Stack_buildGtpV2Message(gtpStack_gp, dsReqMsgBuf_p, &gtpHeader, &msgData);
 
 	g_s11_sequence++;
 
@@ -166,7 +142,9 @@ delete_session_processing()
 static int
 post_to_next()
 {
-	sendto(g_s11_fd, g_udp_buf, g_udp_buf_size, 0,
+	sendto(g_s11_fd,
+			MsgBuffer_getDataPointer(dsReqMsgBuf_p),
+			MsgBuffer_getBufLen(dsReqMsgBuf_p), 0,
 			(struct sockaddr*)&g_s11_cp_addr, g_s11_serv_size);
 
 	//TODO " error chk, eagain etc?

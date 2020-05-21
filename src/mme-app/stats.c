@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -32,17 +23,24 @@ uint32_t attach_stage5_counter = 0;
 uint32_t attach_stage6_counter = 0;
 uint32_t attach_stage7_counter = 0;
 uint32_t attach_stage8_counter = 0;
+uint32_t attach_reject_counter = 0;
+uint32_t attach_identity_req_counter = 0;
+uint32_t attach_identity_rsp_counter = 0;
 
 uint32_t detach_stage1_counter = 0;
 uint32_t detach_stage2_counter = 0;
 uint32_t detach_stage3_counter = 0;
 
+uint32_t paging_counter = 0;
+
+
+uint32_t tau_req_counter;
+uint32_t tau_response_accept_counter;
+uint32_t tau_response_reject_counter;
 
 void* stat_report(void *data)
 {
-	while(1)  {
-#if 0
-// want to disable stats for time being..Its taking all log space
+	while(0)  {
 
 		printf("\033[H\033[J");
 
@@ -56,9 +54,10 @@ void* stat_report(void *data)
 
 		printf("Dtch_Stg1       Dtch_Stg2       Dtch_Stg3\n\n");
 		printf("%8u        %8u        %8u\n",detach_stage1_counter,detach_stage2_counter,detach_stage3_counter);
-#endif
+		printf("paging\n\n");
+		printf("%8u\n",paging_counter);
+		printf("Identification Request %u Identification Response %u Attach Reject %u\n\n", attach_identity_req_counter, attach_identity_rsp_counter, attach_reject_counter);
 		sleep(3);
-
 	}
 
 	return NULL;

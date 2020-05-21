@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef __S11_STRUCTS_H_
@@ -78,14 +69,14 @@ struct PAA {
         } ip_type;
 };
 
-struct Cause {
+struct gtp_cause {
 	unsigned char cause;
 	unsigned char data;
 };
 
 struct bearer_ctx {
 	unsigned char eps_bearer_id;
-	struct Cause cause;
+	struct gtp_cause cause;
 	struct fteid s1u_sgw_teid;
 	struct fteid s5s8_pgw_u_teid;
 };
@@ -98,11 +89,13 @@ struct s11_IE_header {
 };
 
 union s11_IE_data {
-	struct Cause cause;
+	struct gtp_cause cause;
 	struct fteid s11_sgw_fteid;
 	struct fteid s5s8_pgw_c_fteid;
 	struct PAA pdn_addr;
 	struct bearer_ctx bearer;
+	unsigned char eps_bearer_id;
+	uint8_t arp;
 };
 
 struct s11_IE {

@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
@@ -110,6 +101,11 @@ stage6_processing()
 {
 	struct csr_Q_msg *csr_info = (struct csr_Q_msg *)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(csr_info->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "stage6_processing Bad UE with index %d ", csr_info->ue_idx);
+        return E_FAIL;
+    }
 
 	/*Parse and validate  the buffer*/
 	//if(csr_info->status) check for status
@@ -129,6 +125,15 @@ stage6_processing()
 
 	memcpy(&(ue_entry->pdn_addr), &(csr_info->pdn_addr),
 		sizeof(struct PAA));
+        memcpy(&(ue_entry->pdn_addr), &(csr_info->pdn_addr),
+                sizeof(struct PAA));
+
+    char imsi[16] = {0};
+    struct in_addr paa=ue_entry->pdn_addr.ip_type.ipv4;
+    paa.s_addr = ntohl(paa.s_addr);
+    imsi_bin_to_str(ue_entry->IMSI, imsi);
+    log_msg(LOG_DEBUG, "IMSI %s - IP address assigned %s", 
+             imsi, inet_ntoa(paa));
 
 	/*post to next processing*/
 	return SUCCESS;
@@ -140,17 +145,32 @@ stage6_processing()
 static int
 post_to_next()
 {
-	struct init_ctx_req_Q_msg icr_msg;
+	struct init_ctx_req_Q_msg icr_msg = {0};
 	struct csr_Q_msg *csr_info = (struct csr_Q_msg *)buf;
 	struct UE_info *ue_entry =  GET_UE_ENTRY(csr_info->ue_idx);
+    if((ue_entry == NULL) || (!IS_VALID_UE_INFO(ue_entry)))
+    {
+        log_msg(LOG_INFO, "post_to_next Bad UE with index %d ", csr_info->ue_idx);
+        return E_FAIL;
+    }
 
 	log_msg(LOG_INFO, "Post for s1ap processing - stage 6.\n");
 
-	/* create KeNB key */
-	/* TODO: Generate nas_count from ul_seq_no */
-	uint32_t nas_count = 0;
-	create_kenb_key(ue_entry->aia_sec_info->kasme.val,
-			ue_entry->ue_sec_info.kenb_key, nas_count);
+    uint32_t nas_count = 0;
+    create_kenb_key(ue_entry->aia_sec_info->kasme.val,
+                        ue_entry->ue_sec_info.kenb_key, nas_count);
+#if 0
+    if(UE_ID_IMSI(ue_entry->flags))
+    {
+        log_msg(LOG_DEBUG, "creating enb key");
+        /* create KeNB key */
+        /* TODO: Generate nas_count from ul_seq_no */
+        uint32_t nas_count = 0;
+        //uint32_t nas_count = ue_entry->ul_seq_no;
+        create_kenb_key(ue_entry->aia_sec_info->kasme.val,
+                        ue_entry->ue_sec_info.kenb_key, nas_count);
+    }
+#endif
 
 	icr_msg.ue_idx = csr_info->ue_idx;
 	icr_msg.enb_s1ap_ue_id = ue_entry->s1ap_enb_ue_id;
@@ -159,20 +179,35 @@ post_to_next()
 	icr_msg.bearer_id = ue_entry->bearer_id;
 	icr_msg.dl_seq_no = ue_entry->dl_seq_no++;
 	icr_msg.enb_fd = ue_entry->enb_fd;
+    icr_msg.m_tmsi = ue_entry->m_tmsi;
+
 
 	memcpy(&(icr_msg.gtp_teid), &(ue_entry->s1u_sgw_u_fteid), sizeof(struct fteid));
 
+	// tai format is compatible with nas interface tai format
 	memcpy(&(icr_msg.tai), &(ue_entry->tai), sizeof(struct TAI));
 
 	/*s1ap handler to use apn name and tai to generate mcc, mcn appended name*/
 	memcpy(&(icr_msg.apn), &(ue_entry->apn), sizeof(struct apn_name));
+	memcpy(&(icr_msg.selected_apn), &(ue_entry->selected_apn),
+			sizeof(struct apn_name));
 	memcpy(&(icr_msg.pdn_addr), &(ue_entry->pdn_addr), sizeof(struct PAA));
 	memcpy(&(icr_msg.int_key), &(ue_entry->ue_sec_info.int_key),
 			NAS_INT_KEY_SIZE);
 	memcpy(&(icr_msg.sec_key), &(ue_entry->ue_sec_info.kenb_key),
 			KENB_SIZE);
 	memcpy(&(icr_msg.pti), &(ue_entry->pti), 1);
+    log_msg(LOG_DEBUG, "Passing PTI = %d  to s1ap. Ue_entry = %p ", icr_msg.pti, ue_entry);
 
+	/* Keep GUTI to IMSI mapping Or GUTI to ue-index mapping 
+	* send GUTI to UE
+	* save GUTI in the UE Record 
+	*/
+	icr_msg.pco_length = csr_info->pco_length;
+	if(csr_info->pco_length) 
+	{
+		memcpy(&icr_msg.pco_options[0], &csr_info->pco_options[0], csr_info->pco_length);
+	}
 	write_ipc_channel(g_Q_icsreq_fd, (char *)&(icr_msg), S1AP_ICSREQ_STAGE6_BUF_SIZE);
 
 	/*Call DUMMY MB funcion*/

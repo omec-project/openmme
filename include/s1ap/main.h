@@ -1,18 +1,9 @@
 /*
+ * Copyright 2019-present Open Networking Foundation
  * Copyright (c) 2003-2018, Great Software Laboratory Pvt. Ltd.
  * Copyright (c) 2017 Intel Corporation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /*
@@ -66,6 +57,27 @@ void
 
 void
 *detach_accept_handler(void *);
+
+void
+*s1ap_reject_handler(void *);
+
+void 
+*s1ap_attach_id_req_handler(void *);
+
+void 
+*tau_response_handler (void *);
+
+void
+*emm_info_req_handler(void *);
+
+void
+*gen_reset_request_handler(void *);
+
+void
+*paging_handler(void *);
+
+void
+*mme_to_s1ap_msg_handler(void *);
 
 void
 calculate_mac(uint8_t *int_key, uint32_t seq_no, uint8_t direction,
