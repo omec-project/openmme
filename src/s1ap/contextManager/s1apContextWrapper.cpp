@@ -99,6 +99,10 @@ uint32_t setValuesForEnbCtx_cpp(uint32_t cbIndex, EnbStruct* enbCtx)
         }
 
         EnbContext* enbCbCtx = static_cast <EnbContext *>(cb->getPermDataBlock());
+        mme::S1apDataGroupManager::Instance()->deleteenbIdkey(
+                                                    enbCbCtx->getEnbId());
+        mme::S1apDataGroupManager::Instance()->deleteenbFdkey(
+                                                    enbCbCtx->getEnbFd());
         enbCbCtx->setEnbFd(enbCtx->enbFd_m);
         enbCbCtx->setEnbId(enbCtx->enbId_m);
         enbCbCtx->setS1apEnbUeId(enbCtx->s1apEnbUeId_m);
