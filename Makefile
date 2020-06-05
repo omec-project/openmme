@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-PROJECT_NAME		 := openmme
 VERSION                  ?= $(shell cat ./VERSION)
 
 TOPTARGETS 		 := all clean install
@@ -22,7 +21,8 @@ DOCKER_REGISTRY          ?=
 DOCKER_REPOSITORY        ?=
 DOCKER_BUILD_ARGS        ?=
 DOCKER_TAG               ?= ${VERSION}
-DOCKER_IMAGENAME         := ${DOCKER_REGISTRY}${DOCKER_REPOSITORY}${PROJECT_NAME}:${DOCKER_TAG}
+DOCKER_TARGET            := openmme
+DOCKER_IMAGENAME         := ${DOCKER_REGISTRY}${DOCKER_REPOSITORY}${DOCKER_TARGET}:${DOCKER_TAG}
 
 ## Docker labels. Only set ref and commit date if committed
 DOCKER_LABEL_VCS_URL     ?= $(shell git remote get-url $(shell git remote))
@@ -34,11 +34,13 @@ DOCKER_LABEL_BUILD_DATE  ?= $(shell date -u "+%Y-%m-%dT%H:%M:%SZ")
 docker-build:
 	docker build $(DOCKER_BUILD_ARGS) \
 		-t ${DOCKER_IMAGENAME} \
-		--build-arg org_label_schema_version="${VERSION}" \
-		--build-arg org_label_schema_vcs_url="${DOCKER_LABEL_VCS_URL}" \
-		--build-arg org_label_schema_vcs_ref="${DOCKER_LABEL_VCS_REF}" \
-		--build-arg org_label_schema_build_date="${DOCKER_LABEL_BUILD_DATE}" \
-		--build-arg org_opencord_vcs_commit_date="${DOCKER_LABEL_COMMIT_DATE}" \
+		--label "org.label-schema.schema-version=1.0" \
+		--label "org.label-schema.name=${DOCKER_TARGET}" \
+		--label "org.label-schema.version=${VERSION}" \
+		--label "org.label-schema.vcs-url=${DOCKER_LABEL_VCS_URL}" \
+		--label "org.label-schema.vcs-ref=${DOCKER_LABEL_VCS_REF}" \
+		--label "org.label-schema.build-date=${DOCKER_LABEL_BUILD_DATE}" \
+		--label "org.opencord.vcs-commit-date=${DOCKER_LABEL_COMMIT_DATE}" \
 		.
 
 docker-push:
