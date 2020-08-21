@@ -2,6 +2,9 @@
 Copyright 2018-present Open Networking Foundation
 SPDX-License-Identifier: Apache-2.0
 -->
+# Obsolete Project
+New Nucleus MME is developed and its available on omec-project. Please refer [Nucleus](https://github.com/omec-project/Nucleus "Nucleus Home Page").
+No new developement is done on this project !
 # OpenMME
 ## Table of Contents
 [Introduction](#introduction)
