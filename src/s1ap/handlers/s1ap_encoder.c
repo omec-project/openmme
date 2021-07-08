@@ -580,7 +580,7 @@ int s1ap_mme_encode_paging_request(
     /* index(10bit) = ue_imsi_value mod 1024 */
     uint16_t index_value = ue_imsi_value % 1024;
     UEIdentityIndexValue->buf[0] = index_value >> 2;
-    UEIdentityIndexValue->buf[1] = (index_value & 0x3f) << 6;
+    UEIdentityIndexValue->buf[1] = (index_value & 0x3) << 6;
     UEIdentityIndexValue->bits_unused = 6;
 
     log_msg(LOG_DEBUG,"Encoding STMSI\n");
